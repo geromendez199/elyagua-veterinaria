@@ -19,13 +19,13 @@ export default function CategoryFilter({
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-3 mb-8">
       <button
         onClick={() => onCategoryChange(null)}
-        className={`px-4 py-2 rounded-lg transition ${
+        className={`px-6 py-2 rounded-lg font-semibold transition ${
           selectedCategory === null
-            ? 'bg-primary text-white'
-            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+            ? 'bg-primary text-white shadow-lg'
+            : 'bg-primary-light bg-opacity-20 text-primary hover:bg-opacity-40'
         }`}
       >
         Todos
@@ -34,10 +34,10 @@ export default function CategoryFilter({
         <button
           key={cat.value}
           onClick={() => onCategoryChange(cat.value)}
-          className={`px-4 py-2 rounded-lg transition ${
+          className={`px-6 py-2 rounded-lg font-semibold transition ${
             selectedCategory === cat.value
-              ? 'bg-primary text-white'
-              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              ? 'bg-primary-dark text-white shadow-lg'
+              : 'bg-primary-light bg-opacity-20 text-primary hover:bg-opacity-40'
           }`}
         >
           {cat.label}

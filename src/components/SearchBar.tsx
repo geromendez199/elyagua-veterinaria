@@ -23,19 +23,19 @@ export default function SearchBar() {
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-2 bg-white border-2 border-primary rounded-lg px-3 py-2">
-        <Search size={20} className="text-primary" />
+      <div className="flex items-center gap-3 bg-white border-2 border-primary rounded-xl px-4 py-3 shadow-lg">
+        <Search size={22} className="text-primary" />
         <input
           type="text"
           placeholder="Buscar productos..."
           defaultValue={q}
           onChange={handleSearch}
-          className="flex-1 outline-none text-gray-700"
+          className="flex-1 outline-none text-gray-700 font-medium"
         />
         {q && (
           <button
             onClick={handleClear}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-primary hover:text-primary-dark transition"
           >
             <X size={20} />
           </button>

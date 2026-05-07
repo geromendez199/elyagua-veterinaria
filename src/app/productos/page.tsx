@@ -30,20 +30,20 @@ export default async function ProductosPage({ searchParams }: PageProps) {
   const products = await getProducts()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-dark text-white py-12">
+      <div className="bg-gradient-to-br from-primary via-primary-dark to-dark text-white py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-3">Nuestros Productos</h1>
-          <p className="text-primary-light text-lg">
+          <h1 className="text-5xl font-bold mb-4">Nuestros Productos</h1>
+          <p className="text-xl text-primary-light">
             Amplia variedad de productos de calidad para el bienestar de tu mascota
           </p>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-10">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="mb-12">
           <SearchBar />
         </div>
 
