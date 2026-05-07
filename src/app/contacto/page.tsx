@@ -17,8 +17,8 @@ export default function ContactoPage() {
       <div className="bg-primary text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl font-bold mb-2">Contacto</h1>
-          <p className="text-primary-light">
-            Te esperamos en nuestro local o ponte en contacto por WhatsApp
+          <p className="text-white">
+            Te esperamos en nuestro local o ponete en contacto por WhatsApp
           </p>
         </div>
       </div>
