@@ -39,30 +39,40 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     sendWhatsApp()
   }
 
-  const sendWhatsApp = () => {
-    const productList = items
-      .map((item) => `• ${item.product.nombre} x${item.quantity} — $${(item.product.precio * item.quantity).toFixed(2)}`)
-      .join('\n')
+  const formatPrice = (n: number) =>
+    '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+  const sendWhatsApp = () => {
     const deliveryInfo =
       formData.deliveryType === 'retiro'
-        ? 'Retiro en tienda'
-        : `Envío a: ${formData.direccion}`
+        ? '🏪 Retiro en tienda'
+        : `🚚 Envío a domicilio: ${formData.direccion}`
 
-    const message = `🐾 *Nuevo pedido - El Yagua Veterinaria*
+    const productLines = items
+      .map((item) =>
+        `▸ ${item.product.nombre}\n   ${item.quantity} unidad${item.quantity > 1 ? 'es' : ''} × ${formatPrice(item.product.precio)} = *${formatPrice(item.product.precio * item.quantity)}*`
+      )
+      .join('\n\n')
 
-👤 Cliente: ${formData.nombre}
-📞 Teléfono: ${formData.telefono}
-📦 Entrega: ${deliveryInfo}
+    const message = [
+      `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
+      ``,
+      `👤 *Cliente:* ${formData.nombre}`,
+      `📱 *Teléfono:* ${formData.telefono}`,
+      `📦 *Entrega:* ${deliveryInfo}`,
+      ``,
+      `━━━━━━━━━━━━━━━`,
+      `🛒 *PRODUCTOS*`,
+      `━━━━━━━━━━━━━━━`,
+      ``,
+      productLines,
+      ``,
+      `━━━━━━━━━━━━━━━`,
+      `💰 *TOTAL: ${formatPrice(total)}*`,
+      `━━━━━━━━━━━━━━━`,
+    ].join('\n')
 
-🛒 *Productos:*
-${productList}
-
-💰 *Total: $${total.toFixed(2)}*`
-
-    const encodedMessage = encodeURIComponent(message)
-    const whatsappUrl = `https://wa.me/5493492730010?text=${encodedMessage}`
-
+    const whatsappUrl = `https://wa.me/5493492730010?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
     clearCart()
     onClose()
