@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
-import { Edit2, Trash2, LogOut, Plus, X, Upload, ImageIcon } from 'lucide-react'
+import { Edit2, Trash2, LogOut, Plus, X, Upload, ImageIcon, Camera, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'remedios', 'accesorios']
@@ -31,32 +31,29 @@ export default function AdminProductosPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const newImageRef = useRef<HTMLInputElement>(null)
 
-  // Edición inline
+  // Edición inline precio/stock
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState({ precio: 0, stock: 0 })
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+  // Subida de imagen a producto existente
+  const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
+  const existingImageRef = useRef<HTMLInputElement>(null)
+  const uploadTargetId = useRef<string | null>(null)
+
+  useEffect(() => { checkAuth() }, [])
 
   const checkAuth = async () => {
     const { data } = await supabase.auth.getSession()
-    if (!data.session) {
-      router.push('/admin')
-      return
-    }
+    if (!data.session) { router.push('/admin'); return }
     setUser(data.session.user)
     fetchProducts()
   }
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('productos')
-        .select('*')
-        .order('nombre', { ascending: true })
+      const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true })
       if (error) throw error
       setProducts(data || [])
     } catch (error) {
@@ -71,8 +68,49 @@ export default function AdminProductosPage() {
     router.push('/admin')
   }
 
+  // ── Subir imagen a producto existente ──────────────────────────
+  const triggerImageUpload = (productId: string) => {
+    uploadTargetId.current = productId
+    existingImageRef.current?.click()
+  }
+
+  const handleExistingImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const productId = uploadTargetId.current
+    if (!file || !productId) return
+
+    setUploadingImageId(productId)
+    e.target.value = ''
+
+    try {
+      const ext = file.name.split('.').pop()
+      const filename = `${productId}-${Date.now()}.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('productos')
+        .upload(filename, file, { upsert: true })
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filename)
+      const imagen_url = urlData.publicUrl
+
+      const { error: updateError } = await supabase
+        .from('productos')
+        .update({ imagen_url, updated_at: new Date().toISOString() })
+        .eq('id', productId)
+      if (updateError) throw updateError
+
+      setProducts((prev) => prev.map((p) => p.id === productId ? { ...p, imagen_url } : p))
+    } catch (err: any) {
+      alert('Error al subir imagen: ' + err.message)
+    } finally {
+      setUploadingImageId(null)
+      uploadTargetId.current = null
+    }
+  }
+
   // ── Nuevo producto ──────────────────────────────────────────────
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setImageFile(file)
@@ -86,20 +124,14 @@ export default function AdminProductosPage() {
 
     try {
       let imagen_url = ''
-
       if (imageFile) {
         const ext = imageFile.name.split('.').pop()
         const filename = `${Date.now()}.${ext}`
         const { error: uploadError } = await supabase.storage
           .from('productos')
           .upload(filename, imageFile, { upsert: true })
-
         if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage
-          .from('productos')
-          .getPublicUrl(filename)
-
+        const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filename)
         imagen_url = urlData.publicUrl
       }
 
@@ -118,21 +150,19 @@ export default function AdminProductosPage() {
         .single()
 
       if (error) throw error
-
       setProducts((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
       setShowModal(false)
       setForm(emptyForm)
       setImageFile(null)
       setImagePreview(null)
     } catch (err: any) {
-      console.error(err)
       setSaveError(err.message || 'Error al guardar el producto')
     } finally {
       setSaving(false)
     }
   }
 
-  // ── Edición inline ──────────────────────────────────────────────
+  // ── Edición inline precio/stock ────────────────────────────────
   const handleEdit = (product: Product) => {
     setEditingId(product.id)
     setEditValues({ precio: product.precio, stock: product.stock })
@@ -145,7 +175,7 @@ export default function AdminProductosPage() {
         .update({ precio: editValues.precio, stock: editValues.stock, updated_at: new Date().toISOString() })
         .eq('id', id)
       if (error) throw error
-      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...editValues } : p)))
+      setProducts((prev) => prev.map((p) => p.id === id ? { ...p, ...editValues } : p))
       setEditingId(null)
     } catch (error) {
       console.error('Error:', error)
@@ -175,6 +205,15 @@ export default function AdminProductosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Input oculto para subir foto a producto existente */}
+      <input
+        ref={existingImageRef}
+        type="file"
+        accept="image/*"
+        onChange={handleExistingImageChange}
+        className="hidden"
+      />
+
       {/* Header */}
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -194,7 +233,7 @@ export default function AdminProductosPage() {
 
       <div className="max-w-7xl mx-auto p-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">
+          <h2 className="text-3xl font-bold text-gray-900">
             Productos <span className="text-lg font-normal text-gray-400">({products.length})</span>
           </h2>
           <button
@@ -223,57 +262,81 @@ export default function AdminProductosPage() {
             <tbody>
               {products.map((product) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
+                  {/* Celda imagen — clic para cambiar foto */}
                   <td className="px-4 py-3">
-                    {product.imagen_url ? (
-                      <Image
-                        src={product.imagen_url}
-                        alt={product.nombre}
-                        width={56}
-                        height={56}
-                        className="w-14 h-14 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <ImageIcon size={20} className="text-gray-400" />
-                      </div>
-                    )}
+                    <button
+                      onClick={() => triggerImageUpload(product.id)}
+                      className="relative group w-14 h-14 rounded-lg overflow-hidden block"
+                      title="Clic para cambiar imagen"
+                    >
+                      {uploadingImageId === product.id ? (
+                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Loader2 size={20} className="text-primary animate-spin" />
+                        </div>
+                      ) : product.imagen_url ? (
+                        <>
+                          <Image
+                            src={product.imagen_url}
+                            alt={product.nombre}
+                            width={56}
+                            height={56}
+                            className="w-14 h-14 object-cover rounded-lg"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-lg">
+                            <Camera size={16} className="text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex flex-col items-center justify-center gap-1 group-hover:bg-primary/10 transition border-2 border-dashed border-gray-300 group-hover:border-primary">
+                          <Upload size={14} className="text-gray-400 group-hover:text-primary" />
+                          <span className="text-[9px] text-gray-400 group-hover:text-primary">Subir</span>
+                        </div>
+                      )}
+                    </button>
                   </td>
-                  <td className="px-4 py-3 text-gray-800 font-medium">{product.nombre}</td>
+
+                  <td className="px-4 py-3 text-gray-900 font-medium">{product.nombre}</td>
                   <td className="px-4 py-3">
-                    <span className="capitalize text-gray-600 bg-gray-100 px-2 py-1 rounded text-sm">
+                    <span className="capitalize text-gray-700 bg-gray-100 px-2 py-1 rounded text-sm">
                       {product.categoria}
                     </span>
                   </td>
+
+                  {/* Precio */}
                   <td className="px-4 py-3 text-center">
                     {editingId === product.id ? (
                       <input
                         type="number"
                         value={editValues.precio}
                         onChange={(e) => setEditValues({ ...editValues, precio: parseFloat(e.target.value) })}
-                        className="w-24 border rounded px-2 py-1 text-center"
+                        className="w-24 border rounded px-2 py-1 text-center text-gray-900"
                         step="0.01"
                       />
                     ) : (
-                      <span className="font-semibold">${product.precio.toFixed(2)}</span>
+                      <span className="font-semibold text-gray-900">${product.precio.toFixed(2)}</span>
                     )}
                   </td>
+
+                  {/* Stock */}
                   <td className="px-4 py-3 text-center">
                     {editingId === product.id ? (
                       <input
                         type="number"
                         value={editValues.stock}
                         onChange={(e) => setEditValues({ ...editValues, stock: parseInt(e.target.value) })}
-                        className="w-20 border rounded px-2 py-1 text-center"
+                        className="w-20 border rounded px-2 py-1 text-center text-gray-900"
                       />
                     ) : (
-                      product.stock
+                      <span className="text-gray-900 font-medium">{product.stock}</span>
                     )}
                   </td>
+
                   <td className="px-4 py-3 text-center">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${product.activo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                       {product.activo ? 'Sí' : 'No'}
                     </span>
                   </td>
+
                   <td className="px-4 py-3 text-center">
                     {editingId === product.id ? (
                       <div className="flex gap-2 justify-center">
@@ -303,6 +366,9 @@ export default function AdminProductosPage() {
             </div>
           )}
         </div>
+        <p className="text-xs text-gray-400 mt-3 text-center">
+          💡 Hacé clic en la imagen de cualquier producto para subir o cambiar su foto
+        </p>
       </div>
 
       {/* ── Modal nuevo producto ── */}
@@ -327,7 +393,7 @@ export default function AdminProductosPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen del producto</label>
                 <div
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => newImageRef.current?.click()}
                   className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
                 >
                   {imagePreview ? (
@@ -340,13 +406,7 @@ export default function AdminProductosPage() {
                     </div>
                   )}
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
+                <input ref={newImageRef} type="file" accept="image/*" onChange={handleNewImageChange} className="hidden" />
               </div>
 
               {/* Nombre */}
@@ -356,7 +416,7 @@ export default function AdminProductosPage() {
                   type="text"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
+                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
                   placeholder="Ej: Royal Canin Adult 15kg"
                   required
                 />
@@ -368,7 +428,7 @@ export default function AdminProductosPage() {
                 <textarea
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none resize-none"
+                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none resize-none text-gray-900"
                   placeholder="Descripción del producto..."
                   rows={3}
                 />
@@ -382,7 +442,7 @@ export default function AdminProductosPage() {
                     type="number"
                     value={form.precio}
                     onChange={(e) => setForm({ ...form, precio: e.target.value })}
-                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
                     placeholder="0.00"
                     step="0.01"
                     min="0"
@@ -395,7 +455,7 @@ export default function AdminProductosPage() {
                     type="number"
                     value={form.stock}
                     onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
                     placeholder="0"
                     min="0"
                     required
@@ -409,11 +469,11 @@ export default function AdminProductosPage() {
                 <select
                   value={form.categoria}
                   onChange={(e) => setForm({ ...form, categoria: e.target.value as Category })}
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none capitalize"
+                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
                   required
                 >
                   {CATEGORIAS.map((c) => (
-                    <option key={c} value={c} className="capitalize">{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                    <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                   ))}
                 </select>
               </div>
