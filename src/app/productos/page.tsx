@@ -32,17 +32,17 @@ export default async function ProductosPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary via-primary-dark to-dark text-white py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Nuestros Productos</h1>
-          <p className="text-xl text-primary-light">
+      <div className="bg-primary text-white py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <h1 className="text-4xl font-bold mb-2">Nuestros Productos</h1>
+          <p className="text-primary-light">
             Amplia variedad de productos de calidad para el bienestar de tu mascota
           </p>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="mb-12">
           <SearchBar />
         </div>

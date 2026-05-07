@@ -13,8 +13,8 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-primary text-white sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      <nav className="bg-primary text-white sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
@@ -23,28 +23,28 @@ export default function Navbar() {
                 alt="El Yagua Veterinaria"
                 width={180}
                 height={45}
-                className="h-11 w-auto"
+                className="h-12 w-auto"
                 priority
               />
             </Link>
 
             {/* Links */}
-            <div className="flex gap-8 items-center">
+            <div className="flex gap-12 items-center">
               <Link
                 href="/"
-                className="hover:text-primary-light transition font-medium text-sm"
+                className="hover:text-primary-light transition font-medium"
               >
                 Inicio
               </Link>
               <Link
                 href="/productos"
-                className="hover:text-primary-light transition font-medium text-sm"
+                className="hover:text-primary-light transition font-medium"
               >
                 Productos
               </Link>
               <Link
                 href="/contacto"
-                className="hover:text-primary-light transition font-medium text-sm"
+                className="hover:text-primary-light transition font-medium"
               >
                 Contacto
               </Link>
@@ -52,10 +52,10 @@ export default function Navbar() {
               {/* Carrito */}
               <button
                 onClick={() => setCartOpen(!cartOpen)}
-                className="relative hover:text-primary-light transition p-1"
+                className="relative hover:text-primary-light transition"
                 title="Carrito de compras"
               >
-                <ShoppingCart size={22} />
+                <ShoppingCart size={24} />
                 {itemCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {itemCount}

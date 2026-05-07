@@ -14,17 +14,17 @@ export default function ContactoPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary via-primary-dark to-dark text-white py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Contacto</h1>
-          <p className="text-xl text-primary-light">
+      <div className="bg-primary text-white py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <h1 className="text-4xl font-bold mb-2">Contacto</h1>
+          <p className="text-primary-light">
             Te esperamos en nuestro local o ponte en contacto por WhatsApp
           </p>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="bg-white rounded-xl shadow-lg p-8 mb-10">
           <ContactInfo info={contactData} />
         </div>
