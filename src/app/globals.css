@@ -1,11 +1,13 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: #009f8d;
-  --primary-light: #75c6bd;
-  --primary-dark: #3d6171;
+  --primary: #1BA098;
+  --primary-light: #6EBDB3;
+  --primary-dark: #4A8D89;
+  --dark: #3D4D52;
 }
 
 @theme inline {
