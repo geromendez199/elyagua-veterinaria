@@ -35,7 +35,7 @@ export default async function ProductosPage({ searchParams }: PageProps) {
       <div className="bg-primary text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl font-bold mb-2">Nuestros Productos</h1>
-          <p className="text-primary-light">
+          <p className="text-white">
             Amplia variedad de productos de calidad para el bienestar de tu mascota
           </p>
         </div>
