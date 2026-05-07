@@ -24,15 +24,15 @@ export default function AdminLoginPage() {
       })
 
       if (authError) {
-        setError('Email o contraseña incorrectos')
+        setError(`Error Supabase: ${authError.message} (status: ${authError.status})`)
         return
       }
 
       if (data.user) {
         router.push('/admin/productos')
       }
-    } catch (err) {
-      setError('Error al iniciar sesión')
+    } catch (err: any) {
+      setError(`Error inesperado: ${err.message}`)
     } finally {
       setLoading(false)
     }
@@ -96,8 +96,8 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-gray-600 text-sm mt-4">
-          Contacta al administrador para obtener credenciales
+        <p className="text-center text-gray-400 text-xs mt-4">
+          URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ OK' : '❌ Falta SUPABASE_URL'}
         </p>
       </div>
     </div>
