@@ -18,10 +18,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <h1 className="text-5xl md:text-6xl font-bold mb-4">
-                El Yagua Veterinaria
-              </h1>
-              <p className="text-xl text-primary-light max-w-2xl mx-auto">
+              <p className="text-2xl md:text-3xl text-white max-w-2xl mx-auto">
                 Tu veterinaria de confianza con productos de calidad y atención profesional para tus mascotas
               </p>
             </div>
@@ -81,7 +78,7 @@ export default function Home() {
       <section className="bg-primary text-white py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-6">¿Listo para cuidar a tu mascota?</h2>
-          <p className="text-xl text-primary-light mb-10">
+          <p className="text-xl text-white mb-10">
             Explora nuestro catálogo o contáctanos ahora
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
