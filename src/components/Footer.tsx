@@ -60,18 +60,23 @@ export default function Footer() {
           {/* Horarios */}
           <div>
             <h3 className="font-bold mb-4 text-lg text-primary-light">Horarios</h3>
-            <div className="text-sm text-gray-300 space-y-2">
-              <div>
-                <p className="font-semibold text-white">Lun-Vie:</p>
-                <p>7:30 - 21:00</p>
+            <div className="text-sm space-y-3">
+              <div className="border-l-2 border-primary pl-3">
+                <p className="font-semibold text-white">Lunes a Viernes</p>
+                <p className="text-gray-300">7:30 – 21:00 hs</p>
+                <p className="text-gray-400 text-xs">Atención integral todo el día</p>
               </div>
-              <div>
-                <p className="font-semibold text-white">Sábado:</p>
-                <p className="text-xs">Integral: 9:00-12:00 | Vet: 16:00-20:00</p>
+              <div className="border-l-2 border-primary pl-3">
+                <p className="font-semibold text-white">Sábado</p>
+                <p className="text-gray-300">9:00 – 12:00 hs</p>
+                <p className="text-gray-400 text-xs">Atención integral</p>
+                <p className="text-gray-300 mt-1">16:00 – 20:00 hs</p>
+                <p className="text-gray-400 text-xs">Solo veterinaria</p>
               </div>
-              <div>
-                <p className="font-semibold text-white">Domingo:</p>
-                <p className="text-xs">10:00-12:00 / 16:00-20:00</p>
+              <div className="border-l-2 border-primary pl-3">
+                <p className="font-semibold text-white">Domingo</p>
+                <p className="text-gray-300">10:00 – 12:00 hs</p>
+                <p className="text-gray-300">16:00 – 20:00 hs</p>
               </div>
             </div>
           </div>
