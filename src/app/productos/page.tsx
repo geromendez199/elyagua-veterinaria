@@ -44,7 +44,7 @@ export default async function ProductosPage({ searchParams }: PageProps) {
       {/* Contenido */}
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
         <div className="mb-12">
-          <SearchBar />
+          <SearchBar products={products} />
         </div>
 
         <ProductsClient initialProducts={products} searchQuery={q || ''} />

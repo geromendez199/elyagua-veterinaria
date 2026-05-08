@@ -58,13 +58,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className={`text-white p-2 rounded-lg transition shrink-0 ${
+            className={`flex items-center gap-1.5 text-white px-3 py-2 rounded-lg transition shrink-0 font-semibold text-sm ${
               justAdded
                 ? 'bg-green-500'
-                : 'bg-primary hover:bg-primary-dark disabled:bg-gray-400 disabled:cursor-not-allowed'
+                : 'bg-primary hover:bg-primary-dark disabled:bg-gray-300 disabled:cursor-not-allowed'
             }`}
           >
-            {justAdded ? <Check size={18} /> : <ShoppingCart size={18} />}
+            {justAdded ? <Check size={16} /> : <ShoppingCart size={16} />}
+            <span className="hidden sm:inline">
+              {justAdded ? 'Agregado' : product.stock === 0 ? 'Sin stock' : 'Agregar'}
+            </span>
           </button>
         </div>
       </div>
