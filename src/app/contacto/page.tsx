@@ -1,7 +1,7 @@
 import ContactInfo from '@/components/ContactInfo'
 import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'
-import { ClipboardList, Phone, MessageCircle, Instagram, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardList, Phone, MessageCircle, AtSign, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -86,11 +86,11 @@ export default function ContactoPage() {
           </div>
         </div>
 
-        {/* Instagram */}
+        {/* AtSign */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <Instagram size={22} className="text-primary" />
+              <AtSign size={22} className="text-primary" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Seguinos</h2>
           </div>
@@ -99,7 +99,7 @@ export default function ContactoPage() {
             target="_blank"
             className="inline-flex items-center gap-3 bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-dark transition"
           >
-            <Instagram size={18} />
+            <AtSign size={18} />
             @vet.elyagua
           </a>
         </div>
