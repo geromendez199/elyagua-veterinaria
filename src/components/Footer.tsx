@@ -1,5 +1,6 @@
 import { MapPin, Phone, PhoneCall } from 'lucide-react'
 import InstagramIcon from './InstagramIcon'
+import FacebookIcon from './FacebookIcon'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -53,6 +54,17 @@ export default function Footer() {
                 >
                   <InstagramIcon size={16} className="text-primary shrink-0" />
                   <span>vet.elyagua</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/veterinaria.elyagua/?locale=es_LA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-primary transition"
+                >
+                  <FacebookIcon size={16} className="text-primary shrink-0" />
+                  <span>veterinaria.elyagua</span>
                 </a>
               </li>
             </ul>

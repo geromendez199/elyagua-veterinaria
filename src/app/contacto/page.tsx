@@ -3,6 +3,7 @@ import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'
 import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
 import InstagramIcon from '@/components/InstagramIcon'
+import FacebookIcon from '@/components/FacebookIcon'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -87,28 +88,44 @@ export default function ContactoPage() {
           </div>
         </div>
 
-        {/* InstagramIcon */}
+        {/* Redes sociales */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <InstagramIcon size={22} className="text-primary" />
+              <InstagramIcon size={20} className="text-primary" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Seguinos</h2>
           </div>
-          <a
-            href="https://instagram.com/vet.elyagua"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-6 rounded-xl hover:bg-primary transition group"
-          >
-            <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition">
-              <InstagramIcon size={18} className="text-white" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 group-hover:text-white/70 transition">Instagram</p>
-              <p className="text-sm font-bold">@vet.elyagua</p>
-            </div>
-          </a>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href="https://instagram.com/vet.elyagua"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
+            >
+              <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition shrink-0">
+                <InstagramIcon size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 group-hover:text-white/70 transition">Instagram</p>
+                <p className="text-sm font-bold">@vet.elyagua</p>
+              </div>
+            </a>
+            <a
+              href="https://www.facebook.com/veterinaria.elyagua/?locale=es_LA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
+            >
+              <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition shrink-0">
+                <FacebookIcon size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 group-hover:text-white/70 transition">Facebook</p>
+                <p className="text-sm font-bold">veterinaria.elyagua</p>
+              </div>
+            </a>
+          </div>
         </div>
 
         {/* Volver */}
