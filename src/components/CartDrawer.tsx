@@ -185,7 +185,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     value={formData.telefono}
                     onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, '') })}
                     className="flex-1 px-3 py-2 outline-none text-gray-900 bg-white placeholder-gray-400"
-                    placeholder="3492680779"
+                    placeholder="3492XXXXXX"
                     maxLength={12}
                   />
                 </div>
