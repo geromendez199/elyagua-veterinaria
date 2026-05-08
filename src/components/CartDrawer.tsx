@@ -28,12 +28,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   }
 
   const handleCheckout = () => {
-    if (!formData.nombre || !formData.telefono) {
-      alert('Por favor completa nombre y teléfono')
+    if (!formData.nombre) {
+      alert('Por favor ingresá tu nombre')
+      return
+    }
+    if (!formData.telefono || formData.telefono.length < 8) {
+      alert('Por favor ingresá un número de teléfono válido')
       return
     }
     if (formData.deliveryType === 'envio' && !formData.direccion) {
-      alert('Por favor completa la dirección')
+      alert('Por favor completá la dirección de entrega')
       return
     }
     sendWhatsApp()
@@ -58,7 +62,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
       `👤 *Cliente:* ${formData.nombre}`,
-      `📱 *Teléfono:* ${formData.telefono}`,
+      `📱 *Teléfono:* +549${formData.telefono}`,
       `📦 *Entrega:* ${deliveryInfo}`,
       ``,
       `━━━━━━━━━━━━━━━`,
@@ -172,13 +176,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Teléfono/WhatsApp
                 </label>
-                <input
-                  type="tel"
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary text-gray-900 bg-white placeholder-gray-400"
-                  placeholder="+54 9 3492 000000"
-                />
+                <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:border-primary">
+                  <span className="px-3 py-2 bg-gray-100 text-gray-500 font-medium border-r border-gray-300 shrink-0 select-none">
+                    +549
+                  </span>
+                  <input
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, '') })}
+                    className="flex-1 px-3 py-2 outline-none text-gray-900 bg-white placeholder-gray-400"
+                    placeholder="3492680779"
+                    maxLength={12}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Solo el número, sin el 0 ni el 15</p>
               </div>
 
               {/* Tipo de entrega */}
