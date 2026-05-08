@@ -27,7 +27,7 @@ export default function ContactoPage() {
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
 
         {/* Info cards */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
+        <div className="mb-8">
           <ContactInfo info={contactData} />
         </div>
 
