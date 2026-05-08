@@ -1,6 +1,7 @@
 import ContactInfo from '@/components/ContactInfo'
 import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'
+import { ClipboardList, Phone, MessageCircle, Instagram, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -12,7 +13,7 @@ const contactData: ContactInfoType = {
 
 export default function ContactoPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-primary text-white py-10 md:py-12">
         <div className="max-w-7xl mx-auto px-4">
@@ -23,71 +24,96 @@ export default function ContactoPage() {
         </div>
       </div>
 
-      {/* Contenido */}
-      <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-10">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+
+        {/* Info cards */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
           <ContactInfo info={contactData} />
         </div>
 
-        {/* Secciones de información */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-primary mb-4">📋 Servicios</h2>
-            <p className="text-gray-600 mb-6">
+        {/* Servicios + Emergencias */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+          {/* Servicios */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <ClipboardList size={22} className="text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Servicios</h2>
+            </div>
+            <p className="text-gray-600 mb-5 text-sm leading-relaxed">
               Atención integral de lunes a viernes en horario extendido. Contamos con un equipo profesional.
             </p>
-            <ul className="space-y-3 text-gray-700 font-medium">
-              <li>✓ Atención veterinaria</li>
-              <li>✓ Venta de productos</li>
-              <li>✓ Asesoramiento profesional</li>
-              <li>✓ Servicios especializados</li>
+            <ul className="space-y-3">
+              {['Atención veterinaria', 'Venta de productos', 'Asesoramiento profesional', 'Servicios especializados'].map((s) => (
+                <li key={s} className="flex items-center gap-2 text-gray-700 font-medium">
+                  <CheckCircle2 size={18} className="text-primary shrink-0" />
+                  {s}
+                </li>
+              ))}
             </ul>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-primary mb-4">🚨 ¿Emergencia?</h2>
-            <p className="text-gray-600 mb-6">
+          {/* Emergencias */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <AlertCircle size={22} className="text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">¿Emergencia?</h2>
+            </div>
+            <p className="text-gray-600 mb-5 text-sm leading-relaxed">
               Disponibles fuera de horario para atender situaciones urgentes de tu mascota.
             </p>
             <div className="space-y-3">
               <a
                 href="tel:+5493492665978"
-                className="block w-full bg-red-500 text-white font-bold py-3 rounded-lg text-center hover:bg-red-600 transition"
+                className="flex items-center justify-center gap-3 w-full bg-dark text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
-                📞 +54 9 3492 665978
+                <Phone size={18} />
+                +54 9 3492 665978
               </a>
               <a
                 href="https://wa.me/5493492730010"
                 target="_blank"
-                className="block w-full bg-green-500 text-white font-bold py-3 rounded-lg text-center hover:bg-green-600 transition"
+                className="flex items-center justify-center gap-3 w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
-                💬 WhatsApp
+                <MessageCircle size={18} />
+                WhatsApp
               </a>
             </div>
           </div>
         </div>
 
-        {/* Redes sociales */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-10">
-          <h2 className="text-2xl font-bold text-primary mb-4">📸 Síguenos</h2>
+        {/* Instagram */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <Instagram size={22} className="text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Seguinos</h2>
+          </div>
           <a
             href="https://instagram.com/vet.elyagua"
             target="_blank"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition"
+            className="inline-flex items-center gap-3 bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-dark transition"
           >
-            <span>Instagram: @vet.elyagua</span>
+            <Instagram size={18} />
+            @vet.elyagua
           </a>
         </div>
 
-        {/* Botón para volver a productos */}
+        {/* Volver */}
         <div className="text-center">
           <Link
             href="/productos"
-            className="inline-block bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-dark transition"
+            className="inline-block border-2 border-primary text-primary font-bold py-3 px-8 rounded-xl hover:bg-primary hover:text-white transition"
           >
-            ← Volver a Productos
+            ← Ver Productos
           </Link>
         </div>
+
       </div>
     </div>
   )
