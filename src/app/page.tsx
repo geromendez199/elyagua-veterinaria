@@ -90,7 +90,7 @@ export default async function Home() {
               </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary-dark">Siempre Disponible</h3>
               <p className="text-gray-700 leading-relaxed">
-                Atención integral de lunes a domingo. Urgencias 24/7.
+                Atención integral de lunes a domingo.
               </p>
             </div>
           </div>
