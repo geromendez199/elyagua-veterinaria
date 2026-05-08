@@ -1,4 +1,5 @@
-import { MapPin, Phone, PhoneCall, AtSign } from 'lucide-react'
+import { MapPin, Phone, PhoneCall } from 'lucide-react'
+import InstagramIcon from './InstagramIcon'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -50,7 +51,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-primary transition"
                 >
-                  <AtSign size={16} className="text-primary shrink-0" />
+                  <InstagramIcon size={16} className="text-primary shrink-0" />
                   <span>vet.elyagua</span>
                 </a>
               </li>

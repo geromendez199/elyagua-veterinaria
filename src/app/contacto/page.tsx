@@ -1,7 +1,8 @@
 import ContactInfo from '@/components/ContactInfo'
 import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'
-import { ClipboardList, Phone, MessageCircle, AtSign, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
+import InstagramIcon from '@/components/InstagramIcon'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -86,11 +87,11 @@ export default function ContactoPage() {
           </div>
         </div>
 
-        {/* AtSign */}
+        {/* InstagramIcon */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <AtSign size={22} className="text-primary" />
+              <InstagramIcon size={22} className="text-primary" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Seguinos</h2>
           </div>
@@ -101,7 +102,7 @@ export default function ContactoPage() {
             className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-6 rounded-xl hover:bg-primary transition group"
           >
             <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition">
-              <AtSign size={18} className="text-white" />
+              <InstagramIcon size={18} className="text-white" />
             </div>
             <div>
               <p className="text-xs text-gray-400 group-hover:text-white/70 transition">Instagram</p>
