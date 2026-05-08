@@ -36,20 +36,20 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </div>
-      <div className="p-5 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-gray-800 flex-1">{product.nombre}</h3>
-          <span className="text-xs bg-primary text-white px-2 py-1 rounded whitespace-nowrap ml-2">
+      <div className="p-3 md:p-5 flex flex-col flex-1">
+        <div className="mb-2">
+          <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">
             {product.categoria}
           </span>
+          <h3 className="font-bold text-sm md:text-lg text-gray-800 mt-1 leading-tight line-clamp-2">{product.nombre}</h3>
         </div>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1">
+        <p className="text-gray-600 text-xs md:text-sm mb-3 line-clamp-2 flex-1 hidden md:block">
           {product.descripcion}
         </p>
         <div className="flex justify-between items-end mt-auto">
           <div>
-            <p className="text-2xl font-bold text-primary">
-              ${product.precio.toFixed(2)}
+            <p className="text-base md:text-2xl font-bold text-primary">
+              ${product.precio.toLocaleString('es-AR')}
             </p>
             <p className="text-xs text-gray-500">
               {product.stock > 0 ? `${product.stock} en stock` : 'Sin stock'}
@@ -58,13 +58,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className={`text-white p-2 rounded-lg transition ${
+            className={`text-white p-2 rounded-lg transition shrink-0 ${
               justAdded
                 ? 'bg-green-500'
                 : 'bg-primary hover:bg-primary-dark disabled:bg-gray-400 disabled:cursor-not-allowed'
             }`}
           >
-            {justAdded ? <Check size={20} /> : <ShoppingCart size={20} />}
+            {justAdded ? <Check size={18} /> : <ShoppingCart size={18} />}
           </button>
         </div>
       </div>

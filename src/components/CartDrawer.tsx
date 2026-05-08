@@ -90,7 +90,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       />
 
       {/* Drawer — forzamos colores light independientemente del modo del sistema */}
-      <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 overflow-y-auto flex flex-col text-gray-900">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 overflow-y-auto flex flex-col text-gray-900">
 
         {/* Header */}
         <div className="sticky top-0 bg-primary text-white p-4 flex justify-between items-center shrink-0">

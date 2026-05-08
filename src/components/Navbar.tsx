@@ -3,57 +3,42 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, Menu, X } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import CartDrawer from './CartDrawer'
 
 export default function Navbar() {
   const { itemCount } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <>
       <nav className="bg-primary text-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
+
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0">
+            <Link href="/" className="flex-shrink-0" onClick={() => setMenuOpen(false)}>
               <Image
                 src="/logo-blanco.png"
                 alt="El Yagua Veterinaria"
                 width={180}
                 height={45}
-                className="h-12 w-auto"
+                className="h-10 w-auto"
                 priority
               />
             </Link>
 
-            {/* Links */}
-            <div className="flex gap-12 items-center">
-              <Link
-                href="/"
-                className="hover:text-primary-light transition font-medium"
-              >
-                Inicio
-              </Link>
-              <Link
-                href="/productos"
-                className="hover:text-primary-light transition font-medium"
-              >
-                Productos
-              </Link>
-              <Link
-                href="/contacto"
-                className="hover:text-primary-light transition font-medium"
-              >
-                Contacto
-              </Link>
-
-              {/* Carrito */}
+            {/* Desktop links */}
+            <div className="hidden md:flex gap-10 items-center">
+              <Link href="/" className="hover:text-primary-light transition font-medium">Inicio</Link>
+              <Link href="/productos" className="hover:text-primary-light transition font-medium">Productos</Link>
+              <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
               <button
-                onClick={() => setCartOpen(!cartOpen)}
+                onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
-                title="Carrito de compras"
+                title="Carrito"
               >
                 <ShoppingCart size={24} />
                 {itemCount > 0 && (
@@ -63,7 +48,35 @@ export default function Navbar() {
                 )}
               </button>
             </div>
+
+            {/* Mobile: carrito + hamburguesa */}
+            <div className="flex md:hidden items-center gap-4">
+              <button
+                onClick={() => setCartOpen(true)}
+                className="relative hover:text-primary-light transition"
+                title="Carrito"
+              >
+                <ShoppingCart size={22} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => setMenuOpen(!menuOpen)} className="hover:text-primary-light transition">
+                {menuOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile menu desplegable */}
+          {menuOpen && (
+            <div className="md:hidden mt-3 pb-3 border-t border-white/20 flex flex-col gap-1 pt-3">
+              <Link href="/" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Inicio</Link>
+              <Link href="/productos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Productos</Link>
+              <Link href="/contacto" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Contacto</Link>
+            </div>
+          )}
         </div>
       </nav>
 
