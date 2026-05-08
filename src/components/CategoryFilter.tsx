@@ -19,7 +19,7 @@ export default function CategoryFilter({
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap gap-3 mb-8">
+    <div className="flex flex-wrap gap-3">
       <button
         onClick={() => onCategoryChange(null)}
         className={`px-6 py-2 rounded-lg font-semibold transition ${
