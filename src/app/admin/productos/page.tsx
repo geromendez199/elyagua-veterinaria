@@ -7,7 +7,7 @@ import { Product, Category } from '@/types'
 import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
-const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'remedios', 'accesorios']
+const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
 const emptyForm = {
   nombre: '',

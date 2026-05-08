@@ -10,7 +10,7 @@ interface CategoryFilterProps {
 const categories: { value: Category; label: string }[] = [
   { value: 'alimentos', label: 'Alimentos' },
   { value: 'juguetes', label: 'Juguetes' },
-  { value: 'remedios', label: 'Remedios' },
+  { value: 'medicamentos', label: 'Medicamentos' },
   { value: 'accesorios', label: 'Accesorios' },
 ]
 

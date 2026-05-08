@@ -1,4 +1,4 @@
-export type Category = 'alimentos' | 'juguetes' | 'remedios' | 'accesorios'
+export type Category = 'alimentos' | 'juguetes' | 'medicamentos' | 'accesorios'
 export type DeliveryType = 'retiro' | 'envio'
 
 export interface Product {

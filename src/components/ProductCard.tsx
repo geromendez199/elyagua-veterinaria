@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
       <div className="p-3 md:p-5 flex flex-col flex-1">
         <div className="mb-2">
-          <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">
+          <span className="text-xs bg-primary text-white px-2 py-0.5 rounded capitalize">
             {product.categoria}
           </span>
           <h3 className="font-bold text-sm md:text-lg text-gray-800 mt-1 leading-tight line-clamp-2">{product.nombre}</h3>
