@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { ShieldCheck, Stethoscope, Clock } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -47,24 +48,30 @@ export default function Home() {
             ¿Por qué elegirnos?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md hover:shadow-xl transition border-b-4 border-primary">
-              <div className="text-4xl mb-3">🐾</div>
+            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
+                <ShieldCheck size={30} className="text-primary" />
+              </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary">Productos Premium</h3>
               <p className="text-gray-700 leading-relaxed">
                 Seleccionamos cuidadosamente cada producto para el bienestar de tu mascota.
               </p>
             </div>
 
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md hover:shadow-xl transition border-b-4 border-primary-light">
-              <div className="text-4xl mb-3">💪</div>
+            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-light">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
+                <Stethoscope size={30} className="text-primary" />
+              </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary">Equipo Experto</h3>
               <p className="text-gray-700 leading-relaxed">
                 Nuestro equipo profesional te asesora en la mejor solución.
               </p>
             </div>
 
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md hover:shadow-xl transition border-b-4 border-primary-dark">
-              <div className="text-4xl mb-3">⏱️</div>
+            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-dark">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
+                <Clock size={30} className="text-primary-dark" />
+              </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary-dark">Siempre Disponible</h3>
               <p className="text-gray-700 leading-relaxed">
                 Atención integral de lunes a domingo. Urgencias 24/7.
