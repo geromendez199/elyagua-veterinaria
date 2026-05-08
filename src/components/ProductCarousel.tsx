@@ -114,14 +114,14 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
               <button
                 onClick={prev}
                 disabled={index === 0}
-                className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-2 text-primary hover:bg-primary hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
+                className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-2 text-primary hover:bg-primary hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={22} />
               </button>
               <button
                 onClick={next}
                 disabled={index >= maxIndex}
-                className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-2 text-primary hover:bg-primary hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
+                className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-2 text-primary hover:bg-primary hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={22} />
               </button>
@@ -136,7 +136,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
               <button
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`rounded-full transition-all ${
+                className={`p-2 rounded-full transition-all ${
                   i === index ? 'bg-primary w-6 h-2' : 'bg-gray-300 w-2 h-2'
                 }`}
               />

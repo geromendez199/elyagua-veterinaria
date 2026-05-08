@@ -101,7 +101,7 @@ export default function ContactoPage() {
               href="https://instagram.com/vet.elyagua"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
+              className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
             >
               <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition shrink-0">
                 <InstagramIcon size={18} className="text-white" />
@@ -115,7 +115,7 @@ export default function ContactoPage() {
               href="https://www.facebook.com/veterinaria.elyagua/?locale=es_LA"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
+              className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
             >
               <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition shrink-0">
                 <FacebookIcon size={18} className="text-white" />

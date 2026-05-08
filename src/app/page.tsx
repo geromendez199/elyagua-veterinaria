@@ -65,8 +65,8 @@ export default async function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-16 text-primary">
             ¿Por qué elegirnos?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary">
+          <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary">
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
                 <ShieldCheck size={30} className="text-primary" />
               </div>
@@ -75,7 +75,7 @@ export default async function Home() {
                 Seleccionamos cuidadosamente cada producto para el bienestar de tu mascota.
               </p>
             </div>
-            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-light">
+            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-light">
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
                 <Stethoscope size={30} className="text-primary" />
               </div>
@@ -84,7 +84,7 @@ export default async function Home() {
                 Nuestro equipo profesional te asesora en la mejor solución.
               </p>
             </div>
-            <div className="bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-dark">
+            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-dark">
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
                 <Clock size={30} className="text-primary-dark" />
               </div>

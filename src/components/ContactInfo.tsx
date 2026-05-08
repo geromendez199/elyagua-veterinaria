@@ -14,7 +14,7 @@ export default function ContactInfo({ info }: ContactInfoProps) {
         href="https://maps.app.goo.gl/YAZoosPFCgGu6nvB9"
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-primary hover:shadow-md transition"
+        className="group flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-primary hover:shadow-md transition min-h-[80px]"
       >
         <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition">
           <MapPin size={22} className="text-primary group-hover:text-white transition" />
@@ -31,7 +31,7 @@ export default function ContactInfo({ info }: ContactInfoProps) {
         href={`https://wa.me/${info.whatsapp.replace(/\D/g, '')}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-primary hover:shadow-md transition"
+        className="group flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-primary hover:shadow-md transition min-h-[80px]"
       >
         <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary transition">
           <MessageCircle size={22} className="text-primary group-hover:text-white transition" />
@@ -44,7 +44,7 @@ export default function ContactInfo({ info }: ContactInfoProps) {
       </a>
 
       {/* Horarios */}
-      <div className="flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+      <div className="flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm min-h-[80px]">
         <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
           <Clock size={22} className="text-primary" />
         </div>
