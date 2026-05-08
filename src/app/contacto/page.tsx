@@ -97,10 +97,16 @@ export default function ContactoPage() {
           <a
             href="https://instagram.com/vet.elyagua"
             target="_blank"
-            className="inline-flex items-center gap-3 bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-dark transition"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-dark text-white font-bold py-3 px-6 rounded-xl hover:bg-primary transition group"
           >
-            <AtSign size={18} />
-            @vet.elyagua
+            <div className="w-8 h-8 bg-primary group-hover:bg-white/20 rounded-lg flex items-center justify-center transition">
+              <AtSign size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 group-hover:text-white/70 transition">Instagram</p>
+              <p className="text-sm font-bold">@vet.elyagua</p>
+            </div>
           </a>
         </div>
 

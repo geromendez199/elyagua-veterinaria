@@ -1,3 +1,5 @@
+import { MapPin, Phone, PhoneCall, AtSign } from 'lucide-react'
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -5,6 +7,7 @@ export default function Footer() {
     <footer className="bg-dark text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+
           {/* Sobre nosotros */}
           <div>
             <h3 className="font-bold mb-4 text-lg text-primary-light">Sobre Nosotros</h3>
@@ -17,26 +20,38 @@ export default function Footer() {
           <div>
             <h3 className="font-bold mb-4 text-lg text-primary-light">Contacto</h3>
             <ul className="text-sm space-y-3 text-gray-300">
-              <li className="flex gap-2">
-                <span>📍</span>
-                <span>Bv Lehmann 609, Rafaela, Santa Fe</span>
-              </li>
-              <li className="flex gap-2">
-                <span>📱</span>
-                <a href="tel:+5493492730010" className="hover:text-primary transition">
-                  +54 9 3492 730010 (Ventas)
+              <li>
+                <a
+                  href="https://maps.app.goo.gl/YAZoosPFCgGu6nvB9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 hover:text-primary transition"
+                >
+                  <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
+                  <span>Bv Lehmann 609, Rafaela, Santa Fe</span>
                 </a>
               </li>
-              <li className="flex gap-2">
-                <span>🚨</span>
-                <a href="tel:+5493492665978" className="hover:text-primary transition">
-                  +54 9 3492 665978 (Urgencias)
+              <li>
+                <a href="tel:+5493492730010" className="flex items-center gap-2 hover:text-primary transition">
+                  <Phone size={16} className="text-primary shrink-0" />
+                  <span>+54 9 3492 730010 (Ventas)</span>
                 </a>
               </li>
-              <li className="flex gap-2">
-                <span>📸</span>
-                <a href="https://instagram.com/vet.elyagua" target="_blank" className="hover:text-primary transition">
-                  @vet.elyagua
+              <li>
+                <a href="tel:+5493492665978" className="flex items-center gap-2 hover:text-primary transition">
+                  <PhoneCall size={16} className="text-primary shrink-0" />
+                  <span>+54 9 3492 665978 (Urgencias)</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://instagram.com/vet.elyagua"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-primary transition"
+                >
+                  <AtSign size={16} className="text-primary shrink-0" />
+                  <span>vet.elyagua</span>
                 </a>
               </li>
             </ul>
@@ -63,7 +78,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-primary border-opacity-30 pt-8 text-center text-sm text-gray-400">
+        <div className="border-t border-primary/30 pt-8 text-center text-sm text-gray-400">
           <p>&copy; {currentYear} El Yagua Veterinaria. Todos los derechos reservados.</p>
         </div>
       </div>

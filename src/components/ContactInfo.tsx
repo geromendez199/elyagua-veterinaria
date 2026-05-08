@@ -13,7 +13,14 @@ export default function ContactInfo({ info }: ContactInfoProps) {
           <MapPin className="text-primary" size={24} />
           <h3 className="font-bold text-lg">Ubicación</h3>
         </div>
-        <p className="text-gray-700">{info.direccion}</p>
+        <a
+          href="https://maps.app.goo.gl/YAZoosPFCgGu6nvB9"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-700 hover:text-primary transition underline underline-offset-2"
+        >
+          {info.direccion}
+        </a>
       </div>
 
       <div className="bg-primary-light bg-opacity-10 p-6 rounded-lg">
