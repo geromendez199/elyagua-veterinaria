@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useCart } from '@/context/CartContext'
-import { X, Minus, Plus, Check, MapPin, Truck } from 'lucide-react'
+import { X, Minus, Plus, Check, MapPin, Truck, Loader2 } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
 
 interface CartDrawerProps {
@@ -43,6 +43,42 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   })
 
   const currentStep = step === 'cart' ? 0 : 1
+
+  // ── Autocomplete de dirección (Georef Argentina) ───────────────
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([])
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
+  const [fetchingAddress, setFetchingAddress] = useState(false)
+  const addressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.trim().length < 3) { setAddressSuggestions([]); return }
+    setFetchingAddress(true)
+    try {
+      const res = await fetch(
+        `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
+      )
+      const data = await res.json()
+      const items = (data.direcciones || []).map((d: any) => d.nomenclatura as string)
+      setAddressSuggestions(items)
+    } catch {
+      setAddressSuggestions([])
+    } finally {
+      setFetchingAddress(false)
+    }
+  }
+
+  const handleAddressChange = (value: string) => {
+    handleChange('direccion', value)
+    setShowAddressSuggestions(true)
+    if (addressTimerRef.current) clearTimeout(addressTimerRef.current)
+    addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
+  }
+
+  const handleAddressSelect = (suggestion: string) => {
+    handleChange('direccion', suggestion)
+    setShowAddressSuggestions(false)
+    setAddressSuggestions([])
+  }
 
   const handleQuantityChange = (productId: string, newQty: number) => {
     if (newQty <= 0) {
@@ -382,14 +418,40 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
                     Dirección de entrega <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    value={formData.direccion || ''}
-                    onChange={(e) => handleChange('direccion', e.target.value)}
-                    onBlur={() => handleBlur('direccion')}
-                    className={`${inputCls(!!errors.direccion && touched.direccion)} resize-none`}
-                    placeholder="Calle, número, barrio..."
-                    rows={3}
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.direccion || ''}
+                      onChange={(e) => handleAddressChange(e.target.value)}
+                      onBlur={() => {
+                        handleBlur('direccion')
+                        setTimeout(() => setShowAddressSuggestions(false), 150)
+                      }}
+                      onFocus={() => addressSuggestions.length > 0 && setShowAddressSuggestions(true)}
+                      className={`${inputCls(!!errors.direccion && touched.direccion)} pr-8`}
+                      placeholder="Escribí tu calle y número..."
+                      autoComplete="off"
+                    />
+                    {fetchingAddress && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 size={15} className="text-gray-400 animate-spin" />
+                      </div>
+                    )}
+                    {showAddressSuggestions && addressSuggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                        {addressSuggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            onMouseDown={(e) => { e.preventDefault(); handleAddressSelect(s) }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 transition flex items-start gap-2 border-b border-gray-50 last:border-0"
+                          >
+                            <MapPin size={14} className="text-primary shrink-0 mt-0.5" />
+                            <span>{s}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   {errors.direccion && touched.direccion && (
                     <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
                   )}
