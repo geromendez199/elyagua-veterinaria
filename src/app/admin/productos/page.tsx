@@ -4,8 +4,9 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
-import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2 } from 'lucide-react'
+import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
@@ -303,8 +304,15 @@ export default function AdminProductosPage() {
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Panel Admin — El Yagua</h1>
-          <div className="flex items-center gap-4">
-            <p className="text-sm opacity-80">{user?.email}</p>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/pedidos"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition text-sm font-semibold"
+            >
+              <ShoppingBag size={16} />
+              Pedidos
+            </Link>
+            <p className="text-sm opacity-70 hidden md:block">{user?.email}</p>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-primary-dark hover:bg-primary-light px-4 py-2 rounded-lg transition"
@@ -395,7 +403,17 @@ export default function AdminProductosPage() {
                   </td>
 
                   <td className="px-4 py-3 text-center">
-                    <span className="text-gray-900 font-medium">{product.stock}</span>
+                    <span className={`font-bold px-2 py-0.5 rounded text-sm ${
+                      product.stock === 0
+                        ? 'bg-red-100 text-red-700'
+                        : product.stock < 5
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'text-gray-900'
+                    }`}>
+                      {product.stock}
+                      {product.stock === 0 && ' ✕'}
+                      {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                    </span>
                   </td>
 
                   {/* Activo — toggle rápido */}

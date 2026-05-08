@@ -3,7 +3,9 @@ import Image from 'next/image'
 import { ShieldCheck, Stethoscope, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import ProductCarousel from '@/components/ProductCarousel'
+import SearchBar from '@/components/SearchBar'
 import { Product } from '@/types'
+import { Suspense } from 'react'
 
 export const revalidate = 60
 
@@ -41,6 +43,12 @@ export default async function Home() {
             <p className="text-lg md:text-3xl text-white max-w-2xl mx-auto px-2">
               Tu veterinaria de confianza con productos de calidad y atención profesional para tus mascotas
             </p>
+            {/* Buscador en home */}
+            <div className="w-full max-w-xl px-4 sm:px-0">
+              <Suspense fallback={<div className="h-14 bg-white/20 rounded-xl animate-pulse" />}>
+                <SearchBar products={products} />
+              </Suspense>
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0">
               <Link
                 href="/productos"

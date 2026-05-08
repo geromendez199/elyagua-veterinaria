@@ -1,3 +1,8 @@
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
+  title: 'Contacto',
+  description: 'Encontranos en Bv Lehmann 609, Rafaela. Escribinos por WhatsApp o visitanos en nuestro local.',
+}
 import ContactInfo from '@/components/ContactInfo'
 import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'

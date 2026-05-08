@@ -22,8 +22,27 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "El Yagua Veterinaria",
-  description: "Veterinaria con productos de calidad para tus mascotas",
+  metadataBase: new URL('https://elyagua-veterinaria.vercel.app'),
+  title: {
+    default: 'El Yagua Veterinaria',
+    template: '%s | El Yagua Veterinaria',
+  },
+  description: 'Tienda online de productos veterinarios en Rafaela, Santa Fe. Alimentos, medicamentos, juguetes y accesorios para tu mascota.',
+  keywords: ['veterinaria', 'Rafaela', 'Santa Fe', 'mascotas', 'alimentos', 'medicamentos', 'accesorios', 'perros', 'gatos'],
+  openGraph: {
+    title: 'El Yagua Veterinaria',
+    description: 'Tu veterinaria de confianza en Rafaela. Pedí online y retirá en tienda.',
+    url: 'https://elyagua-veterinaria.vercel.app',
+    siteName: 'El Yagua Veterinaria',
+    locale: 'es_AR',
+    type: 'website',
+    images: [{ url: '/logo-color.png', width: 512, height: 512, alt: 'El Yagua Veterinaria' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'El Yagua Veterinaria',
+    description: 'Tu veterinaria de confianza en Rafaela, Santa Fe.',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },

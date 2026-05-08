@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { useCart } from '@/context/CartContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2 } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
+import { supabase } from '@/lib/supabase'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -135,7 +136,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     sendWhatsApp()
   }
 
-  const sendWhatsApp = () => {
+  const sendWhatsApp = async () => {
     const deliveryInfo =
       formData.deliveryType === 'retiro'
         ? '🏪 Retiro en tienda'
@@ -165,6 +166,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `💰 *TOTAL: ${formatPrice(total)}*`,
       `━━━━━━━━━━━━━━━`,
     ].join('\n')
+
+    // Registrar pedido en Supabase (sin bloquear el flujo si falla)
+    try {
+      await supabase.from('pedidos').insert([{
+        nombre: formData.nombre,
+        telefono: `+549${formData.telefono}`,
+        tipo_entrega: formData.deliveryType,
+        direccion: formData.direccion || null,
+        productos: items.map((i) => ({ nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
+        total,
+      }])
+    } catch {}
 
     const whatsappUrl = `https://wa.me/5493492730010?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

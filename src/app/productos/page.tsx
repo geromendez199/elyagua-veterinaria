@@ -2,6 +2,12 @@ import { supabase } from '@/lib/supabase'
 import SearchBar from '@/components/SearchBar'
 import ProductsClient from '@/components/ProductsClient'
 import { Product } from '@/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Productos',
+  description: 'Explorá nuestro catálogo de alimentos, medicamentos, juguetes y accesorios para tu mascota.',
+}
 
 export const revalidate = 60
 
