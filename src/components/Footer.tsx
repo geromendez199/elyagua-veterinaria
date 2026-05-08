@@ -1,4 +1,4 @@
-import { MapPin, Phone, PhoneCall } from 'lucide-react'
+import { MapPin, Phone } from 'lucide-react'
 import InstagramIcon from './InstagramIcon'
 import FacebookIcon from './FacebookIcon'
 
@@ -39,12 +39,7 @@ export default function Footer() {
                   <span>+54 9 3492 730010 (Ventas)</span>
                 </a>
               </li>
-              <li>
-                <a href="tel:+5493492665978" className="flex items-center gap-2 hover:text-primary transition">
-                  <PhoneCall size={16} className="text-primary shrink-0" />
-                  <span>+54 9 3492 665978 (Urgencias)</span>
-                </a>
-              </li>
+
               <li>
                 <a
                   href="https://instagram.com/vet.elyagua"
