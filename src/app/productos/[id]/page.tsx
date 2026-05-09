@@ -56,7 +56,39 @@ export default async function ProductoDetallePage({ params }: PageProps) {
   const shareText = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\nhttps://elyagua-veterinaria.vercel.app/productos/${product.id}`
   const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
 
+  const productUrl = `https://elyagua-veterinaria.vercel.app/productos/${product.id}`
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.nombre,
+    description: product.descripcion || '',
+    image: product.imagen_url || '',
+    offers: {
+      '@type': 'Offer',
+      url: productUrl,
+      priceCurrency: 'ARS',
+      price: product.precio,
+      availability: product.stock > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: 'El Yagua Veterinaria' },
+    },
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio',    item: 'https://elyagua-veterinaria.vercel.app' },
+      { '@type': 'ListItem', position: 2, name: 'Productos', item: 'https://elyagua-veterinaria.vercel.app/productos' },
+      { '@type': 'ListItem', position: 3, name: product.nombre, item: productUrl },
+    ],
+  }
+
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100">
@@ -178,5 +210,6 @@ export default async function ProductoDetallePage({ params }: PageProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }
