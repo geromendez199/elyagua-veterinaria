@@ -168,14 +168,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     window.open(whatsappUrl, '_blank')
 
     // Registrar pedido en Supabase en segundo plano (no bloquea el popup de WhatsApp)
-    supabase.from('pedidos').insert([{
-      nombre: formData.nombre,
-      telefono: `+549${formData.telefono}`,
-      tipo_entrega: formData.deliveryType,
-      direccion: formData.direccion || null,
-      productos: items.map((i) => ({ nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
-      total,
-    }]).catch(() => {})
+    ;(async () => {
+      try {
+        await supabase.from('pedidos').insert([{
+          nombre: formData.nombre,
+          telefono: `+549${formData.telefono}`,
+          tipo_entrega: formData.deliveryType,
+          direccion: formData.direccion || null,
+          productos: items.map((i) => ({ nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
+          total,
+        }])
+      } catch {}
+    })()
     clearCart()
     onClose()
     setStep('cart')
