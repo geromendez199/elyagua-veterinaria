@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
-import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle } from 'lucide-react'
+import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -320,21 +320,35 @@ export default function AdminProductosPage() {
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Panel Admin — El Yagua</h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/dashboard"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
+            >
+              <LayoutDashboard size={16} />
+              <span className="hidden md:inline">Inicio</span>
+            </Link>
             <Link
               href="/admin/pedidos"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
             >
               <ShoppingBag size={16} />
-              Pedidos
+              <span className="hidden md:inline">Pedidos</span>
             </Link>
-            <p className="text-sm opacity-70 hidden md:block">{user?.email}</p>
+            <Link
+              href="/admin/clientes"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
+            >
+              <Users size={16} />
+              <span className="hidden md:inline">Clientes</span>
+            </Link>
+            <p className="text-sm opacity-70 hidden lg:block">{user?.email}</p>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 bg-primary-dark hover:bg-primary-light px-4 py-2 rounded-lg transition"
+              className="flex items-center gap-2 bg-primary-dark hover:bg-primary-light px-3 py-2 rounded-lg transition"
             >
               <LogOut size={18} />
-              Salir
+              <span className="hidden md:inline">Salir</span>
             </button>
           </div>
         </div>
