@@ -4,9 +4,10 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
-import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag } from 'lucide-react'
+import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { formatPrice } from '@/lib/formatPrice'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
@@ -44,6 +45,13 @@ export default function AdminProductosPage() {
   const [editSaving, setEditSaving] = useState(false)
   const [editSaveError, setEditSaveError] = useState('')
   const editImageRef = useRef<HTMLInputElement>(null)
+
+  // ── Toast de error para acciones rápidas ──────────────────────
+  const [toast, setToast] = useState('')
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 4000)
+  }
 
   // ── Cambio rápido de imagen (clic en imagen de tabla) ─────────
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
@@ -113,7 +121,7 @@ export default function AdminProductosPage() {
 
       setProducts((prev) => prev.map((p) => p.id === productId ? { ...p, imagen_url } : p))
     } catch (err: any) {
-      alert('Error al subir imagen: ' + err.message)
+      showToast('Error al subir imagen: ' + err.message)
     } finally {
       setUploadingImageId(null)
       uploadTargetId.current = null
@@ -256,7 +264,7 @@ export default function AdminProductosPage() {
       if (error) throw error
       setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, activo: newActivo } : p))
     } catch (err: any) {
-      alert('Error al actualizar: ' + err.message)
+      showToast('Error al actualizar: ' + err.message)
     }
   }
 
@@ -269,7 +277,7 @@ export default function AdminProductosPage() {
       setProducts((prev) => prev.filter((p) => p.id !== id))
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al eliminar')
+      showToast('Error al eliminar el producto')
     }
   }
 
@@ -283,6 +291,14 @@ export default function AdminProductosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast de error */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-semibold">
+          <AlertCircle size={16} />
+          {toast}
+        </div>
+      )}
+
       {/* Input oculto para cambio rápido de imagen desde tabla */}
       <input
         ref={existingImageRef}
@@ -398,7 +414,7 @@ export default function AdminProductosPage() {
 
                   <td className="px-4 py-3 text-center">
                     <span className="font-semibold text-gray-900">
-                      ${product.precio.toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                      {formatPrice(product.precio)}
                     </span>
                   </td>
 

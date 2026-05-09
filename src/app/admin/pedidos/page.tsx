@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface Pedido {
   id: string
@@ -41,9 +42,6 @@ export default function AdminPedidosPage() {
     const d = new Date(iso)
     return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
-
-  const formatPrice = (n: number) =>
-    '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0 })
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">

@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
 import { ChevronRight, Share2, MapPin } from 'lucide-react'
+import { formatPrice } from '@/lib/formatPrice'
 
 export const revalidate = 60
 
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!product) return { title: 'Producto no encontrado' }
   return {
     title: product.nombre,
-    description: product.descripcion || `${product.nombre} — $${product.precio.toLocaleString('es-AR')}`,
+    description: product.descripcion || `${product.nombre} — ${formatPrice(product.precio)}`,
     openGraph: {
       title: product.nombre,
       description: product.descripcion || '',
@@ -52,7 +53,7 @@ export default async function ProductoDetallePage({ params }: PageProps) {
 
   const related = await getRelated(product.categoria, product.id)
 
-  const shareText = `🐾 *${product.nombre}*\n$${product.precio.toLocaleString('es-AR')}\n\nhttps://elyagua-veterinaria.vercel.app/productos/${product.id}`
+  const shareText = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\nhttps://elyagua-veterinaria.vercel.app/productos/${product.id}`
   const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
 
   return (
@@ -121,7 +122,7 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                 {/* Precio */}
                 <div className="mb-4">
                   <p className="text-4xl font-bold text-primary">
-                    ${product.precio.toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                    {formatPrice(product.precio)}
                   </p>
                   <p className={`text-sm font-semibold mt-1 ${
                     product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'
