@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { useState } from 'react'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface ProductCardProps {
   product: Product
@@ -25,7 +26,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault()
     const url = `https://elyagua-veterinaria.vercel.app/productos/${product.id}`
-    const text = `🐾 *${product.nombre}*\n$${product.precio.toLocaleString('es-AR')}\n\n${url}`
+    const text = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\n${url}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -38,6 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               src={product.imagen_url}
               alt={product.nombre}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition duration-300"
             />
           ) : (
@@ -70,7 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="flex justify-between items-end mt-auto gap-2">
             <div>
               <p className="text-base md:text-xl font-bold text-primary">
-                ${product.precio.toLocaleString('es-AR')}
+                {formatPrice(product.precio)}
               </p>
               <p className={`text-xs font-medium ${product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-gray-400'}`}>
                 {product.stock === 0 ? 'Sin stock' : product.stock < 5 ? `¡Últimas ${product.stock}!` : `${product.stock} en stock`}

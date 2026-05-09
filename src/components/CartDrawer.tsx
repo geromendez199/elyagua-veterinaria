@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2 } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -59,7 +60,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
       )
       const data = await res.json()
-      const items = (data.direcciones || []).map((d: any) => d.nomenclatura as string)
+      const items = (data.direcciones || []).map((d: any) => d.nomenclatura as string).filter(Boolean)
       setAddressSuggestions(items)
     } catch {
       setAddressSuggestions([])
@@ -92,7 +93,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   // ── Validación ────────────────────────────────────────────────
   const validateField = (field: string, value: string): string => {
     if (field === 'nombre') return value.trim() ? '' : 'El nombre es requerido'
-    if (field === 'telefono') return value.length >= 8 ? '' : 'Mínimo 8 dígitos'
+    if (field === 'telefono') return value.length >= 10 ? '' : 'Ingresá los 10 dígitos sin 0 ni 15'
     if (field === 'direccion') return value.trim() ? '' : 'Ingresá tu dirección'
     return ''
   }
@@ -111,10 +112,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
     }
   }
-
-  // ── Formato de precio ─────────────────────────────────────────
-  const formatPrice = (n: number) =>
-    '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
   // ── Checkout ──────────────────────────────────────────────────
   const handleCheckout = () => {
@@ -374,7 +371,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {errors.telefono && touched.telefono ? (
                   <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
                 ) : (
-                  <p className="text-gray-400 text-xs mt-1">Solo el número, sin el 0 ni el 15</p>
+                  <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15. Ej: 3492XXXXXX</p>
                 )}
               </div>
 

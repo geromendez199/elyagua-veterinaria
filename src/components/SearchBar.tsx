@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X } from 'lucide-react'
 import { Product } from '@/types'
 import Image from 'next/image'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface SearchBarProps {
   products?: Product[]
@@ -118,7 +119,7 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 font-semibold text-sm truncate">{product.nombre}</p>
                 <p className="text-primary font-bold text-sm">
-                  ${product.precio.toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                  {formatPrice(product.precio)}
                 </p>
               </div>
               <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded capitalize shrink-0">

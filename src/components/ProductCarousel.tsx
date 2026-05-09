@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ShoppingCart, Check } from 'lucide-react'
 import { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface ProductCarouselProps {
   products: Product[]
@@ -39,7 +40,7 @@ function CarouselCard({ product }: { product: Product }) {
         </h3>
         <div className="flex items-center justify-between mt-auto">
           <p className="text-lg md:text-xl font-bold text-primary">
-            ${product.precio.toLocaleString('es-AR')}
+            {formatPrice(product.precio)}
           </p>
           <button
             onClick={handleAdd}
