@@ -27,4 +27,15 @@ export interface OrderFormData {
   telefono: string
   deliveryType: DeliveryType
   direccion?: string
+  dni?: string
+}
+
+export interface Cliente {
+  id: string
+  dni: string
+  nombre: string
+  telefono: string | null
+  notas: string | null
+  created_at: string
+  updated_at: string
 }

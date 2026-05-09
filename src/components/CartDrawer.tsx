@@ -35,6 +35,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     nombre: '',
     telefono: '',
     deliveryType: 'retiro',
+    dni: '',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -150,6 +151,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
       `👤 *Cliente:* ${formData.nombre}`,
+      ...(formData.dni ? [`🪪 *DNI:* ${formData.dni}`] : []),
       `📱 *Teléfono:* +549${formData.telefono}`,
       `📦 *Entrega:* ${deliveryInfo}`,
       ``,
@@ -167,7 +169,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const whatsappUrl = `https://wa.me/5493492730010?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
 
-    // Registrar pedido en Supabase en segundo plano (no bloquea el popup de WhatsApp)
+    // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
         await supabase.from('pedidos').insert([{
@@ -177,13 +179,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           direccion: formData.direccion || null,
           productos: items.map((i) => ({ nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total,
+          cliente_dni: formData.dni || null,
         }])
+        if (formData.dni) {
+          await supabase.from('clientes').upsert({
+            dni: formData.dni,
+            nombre: formData.nombre,
+            telefono: `+549${formData.telefono}`,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'dni' })
+        }
       } catch {}
     })()
     clearCart()
     onClose()
     setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro' })
+    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '' })
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
   }
@@ -377,6 +388,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 ) : (
                   <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15. Ej: 3492XXXXXX</p>
                 )}
+              </div>
+
+              {/* DNI (opcional) */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.dni || ''}
+                  onChange={(e) => handleChange('dni', e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  className={inputCls(false)}
+                  placeholder="12345678"
+                  maxLength={8}
+                />
+                <p className="text-gray-400 text-xs mt-1">Permite que la veterinaria te reconozca en futuros pedidos</p>
               </div>
 
               {/* Tipo de entrega */}
