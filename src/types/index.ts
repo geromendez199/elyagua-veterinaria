@@ -28,7 +28,7 @@ export interface OrderFormData {
   deliveryType: DeliveryType
   direccion?: string
   dni?: string
-  metodoPago?: 'efectivo' | 'debito' | 'credito'
+  metodoPago?: 'efectivo' | 'debito' | 'credito' | 'transferencia'
 }
 
 export interface Cliente {

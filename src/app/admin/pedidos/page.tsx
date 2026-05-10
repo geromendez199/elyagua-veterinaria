@@ -295,9 +295,11 @@ export default function AdminPedidosPage() {
                             ? 'bg-orange-100 text-orange-700'
                             : pedido.metodo_pago === 'debito'
                             ? 'bg-blue-100 text-blue-700'
+                            : pedido.metodo_pago === 'transferencia'
+                            ? 'bg-purple-100 text-purple-700'
                             : 'bg-gray-100 text-gray-600'
                         }`}>
-                          {pedido.metodo_pago === 'efectivo' ? 'Efectivo' : pedido.metodo_pago === 'debito' ? 'Débito' : 'Crédito'}
+                          {pedido.metodo_pago === 'efectivo' ? 'Efectivo' : pedido.metodo_pago === 'debito' ? 'Débito' : pedido.metodo_pago === 'transferencia' ? 'Transferencia' : 'Crédito'}
                         </span>
                       )}
                     </div>
