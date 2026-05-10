@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -41,6 +41,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats>({ productos_activos: 0, pedidos_pendientes: 0, total_clientes: 0 })
   const [mes, setMes] = useState<MesStats>({ ventas: 0, ventas_anterior: 0, pedidos: 0, pedidos_anterior: 0, ticket_promedio: 0 })
   const [topProductos, setTopProductos] = useState<TopProducto[]>([])
+  const [stockBajo, setStockBajo] = useState<{ id: string; nombre: string; stock: number }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -53,11 +54,14 @@ export default function AdminDashboardPage() {
         { count: productosCount },
         { data: pedidos },
         { count: clientesCount },
+        { data: lowStock },
       ] = await Promise.all([
         supabase.from('productos').select('*', { count: 'exact', head: true }).eq('activo', true),
         supabase.from('pedidos').select('estado, total, productos, created_at'),
         supabase.from('clientes').select('*', { count: 'exact', head: true }),
+        supabase.from('productos').select('id, nombre, stock').eq('activo', true).lt('stock', 5).order('stock', { ascending: true }).limit(10),
       ])
+      setStockBajo(lowStock || [])
 
       const ahora = new Date()
       const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
@@ -303,6 +307,39 @@ export default function AdminDashboardPage() {
                     <p className="text-sm font-bold text-gray-900">{p.cantidad}</p>
                     <p className="text-xs text-gray-400">unid.</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Alerta stock bajo */}
+        {stockBajo.length > 0 && (
+          <div className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="px-5 py-4 border-b border-amber-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+                <h3 className="font-bold text-gray-900 text-sm">
+                  {stockBajo.filter(p => p.stock === 0).length > 0
+                    ? 'Productos sin stock o con stock crítico'
+                    : 'Productos con stock bajo'}
+                </h3>
+              </div>
+              <Link href="/admin/productos" className="text-xs font-semibold text-primary hover:underline">
+                Gestionar →
+              </Link>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {stockBajo.map((p) => (
+                <div key={p.id} className="px-5 py-2.5 flex items-center justify-between">
+                  <span className="text-sm text-gray-700 truncate mr-4">{p.nombre}</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                    p.stock === 0
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {p.stock === 0 ? 'Sin stock' : `${p.stock} unid.`}
+                  </span>
                 </div>
               ))}
             </div>

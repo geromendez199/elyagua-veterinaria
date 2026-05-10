@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
         </form>
 
         <p className="text-center text-gray-400 text-xs mt-4">
-          URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ OK' : '❌ Falta SUPABASE_URL'}
+          El Yagua Veterinaria — Panel Interno
         </p>
       </div>
     </div>

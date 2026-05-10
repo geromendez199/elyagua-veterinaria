@@ -47,6 +47,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const currentStep = step === 'cart' ? 0 : 1
 
+  // ── Validación de stock antes de pasar al checkout ─────────────
+  const [checkingStock, setCheckingStock] = useState(false)
+  const [stockErrors, setStockErrors] = useState<string[]>([])
+
+  const handleContinuar = async () => {
+    if (items.length === 0) return
+    setCheckingStock(true)
+    setStockErrors([])
+    try {
+      const ids = items.map((i) => i.product.id)
+      const { data } = await supabase.from('productos').select('id, nombre, stock').in('id', ids)
+      const errors: string[] = []
+      for (const item of items) {
+        const current = data?.find((p) => p.id === item.product.id)
+        const available = current?.stock ?? 0
+        if (available < item.quantity) {
+          errors.push(
+            available === 0
+              ? `"${item.product.nombre}" ya no tiene stock`
+              : `"${item.product.nombre}": solo quedan ${available} (tenés ${item.quantity} en el carrito)`
+          )
+        }
+      }
+      if (errors.length > 0) { setStockErrors(errors); return }
+      setStep('checkout')
+    } catch {
+      setStep('checkout')
+    } finally {
+      setCheckingStock(false)
+    }
+  }
+
   // ── Autocomplete de dirección (Georef Argentina) ───────────────
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([])
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
@@ -294,7 +326,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </span>
                           <button
                             onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                            className="hover:text-primary p-1 text-gray-700"
+                            disabled={item.quantity >= item.product.stock}
+                            className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
                           >
                             <Plus size={14} />
                           </button>
@@ -526,11 +559,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <span>Total:</span>
                 <span className="text-primary">{formatPrice(total)}</span>
               </div>
+              {stockErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-1">
+                  {stockErrors.map((e, i) => (
+                    <p key={i} className="text-xs text-red-600">{e}</p>
+                  ))}
+                </div>
+              )}
               <button
-                onClick={() => setStep('checkout')}
-                className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition"
+                onClick={handleContinuar}
+                disabled={checkingStock}
+                className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                Continuar →
+                {checkingStock ? (
+                  <><Loader2 size={18} className="animate-spin" /> Verificando stock...</>
+                ) : 'Continuar →'}
               </button>
             </>
           )}

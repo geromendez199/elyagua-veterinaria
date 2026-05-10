@@ -47,13 +47,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id)
       if (existing) {
+        const newQty = Math.min(existing.quantity + quantity, product.stock)
         return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.product.id === product.id ? { ...item, quantity: newQty } : item
         )
       }
-      return [...prev, { product, quantity }]
+      return [...prev, { product, quantity: Math.min(quantity, product.stock) }]
     })
   }
 
