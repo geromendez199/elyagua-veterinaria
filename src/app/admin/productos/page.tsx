@@ -53,6 +53,27 @@ export default function AdminProductosPage() {
     setTimeout(() => setToast(''), 4000)
   }
 
+  // ── Edición inline de stock ────────────────────────────────────
+  const [editingStockId, setEditingStockId] = useState<string | null>(null)
+  const [stockValue, setStockValue] = useState('')
+
+  const saveStock = async (id: string) => {
+    const newStock = parseInt(stockValue)
+    if (isNaN(newStock) || newStock < 0) { setEditingStockId(null); return }
+    try {
+      const { error } = await supabase
+        .from('productos')
+        .update({ stock: newStock, updated_at: new Date().toISOString() })
+        .eq('id', id)
+      if (error) throw error
+      setProducts((prev) => prev.map((p) => p.id === id ? { ...p, stock: newStock } : p))
+    } catch (err: any) {
+      showToast('Error al actualizar stock: ' + err.message)
+    } finally {
+      setEditingStockId(null)
+    }
+  }
+
   // ── Cambio rápido de imagen (clic en imagen de tabla) ─────────
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
   const existingImageRef = useRef<HTMLInputElement>(null)
@@ -458,17 +479,37 @@ export default function AdminProductosPage() {
                   </td>
 
                   <td className="px-4 py-3 text-center">
-                    <span className={`font-bold px-2 py-0.5 rounded text-sm ${
-                      product.stock === 0
-                        ? 'bg-red-100 text-red-700'
-                        : product.stock < 5
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'text-gray-900'
-                    }`}>
-                      {product.stock}
-                      {product.stock === 0 && ' ✕'}
-                      {product.stock > 0 && product.stock < 5 && ' ⚠'}
-                    </span>
+                    {editingStockId === product.id ? (
+                      <input
+                        autoFocus
+                        type="number"
+                        min={0}
+                        value={stockValue}
+                        onChange={(e) => setStockValue(e.target.value)}
+                        onBlur={() => saveStock(product.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveStock(product.id)
+                          if (e.key === 'Escape') setEditingStockId(null)
+                        }}
+                        className="w-16 text-center border-2 border-primary rounded-lg px-1 py-0.5 text-sm font-bold outline-none"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setEditingStockId(product.id); setStockValue(String(product.stock)) }}
+                        title="Clic para editar stock"
+                        className={`font-bold px-2 py-0.5 rounded text-sm hover:ring-2 hover:ring-primary/40 transition ${
+                          product.stock === 0
+                            ? 'bg-red-100 text-red-700'
+                            : product.stock < 5
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'text-gray-900'
+                        }`}
+                      >
+                        {product.stock}
+                        {product.stock === 0 && ' ✕'}
+                        {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                      </button>
+                    )}
                   </td>
 
                   {/* Activo — toggle rápido */}
