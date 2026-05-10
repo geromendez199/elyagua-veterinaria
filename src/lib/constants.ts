@@ -9,3 +9,4 @@ export const STORE_ADDRESS = 'Bv Lehmann 609, Rafaela, Santa Fe'
 export const MAPS_URL = 'https://maps.app.goo.gl/YAZoosPFCgGu6nvB9'
 export const INSTAGRAM_URL = 'https://instagram.com/vet.elyagua'
 export const FACEBOOK_URL = 'https://www.facebook.com/veterinaria.elyagua/?locale=es_LA'
+export const LOW_STOCK_THRESHOLD = 5

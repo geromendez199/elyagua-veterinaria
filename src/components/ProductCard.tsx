@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { useState } from 'react'
 import { formatPrice } from '@/lib/formatPrice'
+import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
 interface ProductCardProps {
   product: Product
@@ -81,8 +82,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               <p className="text-base md:text-xl font-bold text-primary">
                 {formatPrice(product.precio)}
               </p>
-              <p className={`text-xs font-medium ${product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-gray-400'}`}>
-                {product.stock === 0 ? 'Sin stock' : product.stock < 5 ? `¡Últimas ${product.stock}!` : `${product.stock} en stock`}
+              <p className={`text-xs font-medium ${product.stock === 0 ? 'text-red-500' : product.stock < LOW_STOCK_THRESHOLD ? 'text-orange-500' : 'text-gray-400'}`}>
+                {product.stock === 0 ? 'Sin stock' : product.stock < LOW_STOCK_THRESHOLD ? `¡Últimas ${product.stock}!` : `${product.stock} en stock`}
               </p>
             </div>
             <button
