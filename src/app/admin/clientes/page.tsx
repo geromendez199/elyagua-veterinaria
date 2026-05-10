@@ -103,24 +103,24 @@ export default function AdminClientesPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-primary text-white p-4">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition shrink-0">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users size={24} />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 min-w-0">
+            <Users size={22} className="shrink-0" />
             Clientes
           </h1>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 shrink-0">
             <Link
               href="/admin/pedidos"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
             >
               <ShoppingBag size={15} />
-              Pedidos
+              <span className="hidden sm:inline">Pedidos</span>
             </Link>
-            <span className="bg-white/20 text-sm font-semibold px-3 py-1 rounded-full">
-              {clientes.length} registrados
+            <span className="bg-white/20 text-sm font-semibold px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
+              {clientes.length}<span className="hidden sm:inline"> reg.</span>
             </span>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function AdminClientesPage() {
                     </div>
 
                     {/* Stats */}
-                    <div className="flex gap-5 mt-3 flex-wrap">
+                    <div className="grid grid-cols-2 gap-x-5 gap-y-2 mt-3 sm:flex sm:gap-5">
                       <div>
                         <p className="text-xs text-gray-400">Pedidos</p>
                         <p className="font-bold text-gray-900 text-sm">{cliente.pedidos_count}</p>
