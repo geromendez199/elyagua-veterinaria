@@ -283,11 +283,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   return (
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      {/* Overlay — z-[55] cubre el botón flotante de WhatsApp (z-50) */}
+      <div className="fixed inset-0 bg-black/50 z-[55]" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 overflow-y-auto flex flex-col text-gray-900">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl z-[60] overflow-y-auto flex flex-col text-gray-900">
 
         {/* Header */}
         <div className="sticky top-0 bg-primary text-white p-4 flex justify-between items-center shrink-0">
@@ -347,42 +347,53 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
               ) : (
                 <>
+                  <div className="flex justify-end mb-1">
+                    <button
+                      onClick={clearCart}
+                      className="text-xs text-gray-400 hover:text-red-500 transition"
+                    >
+                      Vaciar carrito
+                    </button>
+                  </div>
                   <div className="space-y-3">
                     {items.map((item) => (
-                      <div key={item.product.id} className="border border-gray-200 rounded-xl p-3 flex gap-3">
-                        <div className="flex-1">
+                      <div key={item.product.id} className="border border-gray-200 rounded-xl p-3">
+                        <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="font-semibold text-gray-900 text-sm leading-tight">{item.product.nombre}</h4>
-                          <p className="text-primary font-bold text-sm mt-0.5">
-                            {formatPrice(item.product.precio)} c/u
-                          </p>
+                          <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
                         </div>
-                        <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-2">
-                          <button
-                            onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                            className="hover:text-primary p-1 text-gray-700"
-                            aria-label={`Disminuir cantidad de ${item.product.nombre}`}
-                          >
-                            <Minus size={14} />
-                          </button>
-                          <span className="font-bold w-5 text-center text-gray-900 text-sm" aria-label={`Cantidad: ${item.quantity}`}>
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                            disabled={item.quantity >= item.product.stock}
-                            className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                            aria-label={`Aumentar cantidad de ${item.product.nombre}`}
-                          >
-                            <Plus size={14} />
-                          </button>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-400">{formatPrice(item.product.precio)} c/u</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2">
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                                className="hover:text-primary p-1 text-gray-700"
+                                aria-label={`Disminuir cantidad de ${item.product.nombre}`}
+                              >
+                                <Minus size={14} />
+                              </button>
+                              <span className="font-bold w-5 text-center text-gray-900 text-sm" aria-label={`Cantidad: ${item.quantity}`}>
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                                disabled={item.quantity >= item.product.stock}
+                                className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                aria-label={`Aumentar cantidad de ${item.product.nombre}`}
+                              >
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => removeItem(item.product.id)}
+                              className="text-gray-300 hover:text-red-500 p-1 transition"
+                              aria-label={`Eliminar ${item.product.nombre} del carrito`}
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => removeItem(item.product.id)}
-                          className="text-gray-300 hover:text-red-500 p-1 transition"
-                          aria-label={`Eliminar ${item.product.nombre} del carrito`}
-                        >
-                          <X size={16} />
-                        </button>
                       </div>
                     ))}
                   </div>
