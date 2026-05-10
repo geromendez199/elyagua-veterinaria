@@ -6,6 +6,7 @@ import ProductCarousel from '@/components/ProductCarousel'
 import SearchBar from '@/components/SearchBar'
 import { Product } from '@/types'
 import { Suspense } from 'react'
+import { WA_URL } from '@/lib/constants'
 
 export const revalidate = 60
 
@@ -114,7 +115,7 @@ export default async function Home() {
             Escribinos por WhatsApp y te respondemos a la brevedad
           </p>
           <a
-            href="https://wa.me/5493492730010"
+            href={WA_URL}
             target="_blank"
             className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:bg-[#1ebe5d] transition text-base shadow-sm"
           >

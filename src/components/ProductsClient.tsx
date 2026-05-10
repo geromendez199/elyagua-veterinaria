@@ -34,6 +34,14 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
   const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const p of initialProducts) {
+      counts[p.categoria] = (counts[p.categoria] || 0) + 1
+    }
+    return counts
+  }, [initialProducts])
+
   const handleCategoryChange = (cat: Category | null) => {
     setSelectedCategory(cat)
     const params = new URLSearchParams()
@@ -74,7 +82,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     <div>
       {/* Fila 1: Categorías + controles */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} counts={categoryCounts} />
 
         <div className="flex items-center gap-2 shrink-0">
           {/* Botón filtro precio */}

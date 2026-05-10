@@ -6,6 +6,7 @@ import { X, Minus, Plus, Check, MapPin, Truck, Loader2 } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
+import { WA_URL } from '@/lib/constants'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -238,7 +239,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `━━━━━━━━━━━━━━━`,
     ].join('\n')
 
-    const whatsappUrl = `https://wa.me/5493492730010?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `${WA_URL}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
 
     // Registrar pedido y cliente en Supabase en segundo plano
