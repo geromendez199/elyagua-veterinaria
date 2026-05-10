@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import InstagramIcon from './InstagramIcon'
 import FacebookIcon from './FacebookIcon'
+import { PHONE, PHONE_DISPLAY, MAPS_URL, WA_URL, INSTAGRAM_URL, FACEBOOK_URL } from '@/lib/constants'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -56,7 +57,7 @@ export default function Footer() {
             <ul className="text-sm space-y-3 text-gray-300">
               <li>
                 <a
-                  href="https://maps.app.goo.gl/YAZoosPFCgGu6nvB9"
+                  href="{MAPS_URL}"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-2 hover:text-primary transition"
@@ -66,14 +67,14 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="tel:+5493492730010" className="flex items-center gap-2 hover:text-primary transition">
+                <a href={`tel:${PHONE}`} className="flex items-center gap-2 hover:text-primary transition">
                   <Phone size={15} className="text-primary shrink-0" />
-                  <span>+54 9 3492 730010</span>
+                  <span>{PHONE_DISPLAY}</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="https://instagram.com/vet.elyagua"
+                  href="{INSTAGRAM_URL}"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-primary transition"
@@ -84,7 +85,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://www.facebook.com/veterinaria.elyagua/?locale=es_LA"
+                  href="{FACEBOOK_URL}"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-primary transition"

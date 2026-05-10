@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { WA_URL } from '@/lib/constants'
 
 export default function WhatsAppFloat() {
   const pathname = usePathname()
@@ -9,7 +10,7 @@ export default function WhatsAppFloat() {
 
   return (
     <a
-      href="https://wa.me/5493492730010"
+      href={WA_URL}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"

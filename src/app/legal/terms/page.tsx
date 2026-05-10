@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
+import { WA_URL, PHONE_DISPLAY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Términos y Condiciones',
@@ -131,7 +132,7 @@ export default function TermsPage() {
             <p>
               Si tienes preguntas sobre estos términos, contáctanos a través de WhatsApp:
             </p>
-            <a href="https://wa.me/5493492730010" className="text-primary hover:underline font-semibold">
+            <a href={WA_URL} className="text-primary hover:underline font-semibold">
               +54 9 3492 730010
             </a>
           </section>

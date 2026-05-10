@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { PHONE, SITE_URL, INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
@@ -60,8 +61,8 @@ const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'VeterinaryCare',
   name: 'El Yagua Veterinaria',
-  url: 'https://elyagua-veterinaria.vercel.app',
-  telephone: '+5493492730010',
+  url: SITE_URL,
+  telephone: PHONE,
   image: 'https://elyagua-veterinaria.vercel.app/logo-color.png',
   address: {
     '@type': 'PostalAddress',
@@ -107,10 +108,7 @@ const localBusinessJsonLd = {
       closes: '20:00',
     },
   ],
-  sameAs: [
-    'https://www.instagram.com/vet.elyagua',
-    'https://www.facebook.com/veterinaria.elyagua',
-  ],
+  sameAs: [INSTAGRAM_URL, FACEBOOK_URL],
 }
 
 export default function RootLayout({
