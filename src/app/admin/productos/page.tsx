@@ -8,6 +8,7 @@ import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, A
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
+import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
@@ -488,12 +489,12 @@ export default function AdminProductosPage() {
                       onClick={() => { setEditingStockId(product.id); setStockValue(String(product.stock)) }}
                       title="Clic para editar stock"
                       className={`font-semibold px-2 py-0.5 rounded text-xs ${
-                        product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < 5 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                        product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < LOW_STOCK_THRESHOLD ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       Stock: {product.stock}
                       {product.stock === 0 && ' ✕'}
-                      {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                      {product.stock > 0 && product.stock < LOW_STOCK_THRESHOLD && ' ⚠'}
                     </button>
                   )}
                   <button
@@ -620,14 +621,14 @@ export default function AdminProductosPage() {
                         className={`font-bold px-2 py-0.5 rounded text-sm hover:ring-2 hover:ring-primary/40 transition ${
                           product.stock === 0
                             ? 'bg-red-100 text-red-700'
-                            : product.stock < 5
+                            : product.stock < LOW_STOCK_THRESHOLD
                             ? 'bg-orange-100 text-orange-700'
                             : 'text-gray-900'
                         }`}
                       >
                         {product.stock}
                         {product.stock === 0 && ' ✕'}
-                        {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                        {product.stock > 0 && product.stock < LOW_STOCK_THRESHOLD && ' ⚠'}
                       </button>
                     )}
                   </td>
