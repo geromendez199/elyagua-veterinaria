@@ -67,39 +67,36 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-12 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-16 text-primary">
-            ¿Por qué elegirnos?
-          </h2>
-          <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
-            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary">
-              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
-                <ShieldCheck size={30} className="text-primary" />
+      {/* Features strip */}
+      <section className="py-8 md:py-12 bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-3 gap-4 md:gap-8 text-center">
+            <div className="flex flex-col items-center gap-2 md:gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                <ShieldCheck size={20} className="text-primary" />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary">Productos Premium</h3>
-              <p className="text-gray-700 leading-relaxed">
-                Seleccionamos cuidadosamente cada producto para el bienestar de tu mascota.
-              </p>
+              <div>
+                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Productos Premium</p>
+                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Seleccionamos cada producto para el bienestar de tu mascota.</p>
+              </div>
             </div>
-            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-light">
-              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
-                <Stethoscope size={30} className="text-primary" />
+            <div className="flex flex-col items-center gap-2 md:gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                <Stethoscope size={20} className="text-primary" />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary">Equipo Experto</h3>
-              <p className="text-gray-700 leading-relaxed">
-                Nuestro equipo profesional te asesora en la mejor solución.
-              </p>
+              <div>
+                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Equipo Experto</p>
+                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Nuestro equipo profesional te asesora en la mejor solución.</p>
+              </div>
             </div>
-            <div className="snap-start shrink-0 w-72 md:w-auto bg-white p-6 md:p-10 rounded-xl shadow-md hover:shadow-xl transition border-b-4 border-primary-dark">
-              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-5">
-                <Clock size={30} className="text-primary-dark" />
+            <div className="flex flex-col items-center gap-2 md:gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                <Clock size={20} className="text-primary" />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold mb-3 text-primary-dark">Siempre Disponible</h3>
-              <p className="text-gray-700 leading-relaxed">
-                Atención integral de lunes a domingo.
-              </p>
+              <div>
+                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Lun–Dom</p>
+                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Atención integral de lunes a domingo.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -109,31 +106,23 @@ export default async function Home() {
       <ProductCarousel products={products} />
 
       {/* CTA Section */}
-      <section className="bg-primary text-white py-12 md:py-20">
+      <section className="bg-gray-50 border-t border-gray-100 py-10 md:py-14">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-4xl font-bold mb-4">¿Listo para cuidar a tu mascota?</h2>
-          <p className="text-base md:text-xl text-white mb-8">
-            Explora nuestro catálogo o contáctanos ahora
+          <h2 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">¿Tenés alguna consulta?</h2>
+          <p className="text-sm md:text-base text-gray-500 mb-6">
+            Escribinos por WhatsApp y te respondemos a la brevedad
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
-            <Link
-              href="/productos"
-              className="bg-white text-primary font-bold py-3 px-8 rounded-lg hover:bg-primary-light hover:text-white transition text-base md:text-lg text-center"
-            >
-              Explorar Productos
-            </Link>
-            <a
-              href="https://wa.me/5493492730010"
-              target="_blank"
-              className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#1ebe5d] transition text-base md:text-lg shadow-md"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882a.5.5 0 0 0 .614.612l6.288-1.634A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.853 0-3.587-.5-5.084-1.373l-.36-.214-3.733.97.999-3.62-.235-.374A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-              </svg>
-              Escribinos por WhatsApp
-            </a>
-          </div>
+          <a
+            href="https://wa.me/5493492730010"
+            target="_blank"
+            className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:bg-[#1ebe5d] transition text-base shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882a.5.5 0 0 0 .614.612l6.288-1.634A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.853 0-3.587-.5-5.084-1.373l-.36-.214-3.733.97.999-3.62-.235-.374A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+            </svg>
+            Escribinos por WhatsApp
+          </a>
         </div>
       </section>
     </div>
