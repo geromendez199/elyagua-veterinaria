@@ -21,17 +21,19 @@ interface Pedido {
   created_at: string
 }
 
-type Filtro = 'todos' | 'pendiente' | 'confirmado' | 'cancelado'
+type Filtro = 'todos' | 'pendiente' | 'confirmado' | 'enviado' | 'entregado' | 'cancelado'
 
 const ESTADO_CONFIG = {
   pendiente:  { label: 'Pendiente',   cls: 'bg-yellow-100 text-yellow-800' },
-  confirmado: { label: 'Confirmado',  cls: 'bg-green-100 text-green-800'  },
+  confirmado: { label: 'Confirmado',  cls: 'bg-blue-100 text-blue-800'    },
+  enviado:    { label: 'Enviado',     cls: 'bg-cyan-100 text-cyan-800'    },
+  entregado:  { label: 'Entregado',   cls: 'bg-green-100 text-green-800'  },
   cancelado:  { label: 'Cancelado',   cls: 'bg-red-100 text-red-700'      },
 }
 
-function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 'cancelado' {
-  if (estado === 'confirmado') return 'confirmado'
-  if (estado === 'cancelado') return 'cancelado'
+function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 'enviado' | 'entregado' | 'cancelado' {
+  const validStates = ['confirmado', 'enviado', 'entregado', 'cancelado']
+  if (validStates.includes(estado || '')) return estado as any
   return 'pendiente'
 }
 
@@ -114,6 +116,30 @@ export default function AdminPedidosPage() {
     setAccionando(null)
   }
 
+  const handleEnviar = async (id: string) => {
+    setAccionando(id)
+    const { error } = await supabase.from('pedidos').update({ estado: 'enviado' }).eq('id', id)
+    if (error) {
+      showToast('Error al marcar como enviado. Revisá los permisos en Supabase.')
+      setAccionando(null)
+      return
+    }
+    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'enviado' } : p))
+    setAccionando(null)
+  }
+
+  const handleEntregar = async (id: string) => {
+    setAccionando(id)
+    const { error } = await supabase.from('pedidos').update({ estado: 'entregado' }).eq('id', id)
+    if (error) {
+      showToast('Error al marcar como entregado. Revisá los permisos en Supabase.')
+      setAccionando(null)
+      return
+    }
+    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'entregado' } : p))
+    setAccionando(null)
+  }
+
   const handleCancelar = async (id: string) => {
     setAccionando(id)
     const { error } = await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
@@ -143,6 +169,8 @@ export default function AdminPedidosPage() {
     todos:      pedidos.length,
     pendiente:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'pendiente').length,
     confirmado: pedidos.filter((p) => estadoNormalizado(p.estado) === 'confirmado').length,
+    enviado:    pedidos.filter((p) => estadoNormalizado(p.estado) === 'enviado').length,
+    entregado:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'entregado').length,
     cancelado:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'cancelado').length,
   }
 
@@ -195,7 +223,7 @@ export default function AdminPedidosPage() {
       {/* Filtros */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
-          {(['todos', 'pendiente', 'confirmado', 'cancelado'] as Filtro[]).map((f) => (
+          {(['todos', 'pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado'] as Filtro[]).map((f) => (
             <button
               key={f}
               onClick={() => setFiltro(f)}
@@ -315,8 +343,8 @@ export default function AdminPedidosPage() {
                         WA
                       </a>
 
-                      {/* Confirmar */}
-                      {estado !== 'confirmado' && (
+                      {/* Confirmar (pendiente → confirmado) */}
+                      {estado === 'pendiente' && (
                         <button
                           onClick={() => handleConfirmar(pedido.id)}
                           title="Confirmar pedido"
@@ -326,8 +354,30 @@ export default function AdminPedidosPage() {
                         </button>
                       )}
 
+                      {/* Enviar (confirmado → enviado) */}
+                      {estado === 'confirmado' && (
+                        <button
+                          onClick={() => handleEnviar(pedido.id)}
+                          title="Marcar como enviado"
+                          className="flex items-center gap-1 text-xs bg-cyan-500 text-white px-2.5 py-1.5 rounded-full hover:bg-cyan-600 transition font-semibold"
+                        >
+                          <Truck size={12} /> Enviar
+                        </button>
+                      )}
+
+                      {/* Entregar (enviado → entregado) */}
+                      {estado === 'enviado' && (
+                        <button
+                          onClick={() => handleEntregar(pedido.id)}
+                          title="Marcar como entregado"
+                          className="flex items-center gap-1 text-xs bg-green-500 text-white px-2.5 py-1.5 rounded-full hover:bg-green-600 transition font-semibold"
+                        >
+                          <Check size={12} /> Entregar
+                        </button>
+                      )}
+
                       {/* Cancelar */}
-                      {estado !== 'cancelado' && (
+                      {estado !== 'cancelado' && estado !== 'entregado' && (
                         <button
                           onClick={() => handleCancelar(pedido.id)}
                           title="Cancelar pedido"
