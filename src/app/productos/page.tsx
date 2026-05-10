@@ -28,12 +28,15 @@ async function getProducts(): Promise<Product[]> {
 }
 
 interface PageProps {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; categoria?: string }>
 }
 
+const VALID_CATEGORIES = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
+
 export default async function ProductosPage({ searchParams }: PageProps) {
-  const { q } = await searchParams
+  const { q, categoria } = await searchParams
   const products = await getProducts()
+  const initialCategory = VALID_CATEGORIES.includes(categoria || '') ? categoria as import('@/types').Category : null
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,7 +56,7 @@ export default async function ProductosPage({ searchParams }: PageProps) {
           <SearchBar products={products} />
         </div>
 
-        <ProductsClient initialProducts={products} searchQuery={q || ''} />
+        <ProductsClient initialProducts={products} searchQuery={q || ''} initialCategory={initialCategory} />
       </div>
     </div>
   )

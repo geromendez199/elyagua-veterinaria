@@ -1,16 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, Search } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import CartDrawer from './CartDrawer'
+import { useRouter } from 'next/navigation'
 
 export default function Navbar() {
   const { itemCount } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  const openSearch = () => {
+    setSearchOpen(true)
+    setMenuOpen(false)
+    setTimeout(() => searchInputRef.current?.focus(), 30)
+  }
+
+  const closeSearch = () => {
+    setSearchOpen(false)
+    setSearchQuery('')
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    router.push(q ? `/productos?q=${encodeURIComponent(q)}` : '/productos')
+    closeSearch()
+    setMenuOpen(false)
+  }
 
   return (
     <>
@@ -19,7 +43,7 @@ export default function Navbar() {
           <div className="flex justify-between items-center">
 
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0" onClick={() => setMenuOpen(false)}>
+            <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
               <Image
                 src="/logo-blanco.png"
                 alt="El Yagua Veterinaria"
@@ -31,45 +55,101 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop links */}
-            <div className="hidden md:flex gap-10 items-center">
-              <Link href="/" className="hover:text-primary-light transition font-medium">Inicio</Link>
-              <Link href="/productos" className="hover:text-primary-light transition font-medium">Productos</Link>
-              <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
+            <div className="hidden md:flex gap-8 items-center">
+              {searchOpen ? (
+                <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Escape' && closeSearch()}
+                    placeholder="Buscar productos..."
+                    className="bg-white/20 text-white placeholder-white/60 border border-white/30 rounded-lg px-4 py-1.5 text-sm outline-none focus:bg-white/30 w-60 transition"
+                  />
+                  <button type="submit" className="hover:text-primary-light transition p-1" aria-label="Buscar">
+                    <Search size={18} />
+                  </button>
+                  <button type="button" onClick={closeSearch} className="hover:text-primary-light transition p-1" aria-label="Cerrar búsqueda">
+                    <X size={18} />
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <Link href="/" className="hover:text-primary-light transition font-medium">Inicio</Link>
+                  <Link href="/productos" className="hover:text-primary-light transition font-medium">Productos</Link>
+                  <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
+                  <button
+                    onClick={openSearch}
+                    className="hover:text-primary-light transition"
+                    aria-label="Buscar productos"
+                  >
+                    <Search size={20} />
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
-                title="Carrito"
                 aria-label={`Abrir carrito de compras${itemCount > 0 ? ` con ${itemCount} producto${itemCount > 1 ? 's' : ''}` : ''}`}
               >
                 <ShoppingCart size={24} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" aria-label={`${itemCount} producto${itemCount > 1 ? 's' : ''} en el carrito`}>
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
               </button>
             </div>
 
-            {/* Mobile: carrito + hamburguesa */}
-            <div className="flex md:hidden items-center gap-4">
+            {/* Mobile: buscar + carrito + hamburguesa */}
+            <div className="flex md:hidden items-center gap-3">
+              <button
+                onClick={searchOpen ? closeSearch : openSearch}
+                className="hover:text-primary-light transition"
+                aria-label={searchOpen ? 'Cerrar búsqueda' : 'Buscar productos'}
+              >
+                {searchOpen ? <X size={22} /> : <Search size={22} />}
+              </button>
               <button
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
-                title="Carrito"
                 aria-label={`Abrir carrito de compras${itemCount > 0 ? ` con ${itemCount} producto${itemCount > 1 ? 's' : ''}` : ''}`}
               >
                 <ShoppingCart size={22} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" aria-label={`${itemCount} producto${itemCount > 1 ? 's' : ''} en el carrito`}>
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {itemCount}
                   </span>
                 )}
               </button>
-              <button onClick={() => setMenuOpen(!menuOpen)} className="hover:text-primary-light transition" aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}>
+              <button
+                onClick={() => { setMenuOpen(!menuOpen); closeSearch() }}
+                className="hover:text-primary-light transition"
+                aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              >
                 {menuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
           </div>
+
+          {/* Mobile — buscador expandido */}
+          {searchOpen && (
+            <form onSubmit={handleSearchSubmit} className="md:hidden mt-2 pb-1 flex items-center gap-2">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar productos..."
+                className="flex-1 bg-white/20 text-white placeholder-white/60 border border-white/30 rounded-lg px-4 py-2 text-sm outline-none focus:bg-white/30"
+                autoFocus
+              />
+              <button type="submit" className="bg-white text-primary font-semibold px-4 py-2 rounded-lg text-sm shrink-0">
+                Buscar
+              </button>
+            </form>
+          )}
 
           {/* Mobile menu desplegable */}
           {menuOpen && (

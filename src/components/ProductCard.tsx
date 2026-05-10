@@ -43,8 +43,14 @@ export default function ProductCard({ product }: ProductCardProps) {
               className="object-contain p-3 group-hover:scale-105 transition duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-              Sin imagen
+            <div className="w-full h-full flex items-center justify-center bg-gray-50">
+              <svg viewBox="0 0 100 100" className="w-12 h-12 text-gray-200" fill="currentColor">
+                <ellipse cx="50" cy="65" rx="22" ry="18"/>
+                <circle cx="27" cy="38" r="11"/>
+                <circle cx="73" cy="38" r="11"/>
+                <circle cx="18" cy="57" r="9"/>
+                <circle cx="82" cy="57" r="9"/>
+              </svg>
             </div>
           )}
           {/* Botón compartir — siempre visible en mobile, hover en desktop */}
