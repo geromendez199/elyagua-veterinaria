@@ -283,7 +283,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           <h2 className="text-xl font-bold">
             {step === 'cart' ? 'Mi Carrito' : 'Datos del pedido'}
           </h2>
-          <button onClick={onClose} className="hover:bg-primary-dark p-1 rounded">
+          <button onClick={onClose} className="hover:bg-primary-dark p-1 rounded" aria-label="Cerrar carrito">
             <X size={24} />
           </button>
         </div>
@@ -349,16 +349,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <button
                             onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
                             className="hover:text-primary p-1 text-gray-700"
+                            aria-label={`Disminuir cantidad de ${item.product.nombre}`}
                           >
                             <Minus size={14} />
                           </button>
-                          <span className="font-bold w-5 text-center text-gray-900 text-sm">
+                          <span className="font-bold w-5 text-center text-gray-900 text-sm" aria-label={`Cantidad: ${item.quantity}`}>
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
                             disabled={item.quantity >= item.product.stock}
                             className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label={`Aumentar cantidad de ${item.product.nombre}`}
                           >
                             <Plus size={14} />
                           </button>
@@ -366,6 +368,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <button
                           onClick={() => removeItem(item.product.id)}
                           className="text-gray-300 hover:text-red-500 p-1 transition"
+                          aria-label={`Eliminar ${item.product.nombre} del carrito`}
                         >
                           <X size={16} />
                         </button>

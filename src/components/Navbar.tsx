@@ -39,10 +39,11 @@ export default function Navbar() {
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
                 title="Carrito"
+                aria-label={`Abrir carrito de compras${itemCount > 0 ? ` con ${itemCount} producto${itemCount > 1 ? 's' : ''}` : ''}`}
               >
                 <ShoppingCart size={24} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" aria-label={`${itemCount} producto${itemCount > 1 ? 's' : ''} en el carrito`}>
                     {itemCount}
                   </span>
                 )}
@@ -55,15 +56,16 @@ export default function Navbar() {
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
                 title="Carrito"
+                aria-label={`Abrir carrito de compras${itemCount > 0 ? ` con ${itemCount} producto${itemCount > 1 ? 's' : ''}` : ''}`}
               >
                 <ShoppingCart size={22} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center" aria-label={`${itemCount} producto${itemCount > 1 ? 's' : ''} en el carrito`}>
                     {itemCount}
                   </span>
                 )}
               </button>
-              <button onClick={() => setMenuOpen(!menuOpen)} className="hover:text-primary-light transition">
+              <button onClick={() => setMenuOpen(!menuOpen)} className="hover:text-primary-light transition" aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}>
                 {menuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
