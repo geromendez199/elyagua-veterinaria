@@ -94,6 +94,21 @@ export default function AdminPedidosPage() {
     return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
+  const generateConfirmationMessage = (pedido: Pedido): string => {
+    const productosList = pedido.productos
+      .map(p => `• ${p.nombre} x${p.cantidad}`)
+      .join('\n')
+
+    const mensaje = `🎉 Hola ${pedido.nombre}!\n\nTu pedido ha sido confirmado:\n\n${productosList}\n\n💰 Total: $${pedido.total}\n\n${pedido.tipo_entrega === 'retiro' ? '📍 Retiro en tienda' : `🚚 Envío a: ${pedido.direccion}`}\n\n¡Gracias por tu compra!`
+    return mensaje
+  }
+
+  const openWhatsAppWithMessage = (phoneNumber: string, message: string) => {
+    const encodedMessage = encodeURIComponent(message)
+    const phone = phoneNumber.replace(/\D/g, '')
+    window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank')
+  }
+
   // ── Al confirmar, descuenta stock por cada producto (RPC atómica) ──
   const handleConfirmar = async (id: string) => {
     setAccionando(id)
@@ -352,14 +367,26 @@ export default function AdminPedidosPage() {
 
                     {/* Acciones */}
                     <div className="flex items-center gap-2 sm:ml-auto flex-wrap">
-                      {/* WhatsApp */}
-                      <a
-                        href={`https://wa.me/${pedido.telefono.replace(/\D/g, '')}`}
-                        target="_blank"
-                        className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition font-semibold"
-                      >
-                        WA
-                      </a>
+                      {/* WhatsApp: Notificar (confirmado) o Chat (otros) */}
+                      {estado === 'confirmado' ? (
+                        <button
+                          onClick={() => openWhatsAppWithMessage(pedido.telefono, generateConfirmationMessage(pedido))}
+                          target="_blank"
+                          className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition font-semibold flex items-center gap-1"
+                          title="Enviar confirmación por WhatsApp"
+                        >
+                          <MessageCircle size={12} /> Notificar
+                        </button>
+                      ) : (
+                        <a
+                          href={`https://wa.me/${pedido.telefono.replace(/\D/g, '')}`}
+                          target="_blank"
+                          className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition font-semibold"
+                          title="Abrir WhatsApp"
+                        >
+                          WA
+                        </a>
+                      )}
 
                       {/* Confirmar (pendiente → confirmado) */}
                       {estado === 'pendiente' && (
