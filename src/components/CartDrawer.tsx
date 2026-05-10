@@ -142,6 +142,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     setAddressSuggestions([])
   }
 
+  const handleDeliveryChange = (type: DeliveryType) => {
+    const pagoActual = formData.metodoPago || 'efectivo'
+    const pagoIncompatible = type === 'envio' && ['debito', 'credito'].includes(pagoActual)
+    setFormData({
+      ...formData,
+      deliveryType: type,
+      direccion: type === 'retiro' ? '' : formData.direccion,
+      metodoPago: pagoIncompatible ? 'efectivo' : pagoActual,
+    })
+  }
+
   const handleQuantityChange = (productId: string, newQty: number) => {
     if (newQty <= 0) {
       removeItem(productId)
@@ -206,7 +217,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       )
       .join('\n\n')
 
-    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)' }
+    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
@@ -405,170 +416,36 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
           {/* ── STEP 2: Formulario ── */}
           {step === 'checkout' && (
-            <div className="space-y-4">
+            <div className="space-y-5 pb-2">
 
-              {/* DNI (opcional) — al inicio para auto-reconocimiento */}
+              {/* ── Entrega ── */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.dni || ''}
-                    onChange={(e) => handleDniChange(e.target.value)}
-                    className={`${inputCls(false)} pr-9 ${dniLookup === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
-                    placeholder="12345678"
-                    maxLength={8}
-                  />
-                  {dniLookup === 'loading' && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 size={15} className="text-gray-400 animate-spin" />
-                    </div>
-                  )}
-                  {dniLookup === 'found' && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Check size={15} className="text-green-500" />
-                    </div>
-                  )}
-                </div>
-                {dniLookup === 'found' ? (
-                  <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Completamos tus datos automáticamente.</p>
-                ) : (
-                  <p className="text-gray-400 text-xs mt-1">Permite que El Yagua te reconozca para futuros pedidos</p>
-                )}
-              </div>
-
-              {/* Nombre */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Nombre completo <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) => handleChange('nombre', e.target.value)}
-                  onBlur={() => handleBlur('nombre')}
-                  className={inputCls(!!errors.nombre && touched.nombre)}
-                  placeholder="Tu nombre"
-                />
-                {errors.nombre && touched.nombre && (
-                  <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
-                )}
-              </div>
-
-              {/* Teléfono */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Teléfono/WhatsApp <span className="text-red-500">*</span>
-                </label>
-                <div
-                  className={`flex border rounded-lg overflow-hidden transition focus-within:ring-2 ${
-                    errors.telefono && touched.telefono
-                      ? 'border-red-400 focus-within:ring-red-200'
-                      : 'border-gray-300 focus-within:ring-primary/20 focus-within:border-primary'
-                  }`}
-                >
-                  <span className="px-3 py-2 bg-gray-100 text-gray-500 font-medium border-r border-gray-300 shrink-0 select-none text-sm">
-                    +549
-                  </span>
-                  <input
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => handleChange('telefono', e.target.value.replace(/\D/g, ''))}
-                    onBlur={() => handleBlur('telefono')}
-                    className="flex-1 px-3 py-2 outline-none text-gray-900 bg-white placeholder-gray-400 text-sm"
-                    placeholder="3492XXXXXX"
-                    maxLength={12}
-                  />
-                </div>
-                {errors.telefono && touched.telefono ? (
-                  <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
-                ) : (
-                  <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15. Ej: 3492XXXXXX</p>
-                )}
-              </div>
-
-              {/* Método de pago */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Método de pago
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { value: 'efectivo', label: 'Efectivo',  desc: 'Precio lista publicado en la web' },
-                    { value: 'debito',   label: 'Débito',    desc: 'Precio lista publicado en la web' },
-                    { value: 'credito',  label: 'Crédito',   desc: 'Con recargo' },
-                  ].map(opt => (
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿Cómo recibís tu pedido?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'retiro', label: 'Retiro en tienda', sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
+                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Costo a coordinar',       icon: Truck  },
+                  ] as const).map(({ value, label, sub, icon: Icon }) => (
                     <label
-                      key={opt.value}
-                      className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition ${
-                        formData.metodoPago === opt.value
+                      key={value}
+                      className={`flex flex-col items-center gap-2 py-4 px-2 border-2 rounded-2xl cursor-pointer transition text-center ${
+                        formData.deliveryType === value
                           ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <input
-                        type="radio"
-                        checked={formData.metodoPago === opt.value}
-                        onChange={() => setFormData(prev => ({ ...prev, metodoPago: opt.value as 'efectivo' | 'debito' | 'credito' }))}
-                        className="w-4 h-4 accent-primary"
-                      />
+                      <input type="radio" className="sr-only" checked={formData.deliveryType === value} onChange={() => handleDeliveryChange(value)} />
+                      <Icon size={22} className={formData.deliveryType === value ? 'text-primary' : 'text-gray-300'} />
                       <div>
-                        <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
-                        <p className="text-xs text-gray-500">{opt.desc}</p>
+                        <p className={`font-bold text-sm leading-tight ${formData.deliveryType === value ? 'text-primary' : 'text-gray-700'}`}>{label}</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">{sub}</p>
                       </div>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Tipo de entrega */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tipo de entrega
-                </label>
-                <div className="space-y-2">
-                  <label
-                    className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition ${
-                      formData.deliveryType === 'retiro'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      checked={formData.deliveryType === 'retiro'}
-                      onChange={() => setFormData({ ...formData, deliveryType: 'retiro' })}
-                      className="w-4 h-4 accent-primary"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 text-sm">Retiro en tienda</p>
-                      <p className="text-xs text-gray-500">Bv Lehmann 609 · Gratis</p>
-                    </div>
-                  </label>
-                  <label
-                    className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition ${
-                      formData.deliveryType === 'envio'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      checked={formData.deliveryType === 'envio'}
-                      onChange={() => setFormData({ ...formData, deliveryType: 'envio', direccion: '' })}
-                      className="w-4 h-4 accent-primary"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 text-sm">Envío a domicilio</p>
-                      <p className="text-xs text-gray-500">Costo a coordinar por WhatsApp</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Dirección (solo si envío) */}
+              {/* ── Dirección (solo si envío) ── */}
               {formData.deliveryType === 'envio' && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -579,13 +456,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       type="text"
                       value={formData.direccion || ''}
                       onChange={(e) => handleAddressChange(e.target.value)}
-                      onBlur={() => {
-                        handleBlur('direccion')
-                        setTimeout(() => setShowAddressSuggestions(false), 150)
-                      }}
+                      onBlur={() => { handleBlur('direccion'); setTimeout(() => setShowAddressSuggestions(false), 150) }}
                       onFocus={() => addressSuggestions.length > 0 && setShowAddressSuggestions(true)}
                       className={`${inputCls(!!errors.direccion && touched.direccion)} pr-8`}
-                      placeholder="Escribí tu calle y número..."
+                      placeholder="Calle y número..."
                       autoComplete="off"
                     />
                     {fetchingAddress && (
@@ -614,19 +488,140 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
               )}
 
-              {/* Resumen del pedido */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-                <h4 className="font-bold text-gray-900 mb-3 text-sm">Resumen del pedido</h4>
+              {/* ── Nombre ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Nombre completo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.nombre}
+                  onChange={(e) => handleChange('nombre', e.target.value)}
+                  onBlur={() => handleBlur('nombre')}
+                  className={inputCls(!!errors.nombre && touched.nombre)}
+                  placeholder="Tu nombre y apellido"
+                />
+                {errors.nombre && touched.nombre && (
+                  <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
+                )}
+              </div>
+
+              {/* ── Teléfono ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  WhatsApp <span className="text-red-500">*</span>
+                </label>
+                <div className={`flex border rounded-lg overflow-hidden transition focus-within:ring-2 ${
+                  errors.telefono && touched.telefono
+                    ? 'border-red-400 focus-within:ring-red-200'
+                    : 'border-gray-300 focus-within:ring-primary/20 focus-within:border-primary'
+                }`}>
+                  <span className="px-3 py-2 bg-gray-100 text-gray-500 font-medium border-r border-gray-300 shrink-0 select-none text-sm">+549</span>
+                  <input
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={(e) => handleChange('telefono', e.target.value.replace(/\D/g, ''))}
+                    onBlur={() => handleBlur('telefono')}
+                    className="flex-1 px-3 py-2 outline-none text-gray-900 bg-white placeholder-gray-400 text-sm"
+                    placeholder="3492XXXXXX"
+                    maxLength={12}
+                  />
+                </div>
+                {errors.telefono && touched.telefono ? (
+                  <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
+                ) : (
+                  <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15</p>
+                )}
+              </div>
+
+              {/* ── Método de pago ── */}
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  {formData.deliveryType === 'retiro' ? '¿Cómo pagás en tienda?' : '¿Cómo pagás el envío?'}
+                </p>
+                <div className="space-y-2">
+                  {(formData.deliveryType === 'retiro'
+                    ? [
+                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Precio de lista' },
+                        { value: 'debito',         label: 'Débito',                desc: 'Precio de lista' },
+                        { value: 'credito',        label: 'Crédito',               desc: 'Con recargo' },
+                      ]
+                    : [
+                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
+                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Te enviamos el CBU/alias por WhatsApp' },
+                      ]
+                  ).map(opt => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer transition ${
+                        formData.metodoPago === opt.value
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-100 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        checked={formData.metodoPago === opt.value}
+                        onChange={() => setFormData(prev => ({ ...prev, metodoPago: opt.value as typeof formData.metodoPago }))}
+                        className="w-4 h-4 accent-primary shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
+                        <p className="text-xs text-gray-400">{opt.desc}</p>
+                      </div>
+                      {formData.metodoPago === opt.value && (
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                          <Check size={11} className="text-white" />
+                        </div>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── DNI (opcional) ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.dni || ''}
+                    onChange={(e) => handleDniChange(e.target.value)}
+                    className={`${inputCls(false)} pr-9 ${dniLookup === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
+                    placeholder="12345678"
+                    maxLength={8}
+                  />
+                  {dniLookup === 'loading' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 size={15} className="text-gray-400 animate-spin" />
+                    </div>
+                  )}
+                  {dniLookup === 'found' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Check size={15} className="text-green-500" />
+                    </div>
+                  )}
+                </div>
+                {dniLookup === 'found' ? (
+                  <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Datos cargados automáticamente.</p>
+                ) : (
+                  <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
+                )}
+              </div>
+
+              {/* ── Resumen ── */}
+              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tu pedido</p>
                 {items.map((item) => (
                   <div key={item.product.id} className="flex justify-between text-sm">
                     <span className="text-gray-600 truncate mr-2">{item.product.nombre} ×{item.quantity}</span>
-                    <span className="text-gray-900 font-semibold shrink-0">
-                      {formatPrice(item.product.precio * item.quantity)}
-                    </span>
+                    <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-300 pt-3 mt-2 flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Total:</span>
+                <div className="border-t border-gray-200 pt-3 mt-1 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Total</span>
                   <span className="text-primary font-bold text-xl">{formatPrice(total)}</span>
                 </div>
               </div>
