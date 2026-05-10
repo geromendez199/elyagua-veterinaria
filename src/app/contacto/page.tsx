@@ -83,7 +83,7 @@ export default function ContactoPage() {
                 +54 9 3492 665978
               </a>
               <a
-                href="{WA_URL}"
+                href={WA_URL}
                 target="_blank"
                 className="flex items-center justify-center gap-3 w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
@@ -104,7 +104,7 @@ export default function ContactoPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href="{INSTAGRAM_URL}"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
@@ -118,7 +118,7 @@ export default function ContactoPage() {
               </div>
             </a>
             <a
-              href="{FACEBOOK_URL}"
+              href={FACEBOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
