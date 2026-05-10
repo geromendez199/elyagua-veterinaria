@@ -12,6 +12,8 @@ interface ClienteConStats extends Cliente {
   pedidos_count: number
   total_gastado: number
   ultimo_pedido: string | null
+  top_producto: string | null
+  productos_resumen: { nombre: string; cantidad: number }[]
 }
 
 export default function AdminClientesPage() {
@@ -35,24 +37,36 @@ export default function AdminClientesPage() {
   const fetchData = async () => {
     const [{ data: clientesData }, { data: pedidosData }] = await Promise.all([
       supabase.from('clientes').select('*').order('created_at', { ascending: false }),
-      supabase.from('pedidos').select('cliente_dni, total, created_at').not('cliente_dni', 'is', null),
+      supabase.from('pedidos').select('cliente_dni, total, created_at, productos').not('cliente_dni', 'is', null),
     ])
 
     const stats: Record<string, { count: number; total: number; ultimo: string }> = {}
+    const prodsMap: Record<string, Record<string, { nombre: string; cantidad: number }>> = {}
     for (const p of (pedidosData || [])) {
       if (!p.cliente_dni) continue
       if (!stats[p.cliente_dni]) stats[p.cliente_dni] = { count: 0, total: 0, ultimo: p.created_at }
       stats[p.cliente_dni].count++
       stats[p.cliente_dni].total += p.total || 0
       if (p.created_at > stats[p.cliente_dni].ultimo) stats[p.cliente_dni].ultimo = p.created_at
+      for (const prod of (p.productos || [])) {
+        if (!prodsMap[p.cliente_dni]) prodsMap[p.cliente_dni] = {}
+        const key = prod.nombre
+        if (!prodsMap[p.cliente_dni][key]) prodsMap[p.cliente_dni][key] = { nombre: prod.nombre, cantidad: 0 }
+        prodsMap[p.cliente_dni][key].cantidad += prod.cantidad || 1
+      }
     }
 
-    setClientes((clientesData || []).map(c => ({
-      ...c,
-      pedidos_count: stats[c.dni]?.count || 0,
-      total_gastado: stats[c.dni]?.total || 0,
-      ultimo_pedido: stats[c.dni]?.ultimo || null,
-    })))
+    setClientes((clientesData || []).map(c => {
+      const prods = Object.values(prodsMap[c.dni] || {}).sort((a, b) => b.cantidad - a.cantidad)
+      return {
+        ...c,
+        pedidos_count: stats[c.dni]?.count || 0,
+        total_gastado: stats[c.dni]?.total || 0,
+        ultimo_pedido: stats[c.dni]?.ultimo || null,
+        top_producto: prods[0]?.nombre || null,
+        productos_resumen: prods,
+      }
+    }))
     setLoading(false)
   }
 
@@ -194,6 +208,31 @@ export default function AdminClientesPage() {
                         <p className="font-semibold text-gray-700 text-sm">{formatDate(cliente.created_at)}</p>
                       </div>
                     </div>
+
+                    {/* Productos pedidos */}
+                    {cliente.top_producto && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-400 mb-1">Producto más pedido</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {cliente.top_producto}
+                          <span className="text-xs text-gray-400 font-normal ml-1">
+                            ({cliente.productos_resumen[0].cantidad} ud.)
+                          </span>
+                        </p>
+                        {cliente.productos_resumen.length > 1 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {cliente.productos_resumen.slice(1, 5).map((p, i) => (
+                              <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                {p.nombre} ×{p.cantidad}
+                              </span>
+                            ))}
+                            {cliente.productos_resumen.length > 5 && (
+                              <span className="text-xs text-gray-400 py-0.5">+{cliente.productos_resumen.length - 5} más</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Nota editable */}
                     <div className="mt-3">

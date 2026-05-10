@@ -36,6 +36,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     telefono: '',
     deliveryType: 'retiro',
     dni: '',
+    metodoPago: 'efectivo',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -76,6 +77,32 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       setStep('checkout')
     } finally {
       setCheckingStock(false)
+    }
+  }
+
+  // ── DNI: auto-reconocimiento de cliente ──────────────────────
+  const [dniLookup, setDniLookup] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
+
+  const handleDniChange = async (value: string) => {
+    const sanitized = value.replace(/\D/g, '').slice(0, 8)
+    setFormData(prev => ({ ...prev, dni: sanitized }))
+    if (sanitized.length < 8) { setDniLookup('idle'); return }
+    setDniLookup('loading')
+    try {
+      const { data } = await supabase.from('clientes').select('nombre, telefono').eq('dni', sanitized).limit(1)
+      const found = data?.[0]
+      if (found) {
+        setDniLookup('found')
+        setFormData(prev => ({
+          ...prev,
+          nombre: prev.nombre || found.nombre,
+          telefono: prev.telefono || (found.telefono ? found.telefono.replace(/^\+549/, '') : ''),
+        }))
+      } else {
+        setDniLookup('notfound')
+      }
+    } catch {
+      setDniLookup('idle')
     }
   }
 
@@ -179,6 +206,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       )
       .join('\n\n')
 
+    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)' }
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
@@ -186,6 +214,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       ...(formData.dni ? [`🪪 *DNI:* ${formData.dni}`] : []),
       `📱 *Teléfono:* +549${formData.telefono}`,
       `📦 *Entrega:* ${deliveryInfo}`,
+      `💳 *Pago:* ${metodoPagoLabel[formData.metodoPago || 'efectivo']}`,
       ``,
       `━━━━━━━━━━━━━━━`,
       `🛒 *PRODUCTOS*`,
@@ -212,6 +241,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total,
           cliente_dni: formData.dni || null,
+          metodo_pago: formData.metodoPago || 'efectivo',
         }])
         if (formData.dni) {
           await supabase.from('clientes').upsert({
@@ -226,9 +256,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     clearCart()
     onClose()
     setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '' })
+    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'efectivo' })
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
+    setDniLookup('idle')
   }
 
   if (!isOpen) return null
@@ -373,6 +404,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           {step === 'checkout' && (
             <div className="space-y-4">
 
+              {/* DNI (opcional) — al inicio para auto-reconocimiento */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.dni || ''}
+                    onChange={(e) => handleDniChange(e.target.value)}
+                    className={`${inputCls(false)} pr-9 ${dniLookup === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
+                    placeholder="12345678"
+                    maxLength={8}
+                  />
+                  {dniLookup === 'loading' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 size={15} className="text-gray-400 animate-spin" />
+                    </div>
+                  )}
+                  {dniLookup === 'found' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Check size={15} className="text-green-500" />
+                    </div>
+                  )}
+                </div>
+                {dniLookup === 'found' ? (
+                  <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Completamos tus datos automáticamente.</p>
+                ) : (
+                  <p className="text-gray-400 text-xs mt-1">Permite que El Yagua te reconozca para futuros pedidos</p>
+                )}
+              </div>
+
               {/* Nombre */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -423,20 +486,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 )}
               </div>
 
-              {/* DNI (opcional) */}
+              {/* Método de pago */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Método de pago
                 </label>
-                <input
-                  type="text"
-                  value={formData.dni || ''}
-                  onChange={(e) => handleChange('dni', e.target.value.replace(/\D/g, '').slice(0, 8))}
-                  className={inputCls(false)}
-                  placeholder="12345678"
-                  maxLength={8}
-                />
-                <p className="text-gray-400 text-xs mt-1">Permite que la veterinaria te reconozca en futuros pedidos</p>
+                <div className="space-y-2">
+                  {[
+                    { value: 'efectivo', label: 'Efectivo',  desc: 'Precio lista publicado en la web' },
+                    { value: 'debito',   label: 'Débito',    desc: 'Precio lista publicado en la web' },
+                    { value: 'credito',  label: 'Crédito',   desc: 'Con recargo' },
+                  ].map(opt => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition ${
+                        formData.metodoPago === opt.value
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        checked={formData.metodoPago === opt.value}
+                        onChange={() => setFormData(prev => ({ ...prev, metodoPago: opt.value as 'efectivo' | 'debito' | 'credito' }))}
+                        className="w-4 h-4 accent-primary"
+                      />
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
+                        <p className="text-xs text-gray-500">{opt.desc}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Tipo de entrega */}
