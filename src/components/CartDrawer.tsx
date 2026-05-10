@@ -7,6 +7,7 @@ import { OrderFormData, DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
+import { purchaseEvent } from '@/lib/analytics'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -245,7 +246,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
-        await supabase.from('pedidos').insert([{
+        const { data } = await supabase.from('pedidos').insert([{
           nombre: formData.nombre,
           telefono: `+549${formData.telefono}`,
           tipo_entrega: formData.deliveryType,
@@ -254,7 +255,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           total,
           cliente_dni: formData.dni || null,
           metodo_pago: formData.metodoPago || 'efectivo',
-        }])
+        }]).select()
+
+        if (data?.[0]?.id) {
+          purchaseEvent(total, 'ARS', data[0].id)
+        }
+
         if (formData.dni) {
           await supabase.from('clientes').upsert({
             dni: formData.dni,
