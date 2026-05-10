@@ -177,7 +177,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           telefono: `+549${formData.telefono}`,
           tipo_entrega: formData.deliveryType,
           direccion: formData.direccion || null,
-          productos: items.map((i) => ({ nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
+          productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total,
           cliente_dni: formData.dni || null,
         }])

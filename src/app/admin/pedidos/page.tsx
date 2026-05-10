@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users } from 'lucide-react'
+import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 
@@ -13,7 +13,7 @@ interface Pedido {
   telefono: string
   tipo_entrega: 'retiro' | 'envio'
   direccion: string | null
-  productos: { nombre: string; cantidad: number; precio: number }[]
+  productos: { id?: string; nombre: string; cantidad: number; precio: number }[]
   total: number
   estado: string | null
   cliente_dni: string | null
@@ -40,6 +40,14 @@ export default function AdminPedidosPage() {
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [accionando, setAccionando] = useState<string | null>(null)
+  const [nuevoToast, setNuevoToast] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
+
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg)
+    setNuevoToast(true)
+    setTimeout(() => setNuevoToast(false), 5000)
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -55,22 +63,54 @@ export default function AdminPedidosPage() {
     init()
   }, [router])
 
+  // ── Realtime: nuevos pedidos aparecen sin refresh ──────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('pedidos-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'pedidos' },
+        (payload) => {
+          const nuevo = payload.new as Pedido
+          setPedidos((prev) => {
+            if (prev.some((p) => p.id === nuevo.id)) return prev
+            return [nuevo, ...prev]
+          })
+          showToast(`Nuevo pedido de ${nuevo.nombre}`)
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [showToast])
+
   const formatDate = (iso: string) => {
     const d = new Date(iso)
     return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
+  // ── Al confirmar, descuenta stock por cada producto (RPC atómica) ──
   const handleConfirmar = async (id: string) => {
     setAccionando(id)
-    await supabase.from('pedidos').update({ estado: 'confirmado' }).eq('id', id)
-    setPedidos(prev => prev.map(p => p.id === id ? { ...p, estado: 'confirmado' } : p))
+    const pedido = pedidos.find((p) => p.id === id)
+
+    const { error } = await supabase.from('pedidos').update({ estado: 'confirmado' }).eq('id', id)
+    if (!error && pedido) {
+      for (const prod of pedido.productos) {
+        if (prod.id) {
+          await supabase.rpc('decrement_stock', { p_id: prod.id, p_amount: prod.cantidad })
+        }
+      }
+    }
+
+    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'confirmado' } : p))
     setAccionando(null)
   }
 
   const handleCancelar = async (id: string) => {
     setAccionando(id)
     await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
-    setPedidos(prev => prev.map(p => p.id === id ? { ...p, estado: 'cancelado' } : p))
+    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'cancelado' } : p))
     setAccionando(null)
   }
 
@@ -78,20 +118,20 @@ export default function AdminPedidosPage() {
     if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return
     setAccionando(id)
     await supabase.from('pedidos').delete().eq('id', id)
-    setPedidos(prev => prev.filter(p => p.id !== id))
+    setPedidos((prev) => prev.filter((p) => p.id !== id))
     setAccionando(null)
   }
 
   const counts = {
     todos:      pedidos.length,
-    pendiente:  pedidos.filter(p => estadoNormalizado(p.estado) === 'pendiente').length,
-    confirmado: pedidos.filter(p => estadoNormalizado(p.estado) === 'confirmado').length,
-    cancelado:  pedidos.filter(p => estadoNormalizado(p.estado) === 'cancelado').length,
+    pendiente:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'pendiente').length,
+    confirmado: pedidos.filter((p) => estadoNormalizado(p.estado) === 'confirmado').length,
+    cancelado:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'cancelado').length,
   }
 
   const pedidosFiltrados = filtro === 'todos'
     ? pedidos
-    : pedidos.filter(p => estadoNormalizado(p.estado) === filtro)
+    : pedidos.filter((p) => estadoNormalizado(p.estado) === filtro)
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -101,6 +141,15 @@ export default function AdminPedidosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      {/* Toast: nuevo pedido */}
+      {nuevoToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold animate-pulse">
+          <Bell size={16} />
+          {toastMsg}
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
@@ -129,7 +178,7 @@ export default function AdminPedidosPage() {
       {/* Filtros */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
-          {(['todos', 'pendiente', 'confirmado', 'cancelado'] as Filtro[]).map(f => (
+          {(['todos', 'pendiente', 'confirmado', 'cancelado'] as Filtro[]).map((f) => (
             <button
               key={f}
               onClick={() => setFiltro(f)}
