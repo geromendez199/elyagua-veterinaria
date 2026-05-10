@@ -17,6 +17,7 @@ interface Pedido {
   total: number
   estado: string | null
   cliente_dni: string | null
+  metodo_pago: string | null
   created_at: string
 }
 
@@ -274,7 +275,7 @@ export default function AdminPedidosPage() {
                   {/* Footer: entrega + acciones */}
                   <div className="px-5 py-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
                     {/* Entrega */}
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {pedido.tipo_entrega === 'retiro' ? (
                         <>
                           <MapPin size={14} className="text-primary shrink-0" />
@@ -285,6 +286,17 @@ export default function AdminPedidosPage() {
                           <Truck size={14} className="text-primary shrink-0" />
                           <span className="text-gray-600 truncate max-w-[200px]">Envío: {pedido.direccion}</span>
                         </>
+                      )}
+                      {pedido.metodo_pago && (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          pedido.metodo_pago === 'credito'
+                            ? 'bg-orange-100 text-orange-700'
+                            : pedido.metodo_pago === 'debito'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {pedido.metodo_pago === 'efectivo' ? 'Efectivo' : pedido.metodo_pago === 'debito' ? 'Débito' : 'Crédito'}
+                        </span>
                       )}
                     </div>
 
