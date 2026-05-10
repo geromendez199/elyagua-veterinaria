@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
 
         {/* Bienvenida */}
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bienvenida 👋</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bienvenido</h1>
           <p className="text-gray-500 mt-1">¿Qué querés administrar hoy?</p>
         </div>
 

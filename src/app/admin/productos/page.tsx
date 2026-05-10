@@ -87,6 +87,21 @@ export default function AdminProductosPage() {
     router.push('/admin')
   }
 
+  // ── Extrae el path de Storage a partir de la URL pública ──────
+  const storageFilename = (url: string): string | null => {
+    try {
+      const match = url.match(/\/storage\/v1\/object\/public\/productos\/(.+)/)
+      return match ? match[1] : null
+    } catch {
+      return null
+    }
+  }
+
+  const deleteStorageFile = async (url: string) => {
+    const filename = storageFilename(url)
+    if (filename) await supabase.storage.from('productos').remove([filename])
+  }
+
   // ── Cambio rápido de imagen desde tabla ───────────────────────
   const triggerImageUpload = (productId: string) => {
     uploadTargetId.current = productId
@@ -102,6 +117,7 @@ export default function AdminProductosPage() {
     e.target.value = ''
 
     try {
+      const oldUrl = products.find((p) => p.id === productId)?.imagen_url
       const ext = file.name.split('.').pop()
       const filename = `${productId}-${Date.now()}.${ext}`
 
@@ -118,6 +134,9 @@ export default function AdminProductosPage() {
         .update({ imagen_url, updated_at: new Date().toISOString() })
         .eq('id', productId)
       if (updateError) throw updateError
+
+      // Borrar imagen anterior de Storage
+      if (oldUrl) await deleteStorageFile(oldUrl)
 
       setProducts((prev) => prev.map((p) => p.id === productId ? { ...p, imagen_url } : p))
     } catch (err: any) {
@@ -215,6 +234,7 @@ export default function AdminProductosPage() {
       let imagen_url = editProduct.imagen_url
 
       if (editImageFile) {
+        const oldUrl = editProduct.imagen_url
         const ext = editImageFile.name.split('.').pop()
         const filename = `${editProduct.id}-${Date.now()}.${ext}`
         const { error: uploadError } = await supabase.storage
@@ -223,6 +243,8 @@ export default function AdminProductosPage() {
         if (uploadError) throw uploadError
         const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filename)
         imagen_url = urlData.publicUrl
+        // Borrar imagen anterior de Storage (en background, no bloquea)
+        if (oldUrl) deleteStorageFile(oldUrl)
       }
 
       const { error } = await supabase
@@ -272,9 +294,12 @@ export default function AdminProductosPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Está seguro de eliminar este producto?')) return
     try {
+      const product = products.find((p) => p.id === id)
       const { error } = await supabase.from('productos').delete().eq('id', id)
       if (error) throw error
       setProducts((prev) => prev.filter((p) => p.id !== id))
+      // Borrar imagen de Storage en background
+      if (product?.imagen_url) deleteStorageFile(product.imagen_url)
     } catch (error) {
       console.error('Error:', error)
       showToast('Error al eliminar el producto')
