@@ -1,5 +1,6 @@
 import { ContactInfo as ContactInfoType } from '@/types'
 import { MapPin, MessageCircle, Clock } from 'lucide-react'
+import { MAPS_URL } from '@/lib/constants'
 
 interface ContactInfoProps {
   info: ContactInfoType
@@ -11,7 +12,7 @@ export default function ContactInfo({ info }: ContactInfoProps) {
 
       {/* Ubicación */}
       <a
-        href="https://maps.app.goo.gl/YAZoosPFCgGu6nvB9"
+        href={MAPS_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="group flex gap-4 items-start bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:border-primary hover:shadow-md transition min-h-[80px]"

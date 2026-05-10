@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
 import InstagramIcon from '@/components/InstagramIcon'
 import FacebookIcon from '@/components/FacebookIcon'
-import { PHONE, WA_URL, WA_NUMBER, INSTAGRAM_URL, FACEBOOK_URL } from '@/lib/constants'
+import { PHONE, WA_URL, WA_NUMBER, INSTAGRAM_URL, FACEBOOK_URL, EMERGENCY_PHONE, MAPS_URL } from '@/lib/constants'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -76,11 +76,11 @@ export default function ContactoPage() {
             </p>
             <div className="space-y-3">
               <a
-                href="tel:+5493492665978"
+                href={`tel:${EMERGENCY_PHONE}`}
                 className="flex items-center justify-center gap-3 w-full bg-dark text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
                 <Phone size={18} />
-                +54 9 3492 665978
+                {EMERGENCY_PHONE}
               </a>
               <a
                 href={WA_URL}
