@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ShoppingCart, Check } from 'lucide-react'
@@ -26,7 +26,7 @@ function CarouselCard({ product }: { product: Product }) {
     <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full">
       <div className="aspect-square bg-gray-100 relative overflow-hidden">
         {product.imagen_url ? (
-          <Image src={product.imagen_url} alt={product.nombre} fill className="object-cover" />
+          <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">Sin imagen</div>
         )}
@@ -60,6 +60,8 @@ function CarouselCard({ product }: { product: Product }) {
 export default function ProductCarousel({ products }: ProductCarouselProps) {
   const [index, setIndex] = useState(0)
   const [perPage, setPerPage] = useState(3)
+  const [hovered, setHovered] = useState(false)
+  const touchStartX = useRef<number | null>(null)
 
   // Detectar cuántos mostrar según ancho de pantalla
   useEffect(() => {
@@ -74,14 +76,14 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
   const prev = useCallback(() => setIndex((i) => Math.max(0, i - 1)), [])
   const next = useCallback(() => setIndex((i) => Math.min(maxIndex, i + 1)), [maxIndex])
 
-  // Auto-avance cada 4 segundos
+  // Auto-avance cada 5 segundos, se pausa al hover
   useEffect(() => {
-    if (products.length <= perPage) return
+    if (products.length <= perPage || hovered) return
     const timer = setInterval(() => {
       setIndex((i) => (i >= maxIndex ? 0 : i + 1))
-    }, 4000)
+    }, 5000)
     return () => clearInterval(timer)
-  }, [maxIndex, perPage, products.length])
+  }, [maxIndex, perPage, products.length, hovered])
 
   if (products.length === 0) return null
 
@@ -99,7 +101,18 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
           </Link>
         </div>
 
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return
+            const diff = touchStartX.current - e.changedTouches[0].clientX
+            if (Math.abs(diff) > 40) diff > 0 ? next() : prev()
+            touchStartX.current = null
+          }}
+        >
           {/* Cards */}
           <div className="grid gap-4 transition-all duration-300"
             style={{ gridTemplateColumns: `repeat(${perPage}, minmax(0, 1fr))` }}
@@ -132,15 +145,18 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
 
         {/* Dots */}
         {products.length > perPage && (
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center gap-1 mt-6">
             {Array.from({ length: maxIndex + 1 }).map((_, i) => (
               <button
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`p-2 rounded-full transition-all ${
+                aria-label={`Ir a grupo ${i + 1}`}
+                className="p-2 flex items-center justify-center"
+              >
+                <span className={`block rounded-full transition-all duration-300 ${
                   i === index ? 'bg-primary w-6 h-2' : 'bg-gray-300 w-2 h-2'
-                }`}
-              />
+                }`} />
+              </button>
             ))}
           </div>
         )}
