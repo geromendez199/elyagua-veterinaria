@@ -95,7 +95,13 @@ export default function AdminPedidosPage() {
     const pedido = pedidos.find((p) => p.id === id)
 
     const { error } = await supabase.from('pedidos').update({ estado: 'confirmado' }).eq('id', id)
-    if (!error && pedido) {
+    if (error) {
+      showToast('Error al confirmar el pedido. Revisá los permisos en Supabase.')
+      setAccionando(null)
+      return
+    }
+
+    if (pedido) {
       for (const prod of pedido.productos) {
         if (prod.id) {
           await supabase.rpc('decrement_stock', { p_id: prod.id, p_amount: prod.cantidad })
@@ -109,7 +115,12 @@ export default function AdminPedidosPage() {
 
   const handleCancelar = async (id: string) => {
     setAccionando(id)
-    await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
+    const { error } = await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
+    if (error) {
+      showToast('Error al cancelar el pedido. Revisá los permisos en Supabase.')
+      setAccionando(null)
+      return
+    }
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'cancelado' } : p))
     setAccionando(null)
   }
@@ -117,7 +128,12 @@ export default function AdminPedidosPage() {
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return
     setAccionando(id)
-    await supabase.from('pedidos').delete().eq('id', id)
+    const { error } = await supabase.from('pedidos').delete().eq('id', id)
+    if (error) {
+      showToast('Error al eliminar el pedido. Revisá los permisos en Supabase.')
+      setAccionando(null)
+      return
+    }
     setPedidos((prev) => prev.filter((p) => p.id !== id))
     setAccionando(null)
   }
