@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
@@ -18,23 +19,29 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 interface ProductsClientProps {
   initialProducts: Product[]
   searchQuery?: string
+  initialCategory?: Category | null
 }
 
-export default function ProductsClient({ initialProducts, searchQuery = '' }: ProductsClientProps) {
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+export default function ProductsClient({ initialProducts, searchQuery = '', initialCategory = null }: ProductsClientProps) {
+  const router = useRouter()
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(initialCategory)
   const [sortBy, setSortBy] = useState<SortOption>('default')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [showPriceFilter, setShowPriceFilter] = useState(false)
 
-  const maxPossible = useMemo(
-    () => Math.ceil(Math.max(...initialProducts.map((p) => p.precio), 0) / 1000) * 1000,
-    [initialProducts]
-  )
-
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
 
   const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
+
+  const handleCategoryChange = (cat: Category | null) => {
+    setSelectedCategory(cat)
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    if (cat) params.set('categoria', cat)
+    const qs = params.toString()
+    router.replace(`/productos${qs ? '?' + qs : ''}`, { scroll: false })
+  }
 
   const filteredProducts = useMemo(() => {
     let products = [...initialProducts]
@@ -67,7 +74,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '' }: Pr
     <div>
       {/* Fila 1: Categorías + controles */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />
+        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
 
         <div className="flex items-center gap-2 shrink-0">
           {/* Botón filtro precio */}
@@ -139,8 +146,15 @@ export default function ProductsClient({ initialProducts, searchQuery = '' }: Pr
       </p>
 
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No se encontraron productos.</p>
+        <div className="text-center py-16">
+          <svg viewBox="0 0 100 100" className="w-16 h-16 mx-auto mb-4 text-gray-200" fill="currentColor">
+            <ellipse cx="50" cy="65" rx="22" ry="18"/>
+            <circle cx="27" cy="38" r="11"/>
+            <circle cx="73" cy="38" r="11"/>
+            <circle cx="18" cy="57" r="9"/>
+            <circle cx="82" cy="57" r="9"/>
+          </svg>
+          <p className="text-gray-500 text-lg font-semibold">No se encontraron productos</p>
           <p className="text-sm text-gray-400 mt-1">Probá con otra búsqueda, categoría o rango de precio.</p>
         </div>
       ) : (

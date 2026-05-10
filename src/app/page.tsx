@@ -15,7 +15,8 @@ async function getFeaturedProducts(): Promise<Product[]> {
       .from('productos')
       .select('*')
       .eq('activo', true)
-      .order('created_at', { ascending: false })
+      .gt('stock', 0)
+      .order('updated_at', { ascending: false })
       .limit(9)
     if (error) throw error
     return data || []
