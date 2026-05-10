@@ -51,6 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleShare}
             title="Compartir por WhatsApp"
+            aria-label={`Compartir ${product.nombre} por WhatsApp`}
             className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-primary hover:text-white text-gray-500 shadow"
           >
             <Share2 size={14} />
@@ -81,6 +82,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
+              aria-label={justAdded ? `${product.nombre} agregado al carrito` : product.stock === 0 ? `${product.nombre} sin stock` : `Agregar ${product.nombre} al carrito`}
               className={`flex items-center gap-1.5 text-white px-3 py-2 rounded-lg transition shrink-0 font-semibold text-sm ${
                 justAdded
                   ? 'bg-green-500'
