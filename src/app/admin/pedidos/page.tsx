@@ -169,24 +169,24 @@ export default function AdminPedidosPage() {
 
       {/* Header */}
       <div className="bg-primary text-white p-4">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition shrink-0">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ShoppingBag size={24} />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 min-w-0">
+            <ShoppingBag size={22} className="shrink-0" />
             Pedidos
           </h1>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 shrink-0">
             <Link
               href="/admin/clientes"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
             >
               <Users size={15} />
-              Clientes
+              <span className="hidden sm:inline">Clientes</span>
             </Link>
-            <span className="bg-white/20 text-white text-sm font-semibold px-3 py-1 rounded-full">
-              {counts.todos} total
+            <span className="bg-white/20 text-white text-sm font-semibold px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
+              {counts.todos}<span className="hidden sm:inline"> total</span>
             </span>
           </div>
         </div>
@@ -234,31 +234,33 @@ export default function AdminPedidosPage() {
                   ocupado ? 'opacity-60 pointer-events-none' : 'border-gray-100'
                 }`}>
                   {/* Header */}
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                        <User size={17} className="text-primary" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-gray-900">{pedido.nombre}</p>
-                          {pedido.cliente_dni && (
-                            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono">
-                              DNI {pedido.cliente_dni}
-                            </span>
-                          )}
+                  <div className="px-4 sm:px-5 py-3 border-b border-gray-100 bg-gray-50">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                          <User size={17} className="text-primary" />
                         </div>
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Phone size={11} /> {pedido.telefono}
-                        </p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-gray-900 truncate">{pedido.nombre}</p>
+                            {pedido.cliente_dni && (
+                              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono shrink-0">
+                                DNI {pedido.cliente_dni}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                            <Phone size={11} /> {pedido.telefono}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right flex flex-col items-end gap-1">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>
-                        {label}
-                      </span>
-                      <p className="text-xs text-gray-400">{formatDate(pedido.created_at)}</p>
-                      <p className="font-bold text-primary text-lg">{formatPrice(pedido.total)}</p>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>
+                          {label}
+                        </span>
+                        <p className="font-bold text-primary text-base leading-tight">{formatPrice(pedido.total)}</p>
+                        <p className="text-xs text-gray-400">{formatDate(pedido.created_at)}</p>
+                      </div>
                     </div>
                   </div>
 

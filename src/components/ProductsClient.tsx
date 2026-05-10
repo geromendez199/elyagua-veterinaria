@@ -105,23 +105,23 @@ export default function ProductsClient({ initialProducts, searchQuery = '' }: Pr
         <div className="flex items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
           <SlidersHorizontal size={16} className="text-primary shrink-0" />
           <span className="text-sm font-semibold text-gray-700 shrink-0">Precio:</span>
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
               type="number"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder="Mín"
               min={0}
-              className="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
+              className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
             />
-            <span className="text-gray-400 text-sm">—</span>
+            <span className="text-gray-400 text-sm shrink-0">—</span>
             <input
               type="number"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder={`Máx (${maxPossible.toLocaleString('es-AR')})`}
+              placeholder="Máx"
               min={0}
-              className="w-36 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
+              className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
             />
             {hasPriceFilter && (
               <button onClick={clearPriceFilter} className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition">

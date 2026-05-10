@@ -364,26 +364,28 @@ export default function AdminProductosPage() {
 
       {/* Header */}
       <div className="bg-primary text-white p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Panel Admin — El Yagua</h1>
-          <div className="flex items-center gap-2">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3">
+          <h1 className="text-base sm:text-xl md:text-2xl font-bold min-w-0 truncate">
+            <span className="hidden sm:inline">Panel Admin — </span>El Yagua
+          </h1>
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
               href="/admin/dashboard"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-2 rounded-lg transition text-sm font-semibold"
             >
               <LayoutDashboard size={16} />
               <span className="hidden md:inline">Inicio</span>
             </Link>
             <Link
               href="/admin/pedidos"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-2 rounded-lg transition text-sm font-semibold"
             >
               <ShoppingBag size={16} />
               <span className="hidden md:inline">Pedidos</span>
             </Link>
             <Link
               href="/admin/clientes"
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-semibold"
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-2 rounded-lg transition text-sm font-semibold"
             >
               <Users size={16} />
               <span className="hidden md:inline">Clientes</span>
@@ -391,7 +393,7 @@ export default function AdminProductosPage() {
             <p className="text-sm opacity-70 hidden lg:block">{user?.email}</p>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 bg-primary-dark hover:bg-primary-light px-3 py-2 rounded-lg transition"
+              className="flex items-center gap-1.5 bg-primary-dark hover:bg-primary-light px-2.5 sm:px-3 py-2 rounded-lg transition"
             >
               <LogOut size={18} />
               <span className="hidden md:inline">Salir</span>
@@ -401,21 +403,120 @@ export default function AdminProductosPage() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Productos <span className="text-lg font-normal text-gray-400">({products.length})</span>
+        <div className="flex justify-between items-center gap-3 mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Productos <span className="text-base sm:text-lg font-normal text-gray-400">({products.length})</span>
           </h2>
           <button
             onClick={() => { setShowModal(true); setSaveError('') }}
-            className="flex items-center gap-2 bg-primary text-white font-bold px-5 py-2 rounded-lg hover:bg-primary-dark transition"
+            className="flex items-center gap-1.5 bg-primary text-white font-bold px-3 sm:px-5 py-2 rounded-lg hover:bg-primary-dark transition text-sm sm:text-base whitespace-nowrap"
           >
-            <Plus size={20} />
-            Nuevo producto
+            <Plus size={18} />
+            <span className="hidden sm:inline">Nuevo producto</span>
+            <span className="sm:hidden">Nuevo</span>
           </button>
         </div>
 
-        {/* Tabla */}
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
+        {/* Mobile: Cards */}
+        <div className="block md:hidden space-y-2">
+          {products.map((product) => (
+            <div key={product.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex gap-3 items-start">
+              <button
+                onClick={() => triggerImageUpload(product.id)}
+                className="relative group w-14 h-14 rounded-lg overflow-hidden shrink-0"
+                title="Clic para cambiar imagen"
+              >
+                {uploadingImageId === product.id ? (
+                  <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Loader2 size={18} className="text-primary animate-spin" />
+                  </div>
+                ) : product.imagen_url ? (
+                  <>
+                    <Image src={product.imagen_url} alt={product.nombre} width={56} height={56} className="w-14 h-14 object-cover rounded-lg" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-lg">
+                      <Camera size={14} className="text-white" />
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-primary group-hover:bg-primary/5 transition">
+                    <Upload size={14} className="text-gray-400 group-hover:text-primary" />
+                  </div>
+                )}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm leading-tight truncate">{product.nombre}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span className="capitalize text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{product.categoria}</span>
+                  <span className="font-bold text-primary text-sm">{formatPrice(product.precio)}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {editingStockId === product.id ? (
+                    <input
+                      autoFocus
+                      type="number"
+                      min={0}
+                      value={stockValue}
+                      onChange={(e) => setStockValue(e.target.value)}
+                      onBlur={() => saveStock(product.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveStock(product.id)
+                        if (e.key === 'Escape') setEditingStockId(null)
+                      }}
+                      className="w-20 text-center border-2 border-primary rounded-lg px-1 py-0.5 text-sm font-bold outline-none"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setEditingStockId(product.id); setStockValue(String(product.stock)) }}
+                      title="Clic para editar stock"
+                      className={`font-semibold px-2 py-0.5 rounded text-xs ${
+                        product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < 5 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      Stock: {product.stock}
+                      {product.stock === 0 && ' ✕'}
+                      {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleToggleActivo(product)}
+                    title={product.activo ? 'Clic para desactivar' : 'Clic para activar'}
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold transition ${
+                      product.activo
+                        ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-700'
+                        : 'bg-gray-100 text-gray-500 hover:bg-green-100 hover:text-green-800'
+                    }`}
+                  >
+                    {product.activo ? 'Activo' : 'Inactivo'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5 shrink-0">
+                <button
+                  onClick={() => openEditModal(product)}
+                  className="p-2 bg-blue-50 text-blue-500 hover:bg-blue-100 rounded-lg transition"
+                  title="Editar"
+                >
+                  <Edit2 size={15} />
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="p-2 bg-red-50 text-red-400 hover:bg-red-100 rounded-lg transition"
+                  title="Eliminar"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {products.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg shadow text-gray-400">
+              <p>No hay productos todavía.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: Tabla */}
+        <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-100 border-b-2 border-primary">
