@@ -40,18 +40,18 @@ export default function ProductCard({ product }: ProductCardProps) {
               alt={product.nombre}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover group-hover:scale-105 transition duration-300"
+              className="object-contain p-3 group-hover:scale-105 transition duration-300"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
               Sin imagen
             </div>
           )}
-          {/* Botón compartir — aparece al hover */}
+          {/* Botón compartir — siempre visible en mobile, hover en desktop */}
           <button
             onClick={handleShare}
             title="Compartir por WhatsApp"
-            className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-primary hover:text-white text-gray-500 shadow"
+            className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-primary hover:text-white text-gray-500 shadow"
           >
             <Share2 size={14} />
           </button>

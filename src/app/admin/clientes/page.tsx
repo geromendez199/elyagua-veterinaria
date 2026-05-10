@@ -90,7 +90,7 @@ export default function AdminClientesPage() {
       {/* Header */}
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <Link href="/admin/productos" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
+          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-2">

@@ -104,7 +104,7 @@ export default function AdminPedidosPage() {
       {/* Header */}
       <div className="bg-primary text-white p-4">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <Link href="/admin/productos" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
+          <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -207,25 +207,29 @@ export default function AdminPedidosPage() {
                   </div>
 
                   {/* Footer: entrega + acciones */}
-                  <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-2 text-sm flex-wrap">
-                    {pedido.tipo_entrega === 'retiro' ? (
-                      <>
-                        <MapPin size={14} className="text-primary shrink-0" />
-                        <span className="text-gray-600">Retiro en tienda</span>
-                      </>
-                    ) : (
-                      <>
-                        <Truck size={14} className="text-primary shrink-0" />
-                        <span className="text-gray-600 truncate max-w-[160px]">Envío: {pedido.direccion}</span>
-                      </>
-                    )}
+                  <div className="px-5 py-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+                    {/* Entrega */}
+                    <div className="flex items-center gap-1.5">
+                      {pedido.tipo_entrega === 'retiro' ? (
+                        <>
+                          <MapPin size={14} className="text-primary shrink-0" />
+                          <span className="text-gray-600">Retiro en tienda</span>
+                        </>
+                      ) : (
+                        <>
+                          <Truck size={14} className="text-primary shrink-0" />
+                          <span className="text-gray-600 truncate max-w-[200px]">Envío: {pedido.direccion}</span>
+                        </>
+                      )}
+                    </div>
 
-                    <div className="ml-auto flex items-center gap-2">
+                    {/* Acciones */}
+                    <div className="flex items-center gap-2 sm:ml-auto flex-wrap">
                       {/* WhatsApp */}
                       <a
                         href={`https://wa.me/${pedido.telefono.replace(/\D/g, '')}`}
                         target="_blank"
-                        className="text-xs bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600 transition font-semibold"
+                        className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition font-semibold"
                       >
                         WA
                       </a>
@@ -235,7 +239,7 @@ export default function AdminPedidosPage() {
                         <button
                           onClick={() => handleConfirmar(pedido.id)}
                           title="Confirmar pedido"
-                          className="flex items-center gap-1 text-xs bg-primary text-white px-2.5 py-1 rounded-full hover:bg-primary-dark transition font-semibold"
+                          className="flex items-center gap-1 text-xs bg-primary text-white px-2.5 py-1.5 rounded-full hover:bg-primary-dark transition font-semibold"
                         >
                           <Check size={12} /> Confirmar
                         </button>
@@ -246,7 +250,7 @@ export default function AdminPedidosPage() {
                         <button
                           onClick={() => handleCancelar(pedido.id)}
                           title="Cancelar pedido"
-                          className="flex items-center gap-1 text-xs bg-orange-500 text-white px-2.5 py-1 rounded-full hover:bg-orange-600 transition font-semibold"
+                          className="flex items-center gap-1 text-xs bg-orange-500 text-white px-2.5 py-1.5 rounded-full hover:bg-orange-600 transition font-semibold"
                         >
                           <X size={12} /> Cancelar
                         </button>
@@ -256,7 +260,7 @@ export default function AdminPedidosPage() {
                       <button
                         onClick={() => handleEliminar(pedido.id)}
                         title="Eliminar pedido"
-                        className="text-gray-300 hover:text-red-500 transition p-1"
+                        className="text-gray-300 hover:text-red-500 transition p-1.5"
                       >
                         <Trash2 size={15} />
                       </button>
