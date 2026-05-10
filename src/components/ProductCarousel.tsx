@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ShoppingCart, Check } from 'lucide-react'
+
 import { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/lib/formatPrice'
@@ -23,37 +24,40 @@ function CarouselCard({ product }: { product: Product }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full">
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
-        {product.imagen_url ? (
-          <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">Sin imagen</div>
-        )}
-        <span className="absolute top-2 left-2 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full capitalize">
-          {product.categoria}
-        </span>
-      </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-900 text-sm md:text-base leading-tight line-clamp-2 flex-1 mb-3">
-          {product.nombre}
-        </h3>
-        <div className="flex items-center justify-between mt-auto">
-          <p className="text-lg md:text-xl font-bold text-primary">
-            {formatPrice(product.precio)}
-          </p>
-          <button
-            onClick={handleAdd}
-            disabled={product.stock === 0}
-            className={`p-2 rounded-lg text-white transition ${
-              justAdded ? 'bg-green-500' : 'bg-primary hover:bg-primary-dark disabled:bg-gray-300'
-            }`}
-          >
-            {justAdded ? <Check size={18} /> : <ShoppingCart size={18} />}
-          </button>
+    <Link href={`/productos/${product.id}`} className="block h-full group">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition">
+        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+          {product.imagen_url ? (
+            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">Sin imagen</div>
+          )}
+          <span className="absolute top-2 left-2 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full capitalize">
+            {product.categoria}
+          </span>
+        </div>
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="font-bold text-gray-900 text-sm md:text-base leading-tight line-clamp-2 flex-1 mb-3">
+            {product.nombre}
+          </h3>
+          <div className="flex items-center justify-between mt-auto">
+            <p className="text-lg md:text-xl font-bold text-primary">
+              {formatPrice(product.precio)}
+            </p>
+            <button
+              onClick={(e) => { e.preventDefault(); handleAdd() }}
+              disabled={product.stock === 0}
+              aria-label={justAdded ? `${product.nombre} agregado` : `Agregar ${product.nombre} al carrito`}
+              className={`p-2 rounded-lg text-white transition ${
+                justAdded ? 'bg-green-500' : 'bg-primary hover:bg-primary-dark disabled:bg-gray-300 disabled:cursor-not-allowed'
+              }`}
+            >
+              {justAdded ? <Check size={18} /> : <ShoppingCart size={18} />}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

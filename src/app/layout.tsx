@@ -85,13 +85,31 @@ const localBusinessJsonLd = {
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: 'Saturday',
-      opens: '08:00',
-      closes: '13:00',
+      opens: '09:00',
+      closes: '12:00',
+    },
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: 'Saturday',
+      opens: '16:00',
+      closes: '20:00',
+    },
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: 'Sunday',
+      opens: '10:00',
+      closes: '12:00',
+    },
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: 'Sunday',
+      opens: '16:00',
+      closes: '20:00',
     },
   ],
   sameAs: [
-    'https://www.instagram.com/elyaguaveterinaria',
-    'https://www.facebook.com/elyaguaveterinaria',
+    'https://www.instagram.com/vet.elyagua',
+    'https://www.facebook.com/veterinaria.elyagua',
   ],
 }
 
