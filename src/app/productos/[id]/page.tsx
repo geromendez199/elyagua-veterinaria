@@ -36,13 +36,40 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params
   const product = await getProduct(id)
   if (!product) return { title: 'Producto no encontrado' }
+  const productUrl = `${SITE_URL}/productos/${id}`
+  const priceText = `${formatPrice(product.precio)}`
   return {
     title: product.nombre,
-    description: product.descripcion || `${product.nombre} — ${formatPrice(product.precio)}`,
+    description: product.descripcion || `${product.nombre} — ${priceText}`,
     openGraph: {
       title: product.nombre,
-      description: product.descripcion || '',
-      images: product.imagen_url ? [{ url: product.imagen_url }] : [],
+      description: product.descripcion ? `${product.descripcion} — ${priceText}` : priceText,
+      url: productUrl,
+      type: 'product',
+      siteName: 'El Yagua Veterinaria',
+      locale: 'es_AR',
+      images: product.imagen_url ? [
+        {
+          url: product.imagen_url,
+          width: 1200,
+          height: 630,
+          alt: product.nombre,
+          type: 'image/jpeg',
+        },
+      ] : [
+        {
+          url: `${SITE_URL}/logo-color.png`,
+          width: 512,
+          height: 512,
+          alt: 'El Yagua Veterinaria',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.nombre,
+      description: product.descripcion ? `${product.descripcion} — ${priceText}` : priceText,
+      images: product.imagen_url ? [product.imagen_url] : [`${SITE_URL}/logo-color.png`],
     },
   }
 }
