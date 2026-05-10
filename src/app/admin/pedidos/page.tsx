@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell } from 'lucide-react'
 import Link from 'next/link'
@@ -39,6 +39,8 @@ function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 
 
 export default function AdminPedidosPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const clienteDniFilter = searchParams.get('cliente_dni')
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<Filtro>('todos')
@@ -174,9 +176,11 @@ export default function AdminPedidosPage() {
     cancelado:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'cancelado').length,
   }
 
-  const pedidosFiltrados = filtro === 'todos'
-    ? pedidos
-    : pedidos.filter((p) => estadoNormalizado(p.estado) === filtro)
+  const pedidosFiltrados = pedidos.filter((p) => {
+    const matchEstado = filtro === 'todos' || estadoNormalizado(p.estado) === filtro
+    const matchCliente = !clienteDniFilter || p.cliente_dni === clienteDniFilter
+    return matchEstado && matchCliente
+  })
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -203,7 +207,12 @@ export default function AdminPedidosPage() {
           </Link>
           <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 min-w-0">
             <ShoppingBag size={22} className="shrink-0" />
-            Pedidos
+            <span>Pedidos</span>
+            {clienteDniFilter && (
+              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full whitespace-nowrap">
+                DNI {clienteDniFilter}
+              </span>
+            )}
           </h1>
           <div className="ml-auto flex items-center gap-2 shrink-0">
             <Link
@@ -213,8 +222,17 @@ export default function AdminPedidosPage() {
               <Users size={15} />
               <span className="hidden sm:inline">Clientes</span>
             </Link>
+            {clienteDniFilter && (
+              <button
+                onClick={() => router.push('/admin/pedidos')}
+                className="text-xs bg-white/30 hover:bg-white/40 px-2 py-1 rounded transition font-semibold"
+                title="Limpiar filtro"
+              >
+                <X size={14} />
+              </button>
+            )}
             <span className="bg-white/20 text-white text-sm font-semibold px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
-              {counts.todos}<span className="hidden sm:inline"> total</span>
+              {pedidosFiltrados.length}<span className="hidden sm:inline"> total</span>
             </span>
           </div>
         </div>
