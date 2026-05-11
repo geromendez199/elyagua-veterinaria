@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
 import ProductReviews from '@/components/ProductReviews'
+import StockAlert from '@/components/StockAlert'
 import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2, Truck } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL, SITE_URL, LOW_STOCK_THRESHOLD } from '@/lib/constants'
@@ -218,6 +219,9 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                   </svg>
                   Consultar por WhatsApp
                 </a>
+
+                {/* Notificación de stock */}
+                <StockAlert productId={product.id} productName={product.nombre} inStock={product.stock > 0} />
 
                 {/* Info de entrega */}
                 <div className="mt-5 pt-5 border-t border-gray-100 space-y-2">
