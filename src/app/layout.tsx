@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { CouponProvider } from "@/context/CouponContext";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const geistSans = Geist({
@@ -153,10 +154,12 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-montserrat">
         <CartProvider>
           <WishlistProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <WhatsAppFloat />
+            <CouponProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <WhatsAppFloat />
+            </CouponProvider>
           </WishlistProvider>
         </CartProvider>
       </body>
