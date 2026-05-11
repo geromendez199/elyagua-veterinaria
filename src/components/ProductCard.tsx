@@ -94,9 +94,20 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.nombre}
             </h3>
           </div>
-          <p className="text-gray-500 text-xs mb-3 line-clamp-2 flex-1 hidden md:block">
-            {product.descripcion}
-          </p>
+          {(product.presentacion || product.laboratorio) && (
+            <div className="mb-3 space-y-0.5 hidden md:block">
+              {product.presentacion && (
+                <p className="text-xs text-gray-500">
+                  <span className="font-medium text-gray-600">Presentación:</span> {product.presentacion}
+                </p>
+              )}
+              {product.laboratorio && (
+                <p className="text-xs text-gray-500">
+                  <span className="font-medium text-gray-600">Laboratorio:</span> {product.laboratorio}
+                </p>
+              )}
+            </div>
+          )}
           <div className="flex justify-between items-end mt-auto gap-2">
             <div>
               <p className="text-base md:text-xl font-bold text-primary">
