@@ -5,16 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
-import { ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
-import Image from 'next/image'
-
-const LAB_LOGOS: Record<string, string> = {
-  'Holliday': '/labs/holliday.svg',
-  'Lamar':    '/labs/lamar.svg',
-  'Babs':     '/labs/babs.svg',
-  'Janvier':  '/labs/janvier.svg',
-  'König':    '/labs/konig.svg',
-}
+import { ArrowUpDown, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
 
@@ -226,42 +217,30 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
       {/* Filtro de laboratorios — siempre visible si hay labs */}
       {Object.keys(labCounts).length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <span className="text-sm font-semibold text-gray-600 shrink-0">Laboratorio:</span>
-          <button
-            onClick={() => setSelectedLab(null)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition border ${
-              selectedLab === null
-                ? 'bg-primary text-white border-primary'
-                : 'bg-white border-gray-300 text-gray-600 hover:border-primary hover:text-primary'
-            }`}
-          >
-            Todos
-          </button>
-          {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => {
-            const logo = LAB_LOGOS[lab]
-            return (
-              <button
-                key={lab}
-                onClick={() => setSelectedLab(selectedLab === lab ? null : lab)}
-                title={`${lab} (${count})`}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition border ${
-                  selectedLab === lab
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
-                    : 'bg-white border-gray-200 hover:border-primary/60'
-                }`}
-              >
-                {logo ? (
-                  <Image src={logo} alt={lab} width={64} height={28} className="h-7 w-auto object-contain" />
-                ) : (
-                  <span className="text-sm font-medium text-gray-700 px-1">{lab}</span>
-                )}
-                <span className={`text-xs font-medium ${selectedLab === lab ? 'text-primary' : 'text-gray-400'}`}>
-                  ({count})
-                </span>
-              </button>
-            )
-          })}
+          <div className="relative">
+            <select
+              value={selectedLab ?? ''}
+              onChange={(e) => setSelectedLab(e.target.value || null)}
+              className={`appearance-none border-2 rounded-lg pl-3 pr-8 py-2 text-sm font-medium outline-none cursor-pointer transition bg-white ${
+                selectedLab
+                  ? 'border-primary text-primary'
+                  : 'border-gray-200 text-gray-700 hover:border-primary'
+              }`}
+            >
+              <option value="">Todos los laboratorios</option>
+              {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
+                <option key={lab} value={lab}>{lab} ({count})</option>
+              ))}
+            </select>
+            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+          {selectedLab && (
+            <button onClick={() => setSelectedLab(null)} className="text-gray-400 hover:text-red-500 transition">
+              <X size={15} />
+            </button>
+          )}
         </div>
       )}
 
