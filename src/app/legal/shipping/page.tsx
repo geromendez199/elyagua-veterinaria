@@ -58,9 +58,9 @@ export default function ShippingPage() {
                 <h3 className="text-xl font-bold text-gray-900">Envío a Domicilio</h3>
               </div>
               <ul className="space-y-2 text-gray-700">
-                <li><strong>Costo:</strong> A cotizar según zona</li>
-                <li><strong>Cobertura:</strong> Rafaela y alrededores</li>
-                <li><strong>Tiempo:</strong> 2-5 días hábiles</li>
+                <li><strong>Costo:</strong> Gratis</li>
+                <li><strong>Cobertura:</strong> Rafaela únicamente</li>
+                <li><strong>Tiempo:</strong> A convenir entre las partes</li>
               </ul>
               <p className="text-sm text-gray-500 mt-4">
                 ✓ Entrega sin salir de casa<br/>
@@ -187,8 +187,7 @@ export default function ShippingPage() {
             <details className="bg-gray-50 p-4 rounded-lg cursor-pointer">
               <summary className="font-bold text-gray-900">¿Realizan envíos fuera de Rafaela?</summary>
               <p className="text-gray-700 mt-2 text-sm">
-                Actualmente cubrimos Rafaela y alrededores cercanos. Para otras zonas, contáctanos y veremos si podemos coordinarlo
-                con costos adicionales.
+                Actualmente cubrimos únicamente Rafaela. Para otras zonas, contáctanos y veremos si podemos coordinarlo.
               </p>
             </details>
 
