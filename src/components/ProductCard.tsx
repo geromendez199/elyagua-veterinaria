@@ -57,6 +57,14 @@ export default function ProductCard({ product }: ProductCardProps) {
               </svg>
             </div>
           )}
+          {/* Presentación badge en esquina inferior derecha */}
+          {product.presentacion && (
+            <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md">
+              <p className="text-xs font-semibold text-primary">
+                {product.presentacion}
+              </p>
+            </div>
+          )}
           {/* Botones compartir y wishlist */}
           <div className="absolute top-2 right-2 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition">
             <button
@@ -94,18 +102,11 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.nombre}
             </h3>
           </div>
-          {(product.presentacion || product.laboratorio) && (
-            <div className="mb-3 space-y-0.5 hidden md:block">
-              {product.presentacion && (
-                <p className="text-xs text-gray-500">
-                  <span className="font-medium text-gray-600">Presentación:</span> {product.presentacion}
-                </p>
-              )}
-              {product.laboratorio && (
-                <p className="text-xs text-gray-500">
-                  <span className="font-medium text-gray-600">Laboratorio:</span> {product.laboratorio}
-                </p>
-              )}
+          {product.laboratorio && (
+            <div className="mb-3 hidden md:block">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium text-gray-600">Laboratorio:</span> {product.laboratorio}
+              </p>
             </div>
           )}
           <div className="flex justify-between items-end mt-auto gap-2">
