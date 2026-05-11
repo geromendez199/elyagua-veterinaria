@@ -15,6 +15,8 @@ const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'acceso
 const emptyForm = {
   nombre: '',
   descripcion: '',
+  presentacion: '',
+  laboratorio: '',
   precio: '',
   stock: '',
   categoria: 'alimentos' as Category,
@@ -202,6 +204,8 @@ export default function AdminProductosPage() {
         .insert([{
           nombre: form.nombre,
           descripcion: form.descripcion,
+          presentacion: form.presentacion || null,
+          laboratorio: form.laboratorio || null,
           precio: parseFloat(form.precio),
           stock: parseInt(form.stock),
           categoria: form.categoria,
@@ -276,6 +280,8 @@ export default function AdminProductosPage() {
         .update({
           nombre: editProduct.nombre,
           descripcion: editProduct.descripcion,
+          presentacion: editProduct.presentacion || null,
+          laboratorio: editProduct.laboratorio || null,
           precio: editProduct.precio,
           stock: editProduct.stock,
           categoria: editProduct.categoria,
@@ -751,6 +757,30 @@ export default function AdminProductosPage() {
                 />
               </div>
 
+              {/* Presentación y Laboratorio */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación</label>
+                  <input
+                    type="text"
+                    value={form.presentacion}
+                    onChange={(e) => setForm({ ...form, presentacion: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: 450 ml, 100g"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <input
+                    type="text"
+                    value={form.laboratorio}
+                    onChange={(e) => setForm({ ...form, laboratorio: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: Babs, Holliday"
+                  />
+                </div>
+              </div>
+
               {/* Precio y Stock */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -899,6 +929,30 @@ export default function AdminProductosPage() {
                   className={`${inputCls} resize-none`}
                   rows={3}
                 />
+              </div>
+
+              {/* Presentación y Laboratorio */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación</label>
+                  <input
+                    type="text"
+                    value={editProduct.presentacion || ''}
+                    onChange={(e) => setEditProduct({ ...editProduct, presentacion: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: 450 ml, 100g"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <input
+                    type="text"
+                    value={editProduct.laboratorio || ''}
+                    onChange={(e) => setEditProduct({ ...editProduct, laboratorio: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: Babs, Holliday"
+                  />
+                </div>
               </div>
 
               {/* Precio y Stock */}
