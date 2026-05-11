@@ -168,7 +168,7 @@ export default async function Home() {
                   Atención clínica completa
                 </h4>
                 <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Consultas y atención integral de pequeños y grandes animales</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Consultas y atención integral de animales de compañía</li>
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Estudios complementarios de diagnóstico</li>
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Radiografías y ecografías</li>
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Cirugías programadas y de urgencia</li>
@@ -186,7 +186,7 @@ export default async function Home() {
                 </h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Farmacia veterinaria completa con medicamentos de primera línea</li>
-                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Alimentos balanceados para todas las etapas y especies</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Alimentos balanceados para todas las etapas</li>
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Accesorios, juguetes y productos de higiene y cuidado</li>
                   <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Asesoramiento personalizado en cada compra</li>
                 </ul>
