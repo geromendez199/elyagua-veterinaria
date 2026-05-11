@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell } from 'lucide-react'
+import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 
