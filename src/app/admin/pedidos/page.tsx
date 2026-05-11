@@ -371,7 +371,6 @@ export default function AdminPedidosPage() {
                       {estado === 'confirmado' ? (
                         <button
                           onClick={() => openWhatsAppWithMessage(pedido.telefono, generateConfirmationMessage(pedido))}
-                          target="_blank"
                           className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition font-semibold flex items-center gap-1"
                           title="Enviar confirmación por WhatsApp"
                         >
