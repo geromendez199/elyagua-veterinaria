@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { PHONE, SITE_URL, INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
@@ -159,6 +160,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
               <WhatsAppFloat />
+              <Analytics />
             </CouponProvider>
           </WishlistProvider>
         </CartProvider>
