@@ -6,7 +6,6 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
-import ProductReviews from '@/components/ProductReviews'
 import StockAlert from '@/components/StockAlert'
 import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2, Truck } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
@@ -238,9 +237,6 @@ export default async function ProductoDetallePage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        {/* Reseñas */}
-        <ProductReviews productId={product.id} />
 
         {/* Productos relacionados */}
         {related.length > 0 && (
