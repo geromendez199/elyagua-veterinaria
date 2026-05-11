@@ -6,7 +6,9 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
-import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import StockAlert from '@/components/StockAlert'
+import ProductReviews from '@/components/ProductReviews'
+import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2, Truck } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL, SITE_URL, LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
@@ -197,7 +199,7 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                       ? <><XCircle size={15} /> Sin stock</>
                       : product.stock < 5
                       ? <><AlertTriangle size={15} /> Últimas {product.stock} unidades</>
-                      : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</>}
+                      : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</> }
                   </p>
                 </div>
 
