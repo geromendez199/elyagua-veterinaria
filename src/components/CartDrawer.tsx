@@ -258,6 +258,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       .join('\n\n')
 
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
+    const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
+    const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
