@@ -30,9 +30,10 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [maxPrice, setMaxPrice] = useState('')
   const [showPriceFilter, setShowPriceFilter] = useState(false)
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
+  const [selectedLab, setSelectedLab] = useState<string | null>(null)
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
-  const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all'
+  const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
 
   const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
   const clearFilters = () => {
@@ -40,12 +41,23 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     setMaxPrice('')
     setStockFilter('all')
     setSelectedCategory(null)
+    setSelectedLab(null)
   }
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const p of initialProducts) {
       counts[p.categoria] = (counts[p.categoria] || 0) + 1
+    }
+    return counts
+  }, [initialProducts])
+
+  const labCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const p of initialProducts) {
+      if (p.laboratorio) {
+        counts[p.laboratorio] = (counts[p.laboratorio] || 0) + 1
+      }
     }
     return counts
   }, [initialProducts])
@@ -80,6 +92,8 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     if (stockFilter === 'in-stock') products = products.filter((p) => p.stock > 0)
     if (stockFilter === 'low-stock') products = products.filter((p) => p.stock > 0 && p.stock <= 5)
 
+    if (selectedLab) products = products.filter((p) => p.laboratorio === selectedLab)
+
     switch (sortBy) {
       case 'price-asc':  products.sort((a, b) => a.precio - b.precio); break
       case 'price-desc': products.sort((a, b) => b.precio - a.precio); break
@@ -87,7 +101,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     }
 
     return products
-  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter])
+  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
 
   return (
     <div>
@@ -189,6 +203,37 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
               </label>
             </div>
           </div>
+
+          {Object.keys(labCounts).length > 0 && (
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <span className="text-sm font-semibold text-gray-700 shrink-0">Laboratorio:</span>
+              <div className="flex flex-wrap items-center gap-2 flex-1">
+                <button
+                  onClick={() => setSelectedLab(null)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                    selectedLab === null
+                      ? 'bg-primary text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
+                  }`}
+                >
+                  Todos
+                </button>
+                {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
+                  <button
+                    key={lab}
+                    onClick={() => setSelectedLab(lab)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      selectedLab === lab
+                        ? 'bg-primary text-white'
+                        : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
+                    }`}
+                  >
+                    {lab} ({count})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {hasActiveFilters && (
             <button
