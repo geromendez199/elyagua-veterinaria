@@ -3,13 +3,15 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Menu, X, Search } from 'lucide-react'
+import { ShoppingCart, Menu, X, Search, Heart } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 import CartDrawer from './CartDrawer'
 import { useRouter } from 'next/navigation'
 
 export default function Navbar() {
   const { itemCount } = useCart()
+  const { count: wishlistCount } = useWishlist()
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -88,6 +90,18 @@ export default function Navbar() {
                   </button>
                 </>
               )}
+              <Link
+                href="/favoritos"
+                className="relative hover:text-primary-light transition"
+                aria-label={`Ver favoritos${wishlistCount > 0 ? ` con ${wishlistCount} producto${wishlistCount > 1 ? 's' : ''}` : ''}`}
+              >
+                <Heart size={24} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               <button
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
@@ -102,7 +116,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Mobile: buscar + carrito + hamburguesa */}
+            {/* Mobile: buscar + favoritos + carrito + hamburguesa */}
             <div className="flex md:hidden items-center gap-3">
               <button
                 onClick={searchOpen ? closeSearch : openSearch}
@@ -111,6 +125,18 @@ export default function Navbar() {
               >
                 {searchOpen ? <X size={22} /> : <Search size={22} />}
               </button>
+              <Link
+                href="/favoritos"
+                className="relative hover:text-primary-light transition"
+                aria-label={`Ver favoritos${wishlistCount > 0 ? ` con ${wishlistCount} producto${wishlistCount > 1 ? 's' : ''}` : ''}`}
+              >
+                <Heart size={22} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               <button
                 onClick={() => setCartOpen(true)}
                 className="relative hover:text-primary-light transition"
@@ -156,6 +182,7 @@ export default function Navbar() {
             <div className="md:hidden mt-3 pb-3 border-t border-white/20 flex flex-col gap-1 pt-3">
               <Link href="/" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Inicio</Link>
               <Link href="/productos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Productos</Link>
+              <Link href="/favoritos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Favoritos</Link>
               <Link href="/contacto" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Contacto</Link>
             </div>
           )}
