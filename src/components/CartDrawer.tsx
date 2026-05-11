@@ -258,9 +258,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       .join('\n\n')
 
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
-    const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
-    const discountLine = appliedCoupon ? [`🎁 *Cupón ${appliedCoupon.codigo}:* -${formatPrice((total * appliedCoupon.descuento_porcentaje) / 100)}`] : []
-
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
@@ -674,50 +671,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 )}
               </div>
 
-              {/* ── Cupón de descuento ── */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                  {appliedCoupon ? '✓ Cupón aplicado' : 'Tenés un cupón?'}
-                </label>
-                {appliedCoupon ? (
-                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl p-3">
-                    <Tag size={16} className="text-green-600 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-green-800 text-sm">{appliedCoupon.codigo}</p>
-                      <p className="text-xs text-green-600">-{appliedCoupon.descuento_porcentaje.toFixed(0)}% descuento</p>
-                    </div>
-                    <button
-                      onClick={() => removeCoupon()}
-                      className="text-green-600 hover:text-red-500 transition shrink-0 p-1"
-                      title="Remover cupón"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
-                      onKeyDown={(e) => e.key === 'Enter' && validateCoupon()}
-                      placeholder="Código del cupón"
-                      className={`flex-1 border rounded-lg px-3 py-2 text-sm outline-none bg-white transition ${
-                        couponError ? 'border-red-400' : 'border-gray-300 focus:border-primary'
-                      }`}
-                    />
-                    <button
-                      onClick={validateCoupon}
-                      disabled={couponLoading || !couponCode.trim()}
-                      className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed text-sm shrink-0"
-                    >
-                      {couponLoading ? <Loader2 size={14} className="inline animate-spin" /> : 'Aplicar'}
-                    </button>
-                  </div>
-                )}
-                {couponError && <p className="text-red-500 text-xs mt-1">{couponError}</p>}
-              </div>
-
               {/* ── Resumen ── */}
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tu pedido</p>
@@ -727,23 +680,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 pt-3 mt-1 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-900">Subtotal</span>
-                    <span className="text-gray-900 font-semibold">{formatPrice(total)}</span>
-                  </div>
-                  {appliedCoupon && (
-                    <div className="flex justify-between items-center text-green-600">
-                      <span className="font-semibold">Descuento ({appliedCoupon.descuento_porcentaje.toFixed(0)}%)</span>
-                      <span className="font-bold">-{formatPrice((total * appliedCoupon.descuento_porcentaje) / 100)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                    <span className="font-bold text-gray-900">Total</span>
-                    <span className={`font-bold text-xl ${appliedCoupon ? 'text-green-600' : 'text-primary'}`}>
-                      {formatPrice(appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total)}
-                    </span>
-                  </div>
+                <div className="border-t border-gray-200 pt-3 mt-1 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Total</span>
+                  <span className="text-primary font-bold text-xl">{formatPrice(total)}</span>
                 </div>
               </div>
 

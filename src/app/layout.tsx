@@ -111,7 +111,10 @@ const localBusinessJsonLd = {
       closes: '20:00',
     },
   ],
-  sameAs: [INSTAGRAM_URL, FACEBOOK_URL],
+  sameAs: [
+    'https://www.instagram.com/vet.elyagua',
+    'https://www.facebook.com/veterinaria.elyagua',
+  ],
 }
 
 export default function RootLayout({
