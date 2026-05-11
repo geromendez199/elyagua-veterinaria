@@ -185,6 +185,23 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                 </p>
               )}
 
+              {(product.presentacion || product.laboratorio) && (
+                <div className="mb-6 space-y-2 text-sm">
+                  {product.presentacion && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Presentación:</span>
+                      <span className="font-semibold text-gray-900">{product.presentacion}</span>
+                    </div>
+                  )}
+                  {product.laboratorio && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Laboratorio:</span>
+                      <span className="font-semibold text-gray-900">{product.laboratorio}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-auto">
                 {/* Precio */}
                 <div className="mb-4">
@@ -192,13 +209,13 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                     {formatPrice(product.precio)}
                   </p>
                   <p className={`text-sm font-semibold mt-1 flex items-center gap-1.5 ${
-                    product.stock === 0 ? 'text-red-500' : product.stock < LOW_STOCK_THRESHOLD ? 'text-orange-500' : 'text-green-600'
+                    product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'
                   }`}>
                     {product.stock === 0
                       ? <><XCircle size={15} /> Sin stock</>
-                      : product.stock < LOW_STOCK_THRESHOLD
+                      : product.stock < 5
                       ? <><AlertTriangle size={15} /> Últimas {product.stock} unidades</>
-                      : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</>}
+                      : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</> }
                   </p>
                 </div>
 
