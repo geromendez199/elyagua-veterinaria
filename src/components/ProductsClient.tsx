@@ -204,37 +204,6 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
             </div>
           </div>
 
-          {Object.keys(labCounts).length > 0 && (
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <span className="text-sm font-semibold text-gray-700 shrink-0">Laboratorio:</span>
-              <div className="flex flex-wrap items-center gap-2 flex-1">
-                <button
-                  onClick={() => setSelectedLab(null)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                    selectedLab === null
-                      ? 'bg-primary text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
-                  }`}
-                >
-                  Todos
-                </button>
-                {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
-                  <button
-                    key={lab}
-                    onClick={() => setSelectedLab(lab)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                      selectedLab === lab
-                        ? 'bg-primary text-white'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
-                    }`}
-                  >
-                    {lab} ({count})
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
@@ -243,6 +212,36 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
               <X size={14} /> Limpiar todos los filtros
             </button>
           )}
+        </div>
+      )}
+
+      {/* Filtro de laboratorios — siempre visible si hay labs */}
+      {Object.keys(labCounts).length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-sm font-semibold text-gray-600 shrink-0">Laboratorio:</span>
+          <button
+            onClick={() => setSelectedLab(null)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition border ${
+              selectedLab === null
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white border-gray-300 text-gray-600 hover:border-primary hover:text-primary'
+            }`}
+          >
+            Todos
+          </button>
+          {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
+            <button
+              key={lab}
+              onClick={() => setSelectedLab(selectedLab === lab ? null : lab)}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition border ${
+                selectedLab === lab
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {lab} <span className="opacity-60">({count})</span>
+            </button>
+          ))}
         </div>
       )}
 
