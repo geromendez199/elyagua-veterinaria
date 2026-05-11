@@ -1,0 +1,86 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
+
+/**
+ * Webhook endpoint for Mercado Pago payment notifications
+ * Receives POST requests when payment status changes
+ *
+ * Setup: https://www.mercadopago.com.ar/developers/en/docs/your-integrations/webhooks
+ *
+ * TODO: Implement live payment processing
+ * 1. Add MP_ACCESS_TOKEN to .env.local
+ * 2. Verify webhook signature with MP_WEBHOOK_SECRET
+ * 3. Update pedidos.estado_pago when payment is approved
+ * 4. Send confirmation email/WhatsApp when payment received
+ */
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+
+    // Mercado Pago sends action=payment.created and data.id
+    if (body.action === 'payment.created' || body.action === 'payment.updated') {
+      const paymentId = body.data?.id
+
+      // TODO: Fetch full payment details from Mercado Pago API
+      // const payment = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      //   headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
+      // }).then(r => r.json())
+
+      // TODO: Update order status based on payment.status
+      // if (payment.status === 'approved') {
+      //   await supabase.from('pedidos').update({ estado_pago: 'pagado' }).eq('mp_payment_id', paymentId)
+      // }
+
+      console.log('MP Webhook received:', body)
+
+      return NextResponse.json({ ok: true })
+    }
+
+    return NextResponse.json({ ok: false }, { status: 400 })
+  } catch (error) {
+    console.error('MP webhook error:', error)
+    return NextResponse.json({ error: 'Webhook failed' }, { status: 500 })
+  }
+}
+
+/**
+ * Helper function to initiate Mercado Pago payment (checkout preference)
+ *
+ * Usage in CartDrawer:
+ * const mpPreference = await createMercadoPagoPreference(total, items, customer)
+ * window.location.href = mpPreference.init_point // Redirect to MP checkout
+ */
+export async function createMercadoPagoPreference(
+  total: number,
+  items: Array<{ product: { id: string; nombre: string; precio: number }; quantity: number }>,
+  customer: { nombre: string; email: string; telefono: string }
+) {
+  // TODO: Implement when ready
+  // const preference = {
+  //   items: items.map(i => ({
+  //     id: i.product.id,
+  //     title: i.product.nombre,
+  //     quantity: i.quantity,
+  //     unit_price: i.product.precio
+  //   })),
+  //   payer: {
+  //     name: customer.nombre,
+  //     email: customer.email,
+  //     phone: { number: customer.telefono }
+  //   },
+  //   back_urls: {
+  //     success: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success`,
+  //     pending: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/pending`,
+  //     failure: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/failure`
+  //   },
+  //   auto_return: 'approved',
+  //   notification_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/mercado-pago/webhook`
+  // }
+
+  // return await fetch('https://api.mercadopago.com/checkout/preferences', {
+  //   method: 'POST',
+  //   headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+  //   body: JSON.stringify(preference)
+  // }).then(r => r.json())
+}

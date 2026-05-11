@@ -9,10 +9,11 @@ import Link from 'next/link'
 import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
 import InstagramIcon from '@/components/InstagramIcon'
 import FacebookIcon from '@/components/FacebookIcon'
+import { PHONE, WA_URL, WA_NUMBER, INSTAGRAM_URL, FACEBOOK_URL, EMERGENCY_PHONE, MAPS_URL } from '@/lib/constants'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
-  whatsapp: '+5493492730010',
+  whatsapp: PHONE,
   horario_semana: 'Lun-Vie: 07:30 - 21:00',
   horario_sabado: 'Sáb atención integral: 09:00 - 12:00 | Veterinaria: 16:00 - 20:00',
   horario_domingo: 'Dom: 10:00 - 12:00 y 16:00 - 20:00',
@@ -75,14 +76,14 @@ export default function ContactoPage() {
             </p>
             <div className="space-y-3">
               <a
-                href="tel:+5493492665978"
+                href={`tel:${EMERGENCY_PHONE}`}
                 className="flex items-center justify-center gap-3 w-full bg-dark text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
                 <Phone size={18} />
-                +54 9 3492 665978
+                {EMERGENCY_PHONE}
               </a>
               <a
-                href="https://wa.me/5493492730010"
+                href={WA_URL}
                 target="_blank"
                 className="flex items-center justify-center gap-3 w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
               >
@@ -103,7 +104,7 @@ export default function ContactoPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href="https://instagram.com/vet.elyagua"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"
@@ -117,7 +118,7 @@ export default function ContactoPage() {
               </div>
             </a>
             <a
-              href="https://www.facebook.com/veterinaria.elyagua/?locale=es_LA"
+              href={FACEBOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 w-full sm:w-auto bg-dark text-white font-bold py-3 px-5 rounded-xl hover:bg-primary transition group"

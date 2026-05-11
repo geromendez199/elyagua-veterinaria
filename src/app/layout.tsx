@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
+import { PHONE, SITE_URL, INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { CouponProvider } from "@/context/CouponContext";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const geistSans = Geist({
@@ -60,8 +64,8 @@ const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'VeterinaryCare',
   name: 'El Yagua Veterinaria',
-  url: 'https://elyagua-veterinaria.vercel.app',
-  telephone: '+5493492730010',
+  url: SITE_URL,
+  telephone: PHONE,
   image: 'https://elyagua-veterinaria.vercel.app/logo-color.png',
   address: {
     '@type': 'PostalAddress',
@@ -153,10 +157,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-montserrat">
         <CartProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <WhatsAppFloat />
+          <WishlistProvider>
+            <CouponProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <WhatsAppFloat />
+              <Analytics />
+            </CouponProvider>
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

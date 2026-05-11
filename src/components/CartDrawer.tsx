@@ -2,10 +2,13 @@
 
 import { useState, useRef } from 'react'
 import { useCart } from '@/context/CartContext'
-import { X, Minus, Plus, Check, MapPin, Truck, Loader2 } from 'lucide-react'
+import { useCoupon } from '@/context/CouponContext'
+import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
+import { WA_URL } from '@/lib/constants'
+import { purchaseEvent } from '@/lib/analytics'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -29,6 +32,7 @@ const STEPS = ['Carrito', 'Datos del pedido']
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
+  const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
   const [step, setStep] = useState<'cart' | 'checkout'>('cart')
 
   const [formData, setFormData] = useState<OrderFormData>({
@@ -45,6 +49,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     telefono: false,
     direccion: false,
   })
+
+  const [couponCode, setCouponCode] = useState('')
+  const [couponError, setCouponError] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
 
   const currentStep = step === 'cart' ? 0 : 1
 
@@ -176,6 +184,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
   }
 
+  // ── Validación de cupones ──
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('')
+      return
+    }
+
+    setCouponLoading(true)
+    setCouponError('')
+
+    try {
+      const { data } = await supabase
+        .from('cupones')
+        .select('*')
+        .eq('codigo', couponCode.toUpperCase())
+        .eq('activo', true)
+        .single()
+
+      if (!data) {
+        setCouponError('Cupón inválido o inactivo')
+        return
+      }
+
+      applyCoupon(data.codigo, data.descuento_porcentaje)
+      setCouponCode('')
+    } catch {
+      setCouponError('Cupón no encontrado')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
   const handleChange = (field: keyof OrderFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // Validar en tiempo real si el campo ya fue tocado
@@ -234,26 +274,35 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       productLines,
       ``,
       `━━━━━━━━━━━━━━━`,
-      `💰 *TOTAL: ${formatPrice(total)}*`,
+      `Subtotal: ${formatPrice(total)}`,
+      ...discountLine,
+      `💰 *TOTAL: ${formatPrice(finalTotal)}*`,
       `━━━━━━━━━━━━━━━`,
     ].join('\n')
 
-    const whatsappUrl = `https://wa.me/5493492730010?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `${WA_URL}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
 
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
-        await supabase.from('pedidos').insert([{
+        const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
+        const { data } = await supabase.from('pedidos').insert([{
           nombre: formData.nombre,
           telefono: `+549${formData.telefono}`,
           tipo_entrega: formData.deliveryType,
           direccion: formData.direccion || null,
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
-          total,
+          total: finalTotal,
+          cupón_codigo: appliedCoupon?.codigo || null,
           cliente_dni: formData.dni || null,
           metodo_pago: formData.metodoPago || 'efectivo',
-        }])
+        }]).select()
+
+        if (data?.[0]?.id) {
+          purchaseEvent(finalTotal, 'ARS', data[0].id)
+        }
+
         if (formData.dni) {
           await supabase.from('clientes').upsert({
             dni: formData.dni,

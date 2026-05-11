@@ -1,12 +1,14 @@
 'use client'
 
 import { Product } from '@/types'
-import { ShoppingCart, Check, Share2 } from 'lucide-react'
+import { ShoppingCart, Check, Share2, Heart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 import { useState } from 'react'
 import { formatPrice } from '@/lib/formatPrice'
+import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
 interface ProductCardProps {
   product: Product
@@ -14,7 +16,9 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart()
+  const { toggleItem, isInWishlist } = useWishlist()
   const [justAdded, setJustAdded] = useState(false)
+  const inWishlist = isInWishlist(product.id)
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -53,15 +57,32 @@ export default function ProductCard({ product }: ProductCardProps) {
               </svg>
             </div>
           )}
-          {/* Botón compartir — siempre visible en mobile, hover en desktop */}
-          <button
-            onClick={handleShare}
-            title="Compartir por WhatsApp"
-            aria-label={`Compartir ${product.nombre} por WhatsApp`}
-            className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-primary hover:text-white text-gray-500 shadow"
-          >
-            <Share2 size={14} />
-          </button>
+          {/* Botones compartir y wishlist */}
+          <div className="absolute top-2 right-2 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                toggleItem(product.id)
+              }}
+              title={inWishlist ? "Remover de favoritos" : "Agregar a favoritos"}
+              aria-label={inWishlist ? `Remover ${product.nombre} de favoritos` : `Agregar ${product.nombre} a favoritos`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition shadow ${
+                inWishlist
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/90 text-gray-500 hover:bg-red-500 hover:text-white'
+              }`}
+            >
+              <Heart size={14} fill={inWishlist ? "currentColor" : "none"} />
+            </button>
+            <button
+              onClick={handleShare}
+              title="Compartir por WhatsApp"
+              aria-label={`Compartir ${product.nombre} por WhatsApp`}
+              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-primary hover:text-white text-gray-500 shadow transition"
+            >
+              <Share2 size={14} />
+            </button>
+          </div>
         </div>
 
         <div className="p-3 md:p-5 flex flex-col flex-1">
@@ -81,8 +102,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               <p className="text-base md:text-xl font-bold text-primary">
                 {formatPrice(product.precio)}
               </p>
-              <p className={`text-xs font-medium ${product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-gray-400'}`}>
-                {product.stock === 0 ? 'Sin stock' : product.stock < 5 ? `¡Últimas ${product.stock}!` : `${product.stock} en stock`}
+              <p className={`text-xs font-medium ${product.stock === 0 ? 'text-red-500' : product.stock < LOW_STOCK_THRESHOLD ? 'text-orange-500' : 'text-gray-400'}`}>
+                {product.stock === 0 ? 'Sin stock' : product.stock < LOW_STOCK_THRESHOLD ? `¡Últimas ${product.stock}!` : `${product.stock} en stock`}
               </p>
             </div>
             <button

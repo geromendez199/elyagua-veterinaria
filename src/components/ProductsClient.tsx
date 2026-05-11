@@ -31,8 +31,32 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [showPriceFilter, setShowPriceFilter] = useState(false)
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
+  const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all'
 
   const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
+  const clearFilters = () => {
+    setMinPrice('')
+    setMaxPrice('')
+    setStockFilter('all')
+    setSelectedCategory(null)
+  }
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const p of initialProducts) {
+      counts[p.categoria] = (counts[p.categoria] || 0) + 1
+    }
+    return counts
+  }, [initialProducts])
+
+  const handleCategoryChange = (cat: Category | null) => {
+    setSelectedCategory(cat)
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    if (cat) params.set('categoria', cat)
+    const qs = params.toString()
+    router.replace(`/productos${qs ? '?' + qs : ''}`, { scroll: false })
+  }
 
   const handleCategoryChange = (cat: Category | null) => {
     setSelectedCategory(cat)
@@ -61,6 +85,9 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     if (minPrice !== '') products = products.filter((p) => p.precio >= parseFloat(minPrice))
     if (maxPrice !== '') products = products.filter((p) => p.precio <= parseFloat(maxPrice))
 
+    if (stockFilter === 'in-stock') products = products.filter((p) => p.stock > 0)
+    if (stockFilter === 'low-stock') products = products.filter((p) => p.stock > 0 && p.stock <= 5)
+
     switch (sortBy) {
       case 'price-asc':  products.sort((a, b) => a.precio - b.precio); break
       case 'price-desc': products.sort((a, b) => b.precio - a.precio); break
@@ -68,7 +95,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     }
 
     return products
-  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice])
+  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter])
 
   return (
     <div>
@@ -107,43 +134,96 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
         </div>
       </div>
 
-      {/* Fila 2: Filtro de precio (expandible) */}
+      {/* Fila 2: Filtros expandibles (precio + stock) */}
       {showPriceFilter && (
-        <div className="flex items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
-          <SlidersHorizontal size={16} className="text-primary shrink-0" />
-          <span className="text-sm font-semibold text-gray-700 shrink-0">Precio:</span>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <input
-              type="number"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              placeholder="Mín"
-              min={0}
-              className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
-            />
-            <span className="text-gray-400 text-sm shrink-0">—</span>
-            <input
-              type="number"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder="Máx"
-              min={0}
-              className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
-            />
-            {hasPriceFilter && (
-              <button onClick={clearPriceFilter} className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition">
-                <X size={14} /> Limpiar
-              </button>
-            )}
+        <div className="space-y-3 mb-4">
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <SlidersHorizontal size={16} className="text-primary shrink-0" />
+            <span className="text-sm font-semibold text-gray-700 shrink-0">Precio:</span>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <input
+                type="number"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                placeholder="Mín"
+                min={0}
+                className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
+              />
+              <span className="text-gray-400 text-sm shrink-0">—</span>
+              <input
+                type="number"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="Máx"
+                min={0}
+                className="flex-1 min-w-0 border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-primary"
+              />
+            </div>
           </div>
+
+          {/* Stock filter */}
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <span className="text-sm font-semibold text-gray-700 shrink-0">Disponibilidad:</span>
+            <div className="flex items-center gap-2 flex-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="all"
+                  checked={stockFilter === 'all'}
+                  onChange={(e) => setStockFilter(e.target.value as 'all' | 'in-stock' | 'low-stock')}
+                  className="cursor-pointer"
+                />
+                <span className="text-sm text-gray-700">Todos</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="in-stock"
+                  checked={stockFilter === 'in-stock'}
+                  onChange={(e) => setStockFilter(e.target.value as 'all' | 'in-stock' | 'low-stock')}
+                  className="cursor-pointer"
+                />
+                <span className="text-sm text-gray-700">En stock</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="low-stock"
+                  checked={stockFilter === 'low-stock'}
+                  onChange={(e) => setStockFilter(e.target.value as 'all' | 'in-stock' | 'low-stock')}
+                  className="cursor-pointer"
+                />
+                <span className="text-sm text-gray-700">Stock limitado</span>
+              </label>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="w-full flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-red-500 transition py-2 border border-gray-200 rounded-lg hover:border-red-200"
+            >
+              <X size={14} /> Limpiar todos los filtros
+            </button>
+          )}
         </div>
       )}
 
-      {/* Contador */}
-      <p className="text-sm text-gray-400 mb-4">
-        {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
-        {hasPriceFilter && <span className="ml-1 text-primary font-medium">· filtrado por precio</span>}
-      </p>
+      {/* Contador y filtros activos */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-400">
+          {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+          {hasActiveFilters && <span className="ml-1 text-primary font-medium">· filtrado</span>}
+        </p>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs text-red-500 hover:text-red-600 transition flex items-center gap-1"
+          >
+            <X size={12} /> Limpiar filtros
+          </button>
+        )}
+      </div>
 
       {filteredProducts.length === 0 ? (
         <div className="text-center py-16">

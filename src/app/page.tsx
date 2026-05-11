@@ -6,6 +6,7 @@ import ProductCarousel from '@/components/ProductCarousel'
 import SearchBar from '@/components/SearchBar'
 import { Product } from '@/types'
 import { Suspense } from 'react'
+import { WA_URL } from '@/lib/constants'
 
 export const revalidate = 60
 

@@ -8,6 +8,7 @@ import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
 import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
+import { WA_URL, SITE_URL, LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
 export const revalidate = 60
 
@@ -35,13 +36,40 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params
   const product = await getProduct(id)
   if (!product) return { title: 'Producto no encontrado' }
+  const productUrl = `${SITE_URL}/productos/${id}`
+  const priceText = `${formatPrice(product.precio)}`
   return {
     title: product.nombre,
-    description: product.descripcion || `${product.nombre} — ${formatPrice(product.precio)}`,
+    description: product.descripcion || `${product.nombre} — ${priceText}`,
     openGraph: {
       title: product.nombre,
-      description: product.descripcion || '',
-      images: product.imagen_url ? [{ url: product.imagen_url }] : [],
+      description: product.descripcion ? `${product.descripcion} — ${priceText}` : priceText,
+      url: productUrl,
+      type: 'website',
+      siteName: 'El Yagua Veterinaria',
+      locale: 'es_AR',
+      images: product.imagen_url ? [
+        {
+          url: product.imagen_url,
+          width: 1200,
+          height: 630,
+          alt: product.nombre,
+          type: 'image/jpeg',
+        },
+      ] : [
+        {
+          url: `${SITE_URL}/logo-color.png`,
+          width: 512,
+          height: 512,
+          alt: 'El Yagua Veterinaria',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.nombre,
+      description: product.descripcion ? `${product.descripcion} — ${priceText}` : priceText,
+      images: product.imagen_url ? [product.imagen_url] : [`${SITE_URL}/logo-color.png`],
     },
   }
 }
@@ -53,10 +81,10 @@ export default async function ProductoDetallePage({ params }: PageProps) {
 
   const related = await getRelated(product.categoria, product.id)
 
-  const shareText = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\nhttps://elyagua-veterinaria.vercel.app/productos/${product.id}`
+  const productUrl = `${SITE_URL}/productos/${product.id}`
+  const shareText = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\n${productUrl}`
   const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
-
-  const productUrl = `https://elyagua-veterinaria.vercel.app/productos/${product.id}`
+  const consultaUrl = `${WA_URL}?text=${encodeURIComponent(`Hola! Me interesa el producto *${product.nombre}* (${formatPrice(product.precio)}). ¿Está disponible?`)}`
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -176,6 +204,23 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                 {/* Botón agregar al carrito */}
                 <AddToCartButton product={product} />
 
+                {/* Consultar por WhatsApp */}
+                <a
+                  href={consultaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex items-center justify-center gap-2 w-full border-2 border-green-500 text-green-600 font-bold py-3 rounded-xl hover:bg-green-500 hover:text-white transition text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.554 4.103 1.523 5.824L.057 23.882a.5.5 0 0 0 .614.612l6.288-1.634A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.853 0-3.587-.5-5.084-1.373l-.36-.214-3.733.97.999-3.62-.235-.374A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                  </svg>
+                  Consultar por WhatsApp
+                </a>
+
+                {/* Notificación de stock */}
+                <StockAlert productId={product.id} productName={product.nombre} inStock={product.stock > 0} />
+
                 {/* Info de entrega */}
                 <div className="mt-5 pt-5 border-t border-gray-100 space-y-2">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -183,7 +228,7 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                     <span>Retiro gratuito · Bv Lehmann 609, Rafaela</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="text-primary font-bold shrink-0">🚚</span>
+                    <Truck size={15} className="text-primary shrink-0" />
                     <span>Envío a domicilio · coordinar por WhatsApp</span>
                   </div>
                 </div>
@@ -192,9 +237,12 @@ export default async function ProductoDetallePage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Reseñas */}
+        <ProductReviews productId={product.id} />
+
         {/* Productos relacionados */}
         {related.length > 0 && (
-          <div>
+          <div className="mt-12">
             <h2 className="text-xl font-bold text-gray-900 mb-5">
               Más productos de <span className="text-primary capitalize">{product.categoria}</span>
             </h2>

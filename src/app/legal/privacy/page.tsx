@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
+import { WA_URL, PHONE_DISPLAY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad',
@@ -97,7 +98,7 @@ export default function PrivacyPage() {
               <li><strong>Objeción</strong>: Objetar al procesamiento de tus datos para ciertos propósitos</li>
             </ul>
             <p className="mt-2">
-              Para ejercer cualquiera de estos derechos, contáctanos a través de WhatsApp: <a href="https://wa.me/5493492730010" className="text-primary hover:underline">+54 9 3492 730010</a>
+              Para ejercer cualquiera de estos derechos, contáctanos a través de WhatsApp: <a href={WA_URL} className="text-primary hover:underline">{PHONE_DISPLAY}</a>
             </p>
           </section>
 
@@ -151,7 +152,7 @@ export default function PrivacyPage() {
               Si tienes preguntas sobre esta Política de Privacidad o nuestras prácticas de privacidad, contáctanos:
             </p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
-              <li><strong>WhatsApp:</strong> <a href="https://wa.me/5493492730010" className="text-primary hover:underline">+54 9 3492 730010</a></li>
+              <li><strong>WhatsApp:</strong> <a href={WA_URL} className="text-primary hover:underline">{PHONE_DISPLAY}</a></li>
               <li><strong>Ubicación:</strong> Bv Lehmann 609, Rafaela, Santa Fe, Argentina</li>
               <li><strong>Horario:</strong> Lunes a Viernes 7:30 - 21:00</li>
             </ul>

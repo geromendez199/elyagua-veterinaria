@@ -1,161 +1,9 @@
-'use client'
+import { Suspense } from 'react'
+import AdminPedidosContent from './AdminPedidosContent'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell } from 'lucide-react'
-import Link from 'next/link'
-import { formatPrice } from '@/lib/formatPrice'
-
-interface Pedido {
-  id: string
-  nombre: string
-  telefono: string
-  tipo_entrega: 'retiro' | 'envio'
-  direccion: string | null
-  productos: { id?: string; nombre: string; cantidad: number; precio: number }[]
-  total: number
-  estado: string | null
-  cliente_dni: string | null
-  metodo_pago: string | null
-  created_at: string
-}
-
-type Filtro = 'todos' | 'pendiente' | 'confirmado' | 'cancelado'
-
-const ESTADO_CONFIG = {
-  pendiente:  { label: 'Pendiente',   cls: 'bg-yellow-100 text-yellow-800' },
-  confirmado: { label: 'Confirmado',  cls: 'bg-green-100 text-green-800'  },
-  cancelado:  { label: 'Cancelado',   cls: 'bg-red-100 text-red-700'      },
-}
-
-function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 'cancelado' {
-  if (estado === 'confirmado') return 'confirmado'
-  if (estado === 'cancelado') return 'cancelado'
-  return 'pendiente'
-}
+export const dynamic = 'force-dynamic'
 
 export default function AdminPedidosPage() {
-  const router = useRouter()
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState<Filtro>('todos')
-  const [accionando, setAccionando] = useState<string | null>(null)
-  const [nuevoToast, setNuevoToast] = useState(false)
-  const [toastMsg, setToastMsg] = useState('')
-
-  const showToast = useCallback((msg: string) => {
-    setToastMsg(msg)
-    setNuevoToast(true)
-    setTimeout(() => setNuevoToast(false), 5000)
-  }, [])
-
-  useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
-      const { data: rows } = await supabase
-        .from('pedidos')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setPedidos(rows || [])
-      setLoading(false)
-    }
-    init()
-  }, [router])
-
-  // ── Realtime: nuevos pedidos aparecen sin refresh ──────────────
-  useEffect(() => {
-    const channel = supabase
-      .channel('pedidos-realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'pedidos' },
-        (payload) => {
-          const nuevo = payload.new as Pedido
-          setPedidos((prev) => {
-            if (prev.some((p) => p.id === nuevo.id)) return prev
-            return [nuevo, ...prev]
-          })
-          showToast(`Nuevo pedido de ${nuevo.nombre}`)
-        }
-      )
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [showToast])
-
-  const formatDate = (iso: string) => {
-    const d = new Date(iso)
-    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-  }
-
-  // ── Al confirmar, descuenta stock por cada producto (RPC atómica) ──
-  const handleConfirmar = async (id: string) => {
-    setAccionando(id)
-    const pedido = pedidos.find((p) => p.id === id)
-
-    const { error } = await supabase.from('pedidos').update({ estado: 'confirmado' }).eq('id', id)
-    if (error) {
-      showToast('Error al confirmar el pedido. Revisá los permisos en Supabase.')
-      setAccionando(null)
-      return
-    }
-
-    if (pedido) {
-      for (const prod of pedido.productos) {
-        if (prod.id) {
-          await supabase.rpc('decrement_stock', { p_id: prod.id, p_amount: prod.cantidad })
-        }
-      }
-    }
-
-    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'confirmado' } : p))
-    setAccionando(null)
-  }
-
-  const handleCancelar = async (id: string) => {
-    setAccionando(id)
-    const { error } = await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
-    if (error) {
-      showToast('Error al cancelar el pedido. Revisá los permisos en Supabase.')
-      setAccionando(null)
-      return
-    }
-    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'cancelado' } : p))
-    setAccionando(null)
-  }
-
-  const handleEliminar = async (id: string) => {
-    if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return
-    setAccionando(id)
-    const { error } = await supabase.from('pedidos').delete().eq('id', id)
-    if (error) {
-      showToast('Error al eliminar el pedido. Revisá los permisos en Supabase.')
-      setAccionando(null)
-      return
-    }
-    setPedidos((prev) => prev.filter((p) => p.id !== id))
-    setAccionando(null)
-  }
-
-  const counts = {
-    todos:      pedidos.length,
-    pendiente:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'pendiente').length,
-    confirmado: pedidos.filter((p) => estadoNormalizado(p.estado) === 'confirmado').length,
-    cancelado:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'cancelado').length,
-  }
-
-  const pedidosFiltrados = filtro === 'todos'
-    ? pedidos
-    : pedidos.filter((p) => estadoNormalizado(p.estado) === filtro)
-
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-gray-500">Cargando pedidos...</p>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -353,6 +201,8 @@ export default function AdminPedidosPage() {
           </div>
         )}
       </div>
-    </div>
+    }>
+      <AdminPedidosContent />
+    </Suspense>
   )
 }

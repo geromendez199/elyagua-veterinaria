@@ -161,7 +161,7 @@ export default function AdminClientesPage() {
                   <div className="flex-1 min-w-0">
                     {/* Nombre + acciones */}
                     <div className="flex items-start justify-between gap-2">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-bold text-gray-900">{cliente.nombre}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-mono font-semibold">
@@ -178,13 +178,24 @@ export default function AdminClientesPage() {
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleEliminar(cliente.id)}
-                        className="text-gray-300 hover:text-red-500 transition p-1 shrink-0"
-                        title="Eliminar cliente"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Link
+                          href={`/admin/pedidos?cliente_dni=${cliente.dni}`}
+                          className="text-xs bg-primary/10 text-primary hover:bg-primary hover:text-white px-2 py-1 rounded transition font-semibold flex items-center gap-1"
+                          title="Ver pedidos de este cliente"
+                        >
+                          <ShoppingBag size={13} />
+                          <span className="hidden sm:inline">Pedidos ({cliente.pedidos_count})</span>
+                          <span className="sm:hidden">{cliente.pedidos_count}</span>
+                        </Link>
+                        <button
+                          onClick={() => handleEliminar(cliente.id)}
+                          className="text-gray-300 hover:text-red-500 transition p-1"
+                          title="Eliminar cliente"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Stats */}

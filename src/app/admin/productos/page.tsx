@@ -4,10 +4,11 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
-import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard } from 'lucide-react'
+import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
+import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
@@ -45,6 +46,8 @@ export default function AdminProductosPage() {
   const [editSaving, setEditSaving] = useState(false)
   const [editSaveError, setEditSaveError] = useState('')
   const editImageRef = useRef<HTMLInputElement>(null)
+
+  const [searchTerm, setSearchTerm] = useState('')
 
   // ── Toast de error para acciones rápidas ──────────────────────
   const [toast, setToast] = useState('')
@@ -403,7 +406,7 @@ export default function AdminProductosPage() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 py-8">
-        <div className="flex justify-between items-center gap-3 mb-6">
+        <div className="flex justify-between items-center gap-3 mb-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Productos <span className="text-base sm:text-lg font-normal text-gray-400">({products.length})</span>
           </h2>
@@ -417,9 +420,26 @@ export default function AdminProductosPage() {
           </button>
         </div>
 
+        {/* Buscador */}
+        <div className="relative mb-5">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nombre o categoría..."
+            className="w-full border-2 border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-gray-800 outline-none focus:border-primary transition bg-white"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
         {/* Mobile: Cards */}
         <div className="block md:hidden space-y-2">
-          {products.map((product) => (
+          {products.filter(p => !searchTerm || p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.categoria.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
             <div key={product.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex gap-3 items-start">
               <button
                 onClick={() => triggerImageUpload(product.id)}
@@ -469,12 +489,12 @@ export default function AdminProductosPage() {
                       onClick={() => { setEditingStockId(product.id); setStockValue(String(product.stock)) }}
                       title="Clic para editar stock"
                       className={`font-semibold px-2 py-0.5 rounded text-xs ${
-                        product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < 5 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                        product.stock === 0 ? 'bg-red-100 text-red-700' : product.stock < LOW_STOCK_THRESHOLD ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       Stock: {product.stock}
                       {product.stock === 0 && ' ✕'}
-                      {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                      {product.stock > 0 && product.stock < LOW_STOCK_THRESHOLD && ' ⚠'}
                     </button>
                   )}
                   <button
@@ -530,7 +550,7 @@ export default function AdminProductosPage() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {products.filter(p => !searchTerm || p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.categoria.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   {/* Imagen — clic para cambio rápido */}
                   <td className="px-4 py-3">
@@ -601,14 +621,14 @@ export default function AdminProductosPage() {
                         className={`font-bold px-2 py-0.5 rounded text-sm hover:ring-2 hover:ring-primary/40 transition ${
                           product.stock === 0
                             ? 'bg-red-100 text-red-700'
-                            : product.stock < 5
+                            : product.stock < LOW_STOCK_THRESHOLD
                             ? 'bg-orange-100 text-orange-700'
                             : 'text-gray-900'
                         }`}
                       >
                         {product.stock}
                         {product.stock === 0 && ' ✕'}
-                        {product.stock > 0 && product.stock < 5 && ' ⚠'}
+                        {product.stock > 0 && product.stock < LOW_STOCK_THRESHOLD && ' ⚠'}
                       </button>
                     )}
                   </td>

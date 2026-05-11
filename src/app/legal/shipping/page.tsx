@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft, Truck, MapPin, RotateCcw } from 'lucide-react'
+import { WA_URL, PHONE_DISPLAY } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Política de Envíos y Devoluciones',
@@ -144,7 +145,7 @@ export default function ShippingPage() {
             <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
               <h3 className="font-bold text-gray-900 mb-2">⚠ PROCESO DE DEVOLUCIÓN</h3>
               <ol className="list-decimal pl-6 text-gray-700 space-y-2">
-                <li>Contacta por WhatsApp: <a href="https://wa.me/5493492730010" className="text-primary hover:underline">+54 9 3492 730010</a></li>
+                <li>Contacta por WhatsApp: <a href={WA_URL} className="text-primary hover:underline">{PHONE_DISPLAY}</a></li>
                 <li>Fotograía del producto en su empaque original</li>
                 <li>Describe el motivo de la devolución</li>
                 <li>Acordamos cómo proceder (reembolso o cambio)</li>
@@ -221,7 +222,7 @@ export default function ShippingPage() {
           <h2 className="text-2xl font-bold mb-4">¿Dudas sobre tu pedido?</h2>
           <p className="mb-6 text-lg">Contáctanos directamente por WhatsApp</p>
           <a
-            href="https://wa.me/5493492730010"
+            href={WA_URL}
             className="inline-block bg-white text-primary font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition"
           >
             Escribir por WhatsApp
