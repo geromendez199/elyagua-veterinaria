@@ -262,12 +262,17 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
       {filteredProducts.length === 0 ? (
         <div className="text-center py-16">
-          <svg viewBox="0 0 100 100" className="w-16 h-16 mx-auto mb-4 text-gray-200" fill="currentColor">
-            <ellipse cx="50" cy="65" rx="22" ry="18"/>
-            <circle cx="27" cy="38" r="11"/>
-            <circle cx="73" cy="38" r="11"/>
-            <circle cx="18" cy="57" r="9"/>
-            <circle cx="82" cy="57" r="9"/>
+          <svg viewBox="0 0 100 100" className="w-20 h-20 mx-auto mb-4 text-gray-200" fill="currentColor">
+            {/* Almohadilla central */}
+            <ellipse cx="50" cy="64" rx="20" ry="15"/>
+            {/* Dedo central izquierdo */}
+            <ellipse cx="36" cy="43" rx="7.5" ry="10" transform="rotate(-12 36 43)"/>
+            {/* Dedo central derecho */}
+            <ellipse cx="64" cy="43" rx="7.5" ry="10" transform="rotate(12 64 43)"/>
+            {/* Dedo exterior izquierdo */}
+            <ellipse cx="21" cy="54" rx="6" ry="8" transform="rotate(-28 21 54)"/>
+            {/* Dedo exterior derecho */}
+            <ellipse cx="79" cy="54" rx="6" ry="8" transform="rotate(28 79 54)"/>
           </svg>
           <p className="text-gray-500 text-lg font-semibold">No se encontraron productos</p>
           <p className="text-sm text-gray-400 mt-1">Probá con otra búsqueda, categoría o rango de precio.</p>
