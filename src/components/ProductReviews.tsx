@@ -178,15 +178,15 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
               value={formData.nombre}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               required
-              className="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary text-sm"
+              className="border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-primary text-base"
             />
             <input
               type="email"
-              placeholder="Tu email (para verificación)"
+              placeholder="Tu email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              className="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary text-sm"
+              className="border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-primary text-base"
             />
           </div>
 
@@ -209,14 +209,17 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             </div>
           </div>
 
-          <textarea
-            placeholder="Contanos qué pensás del producto (opcional)"
-            value={formData.comentario}
-            onChange={(e) => setFormData({ ...formData, comentario: e.target.value })}
-            maxLength={500}
-            rows={4}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary text-sm resize-none"
-          />
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Tu reseña (opcional)</label>
+            <textarea
+              placeholder="Contanos qué pensás del producto"
+              value={formData.comentario}
+              onChange={(e) => setFormData({ ...formData, comentario: e.target.value })}
+              maxLength={500}
+              rows={4}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-primary text-base resize-none"
+            />
+          </div>
 
           <div className="flex gap-2">
             <button
