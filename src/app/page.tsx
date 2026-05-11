@@ -96,8 +96,8 @@ export default async function Home() {
                 <Clock size={20} className="text-primary" />
               </div>
               <div>
-                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Lun–Dom</p>
-                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Atención integral de lunes a domingo.</p>
+                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Horario Extendido</p>
+                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Lun–Vie 7:30–21:00 · Sábado y domingo abiertos</p>
               </div>
             </div>
           </div>
@@ -106,6 +106,52 @@ export default async function Home() {
 
       {/* Carrusel de productos */}
       <ProductCarousel products={products} />
+
+      {/* Horarios Section */}
+      <section className="py-10 md:py-14 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Nuestro Horario</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Lunes a Viernes */}
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Atención Completa</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Lun — Vie</p>
+              <p className="text-lg font-semibold text-primary mb-3">7:30 — 21:00 h</p>
+              <p className="text-xs text-gray-600">Atención veterinaria, venta de productos y asesoramiento</p>
+            </div>
+
+            {/* Sábado */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl border border-orange-200 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-orange-600 uppercase tracking-wider mb-2">Fin de Semana</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Sábado</p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Atención integral</p>
+                  <p className="text-lg font-semibold text-orange-600">9:00 — 12:00 h</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Veterinaria</p>
+                  <p className="text-lg font-semibold text-orange-600">16:00 — 20:00 h</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Domingo */}
+            <div className="bg-gradient-to-br from-primary-light/5 to-primary-light/10 rounded-xl border border-primary-light/20 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Fin de Semana</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Domingo</p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-lg font-semibold text-primary">10:00 — 12:00 h</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-primary">16:00 — 20:00 h</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="bg-gray-50 border-t border-gray-100 py-10 md:py-14">
