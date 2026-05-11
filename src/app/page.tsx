@@ -42,9 +42,11 @@ export default async function Home() {
               height={250}
               className="h-36 md:h-48 w-auto mx-auto"
             />
-            <p className="text-lg md:text-3xl text-white max-w-2xl mx-auto px-2">
-              Tu veterinaria de confianza con productos de calidad y atención profesional para tus mascotas
-            </p>
+            <div className="max-w-2xl mx-auto px-2 space-y-1">
+              <p className="text-xl md:text-3xl font-bold text-white">En qué podemos ayudarte?</p>
+              <p className="text-base md:text-lg text-white/85">Ingresa para conocer nuestro catálogo.</p>
+              <p className="text-base md:text-lg text-white/85">Contactanos ahora para que te asesoremos.</p>
+            </div>
             {/* Buscador en home */}
             <div className="w-full max-w-xl px-4 sm:px-0">
               <Suspense fallback={<div className="h-14 bg-white/20 rounded-xl animate-pulse" />}>
