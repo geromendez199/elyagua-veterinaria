@@ -6,7 +6,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
 import ProductCard from '@/components/ProductCard'
-import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2, Truck } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL, SITE_URL, LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
@@ -225,7 +225,7 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                     <span>Retiro gratuito · Bv Lehmann 609, Rafaela</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="text-primary font-bold shrink-0">🚚</span>
+                    <Truck size={15} className="text-primary shrink-0" />
                     <span>Envío a domicilio · coordinar por WhatsApp</span>
                   </div>
                 </div>
