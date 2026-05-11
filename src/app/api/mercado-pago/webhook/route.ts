@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
  */
 export async function createMercadoPagoPreference(
   total: number,
-  items: Array<{ product: { id: string; nombre: string }; quantity: number; product: { precio: number } }>,
+  items: Array<{ product: { id: string; nombre: string; precio: number }; quantity: number }>,
   customer: { nombre: string; email: string; telefono: string }
 ) {
   // TODO: Implement when ready
