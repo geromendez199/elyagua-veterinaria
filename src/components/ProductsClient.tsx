@@ -29,6 +29,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [showPriceFilter, setShowPriceFilter] = useState(false)
+  const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
   const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all'
@@ -48,15 +49,6 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     }
     return counts
   }, [initialProducts])
-
-  const handleCategoryChange = (cat: Category | null) => {
-    setSelectedCategory(cat)
-    const params = new URLSearchParams()
-    if (searchQuery) params.set('q', searchQuery)
-    if (cat) params.set('categoria', cat)
-    const qs = params.toString()
-    router.replace(`/productos${qs ? '?' + qs : ''}`, { scroll: false })
-  }
 
   const handleCategoryChange = (cat: Category | null) => {
     setSelectedCategory(cat)
@@ -101,7 +93,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     <div>
       {/* Fila 1: Categorías + controles */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+        <CategoryFilter selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} counts={categoryCounts} />
 
         <div className="flex items-center gap-2 shrink-0">
           {/* Botón filtro precio */}
