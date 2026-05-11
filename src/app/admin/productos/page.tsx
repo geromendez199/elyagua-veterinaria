@@ -79,6 +79,11 @@ export default function AdminProductosPage() {
     }
   }
 
+  // ── Laboratorios únicos para sugerencias ────────────────────────
+  const uniqueLabs = Array.from(
+    new Set(products.map((p) => p.laboratorio).filter(Boolean))
+  ).sort()
+
   // ── Cambio rápido de imagen (clic en imagen de tabla) ─────────
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
   const existingImageRef = useRef<HTMLInputElement>(null)
@@ -770,14 +775,21 @@ export default function AdminProductosPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <label htmlFor="lab-new" className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
                   <input
+                    id="lab-new"
                     type="text"
                     value={form.laboratorio}
                     onChange={(e) => setForm({ ...form, laboratorio: e.target.value })}
                     className={inputCls}
                     placeholder="Ej: Babs, Holliday"
+                    list="labs-list"
                   />
+                  <datalist id="labs-list">
+                    {uniqueLabs.map((lab) => (
+                      <option key={lab} value={lab} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
@@ -944,14 +956,21 @@ export default function AdminProductosPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <label htmlFor="lab-edit" className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
                   <input
+                    id="lab-edit"
                     type="text"
                     value={editProduct.laboratorio || ''}
                     onChange={(e) => setEditProduct({ ...editProduct, laboratorio: e.target.value })}
                     className={inputCls}
                     placeholder="Ej: Babs, Holliday"
+                    list="labs-list-edit"
                   />
+                  <datalist id="labs-list-edit">
+                    {uniqueLabs.map((lab) => (
+                      <option key={lab} value={lab} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 

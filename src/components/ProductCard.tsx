@@ -59,8 +59,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           {/* Presentación badge en esquina inferior derecha */}
           {product.presentacion && (
-            <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md">
-              <p className="text-xs font-semibold text-primary">
+            <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md">
+              <p className="text-sm font-bold text-primary">
                 {product.presentacion}
               </p>
             </div>
