@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
@@ -409,12 +410,25 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.product.id} className="border border-gray-200 rounded-xl p-3">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{item.product.nombre}</h4>
-                          <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                        <div className="flex items-start gap-3">
+                          <div className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+                            <Image
+                              src={item.product.imagen_url || '/placeholder-product.png'}
+                              alt={item.product.nombre}
+                              fill
+                              className="object-contain p-1"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">{item.product.nombre}</h4>
+                              <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-2">{formatPrice(item.product.precio)} c/u</p>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-400">{formatPrice(item.product.precio)} c/u</p>
+                        <div className="flex items-center justify-between mt-2 pl-[68px]">
+                          <p className="text-xs text-gray-400"></p>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2">
                               <button
@@ -677,8 +691,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tu pedido</p>
                 {items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate mr-2">{item.product.nombre} ×{item.quantity}</span>
+                  <div key={item.product.id} className="flex items-center gap-2 text-sm">
+                    <div className="relative w-9 h-9 shrink-0 rounded-md overflow-hidden bg-white border border-gray-200">
+                      <Image
+                        src={item.product.imagen_url || '/placeholder-product.png'}
+                        alt={item.product.nombre}
+                        fill
+                        className="object-contain p-0.5"
+                      />
+                    </div>
+                    <span className="text-gray-600 truncate flex-1">{item.product.nombre} ×{item.quantity}</span>
                     <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
