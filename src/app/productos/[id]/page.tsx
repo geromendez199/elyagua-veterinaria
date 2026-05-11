@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: product.nombre,
       description: product.descripcion ? `${product.descripcion} — ${priceText}` : priceText,
       url: productUrl,
-      type: 'product',
+      type: 'website',
       siteName: 'El Yagua Veterinaria',
       locale: 'es_AR',
       images: product.imagen_url ? [
