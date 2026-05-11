@@ -257,7 +257,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       )
       .join('\n\n')
 
-    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
+    const metodoPagoLabel = { efectivo: 'Efectivo (-10%)', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria (precio lista)' }
     const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
     const message = [
@@ -604,13 +604,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="space-y-2">
                   {(formData.deliveryType === 'retiro'
                     ? [
-                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Precio de lista' },
+                        { value: 'efectivo',      label: 'Efectivo',              desc: '10% de descuento' },
                         { value: 'debito',         label: 'Débito',                desc: 'Precio de lista' },
                         { value: 'credito',        label: 'Crédito',               desc: 'Con recargo' },
                       ]
                     : [
                         { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
-                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Te enviamos el CBU/alias por WhatsApp' },
+                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Precio de lista · CBU/alias por WhatsApp' },
                       ]
                   ).map(opt => (
                     <label
