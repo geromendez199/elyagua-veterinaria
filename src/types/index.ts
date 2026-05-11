@@ -10,6 +10,8 @@ export interface Product {
   categoria: Category
   imagen_url: string
   activo: boolean
+  presentacion?: string
+  laboratorio?: string
   created_at?: string
   updated_at?: string
 }

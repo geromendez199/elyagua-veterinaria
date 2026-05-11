@@ -186,6 +186,23 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                 </p>
               )}
 
+              {(product.presentacion || product.laboratorio) && (
+                <div className="mb-6 space-y-2 text-sm">
+                  {product.presentacion && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Presentación:</span>
+                      <span className="font-semibold text-gray-900">{product.presentacion}</span>
+                    </div>
+                  )}
+                  {product.laboratorio && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Laboratorio:</span>
+                      <span className="font-semibold text-gray-900">{product.laboratorio}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-auto">
                 {/* Precio */}
                 <div className="mb-4">
