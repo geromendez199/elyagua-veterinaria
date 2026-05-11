@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 90" fill="none">
+  <!-- Hexágono -->
+  <polygon points="38,12 62,12 74,32 62,52 38,52 26,32" fill="#00BFA5" stroke="#00897B" stroke-width="2"/>
+  <!-- Línea interior del hexágono -->
+  <polygon points="41,16 59,16 69,32 59,48 41,48 31,32" fill="none" stroke="white" stroke-width="1.5" opacity="0.6"/>
+  <!-- Letra Lf estilizada -->
+  <text x="50" y="38" font-family="Georgia, serif" font-size="20" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Lf</text>
+  <!-- Texto LAMAR -->
+  <text x="135" y="38" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#00BFA5" text-anchor="middle" letter-spacing="2">LAMAR</text>
+</svg>

@@ -6,6 +6,15 @@ import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
 import { ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
+import Image from 'next/image'
+
+const LAB_LOGOS: Record<string, string> = {
+  'Holliday': '/labs/holliday.svg',
+  'Lamar':    '/labs/lamar.svg',
+  'Babs':     '/labs/babs.svg',
+  'Janvier':  '/labs/janvier.svg',
+  'König':    '/labs/konig.svg',
+}
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
 
@@ -221,7 +230,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
           <span className="text-sm font-semibold text-gray-600 shrink-0">Laboratorio:</span>
           <button
             onClick={() => setSelectedLab(null)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition border ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition border ${
               selectedLab === null
                 ? 'bg-primary text-white border-primary'
                 : 'bg-white border-gray-300 text-gray-600 hover:border-primary hover:text-primary'
@@ -229,19 +238,30 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
           >
             Todos
           </button>
-          {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
-            <button
-              key={lab}
-              onClick={() => setSelectedLab(selectedLab === lab ? null : lab)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition border ${
-                selectedLab === lab
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-primary hover:text-primary'
-              }`}
-            >
-              {lab} <span className="opacity-60">({count})</span>
-            </button>
-          ))}
+          {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => {
+            const logo = LAB_LOGOS[lab]
+            return (
+              <button
+                key={lab}
+                onClick={() => setSelectedLab(selectedLab === lab ? null : lab)}
+                title={`${lab} (${count})`}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition border ${
+                  selectedLab === lab
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
+                    : 'bg-white border-gray-200 hover:border-primary/60'
+                }`}
+              >
+                {logo ? (
+                  <Image src={logo} alt={lab} width={64} height={28} className="h-7 w-auto object-contain" />
+                ) : (
+                  <span className="text-sm font-medium text-gray-700 px-1">{lab}</span>
+                )}
+                <span className={`text-xs font-medium ${selectedLab === lab ? 'text-primary' : 'text-gray-400'}`}>
+                  ({count})
+                </span>
+              </button>
+            )
+          })}
         </div>
       )}
 
