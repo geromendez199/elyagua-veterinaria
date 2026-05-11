@@ -40,7 +40,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     telefono: '',
     deliveryType: 'retiro',
     dni: '',
-    metodoPago: 'efectivo',
+    metodoPago: 'debito',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -318,7 +318,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     clearCart()
     onClose()
     setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'efectivo' })
+    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
     setDniLookup('idle')
@@ -486,7 +486,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     { value: 'retiro', label: 'Retiro en tienda', sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
-                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Costo a coordinar',       icon: Truck  },
+                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Gratis',                  icon: Truck  },
                   ] as const).map(({ value, label, sub, icon: Icon }) => (
                     <label
                       key={value}
