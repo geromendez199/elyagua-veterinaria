@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -181,13 +181,23 @@ export default function AdminDashboardPage() {
               <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userEmail}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition font-medium"
-          >
-            <LogOut size={16} />
-            <span className="hidden sm:inline">Salir</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/perfil"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition font-medium"
+              title="Mi perfil"
+            >
+              <Settings size={16} />
+              <span className="hidden sm:inline">Perfil</span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition font-medium"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
       </div>
 
