@@ -49,7 +49,8 @@ export default function AdminDashboardPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/admin'); return }
-      setUserEmail(user.email || '')
+      const displayName = user.user_metadata?.full_name || user.email || 'Admin'
+      setUserEmail(displayName)
 
       const [
         { count: productosCount },
