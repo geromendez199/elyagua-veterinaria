@@ -502,12 +502,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                   {/* Cupón de descuento */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">🏷️ Código de descuento</p>
+                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-2"><span>💚</span> Código de descuento</p>
                     {appliedCoupon ? (
                       <div className="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between">
                         <div>
-                          <p className="font-bold text-green-700">{appliedCoupon.codigo}</p>
-                          <p className="text-xs text-green-600">{appliedCoupon.descuento_porcentaje}% de descuento</p>
+                          <p className="font-bold text-primary">{appliedCoupon.codigo}</p>
+                          <p className="text-xs text-primary/70">💚 {appliedCoupon.descuento_porcentaje}% de descuento</p>
                         </div>
                         <button
                           onClick={() => removeCoupon()}
@@ -790,7 +790,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   {appliedCoupon && (
                     <div className="flex justify-between items-center text-green-700">
-                      <span className="text-sm">🏷️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span className="text-sm">💚 Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
                       <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
                     </div>
                   )}
@@ -809,9 +809,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2 shrink-0">
           {step === 'cart' && items.length > 0 && (
             <>
-              <div className="flex justify-between items-center text-lg font-bold text-gray-900">
-                <span>Total:</span>
-                <span className="text-primary">{formatPrice(total)}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm text-gray-600">
+                  <span>Subtotal:</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center text-sm text-green-700">
+                    <span>🏷️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                    <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+                  <span>Total:</span>
+                  <span className="text-primary">{formatPrice(appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total)}</span>
+                </div>
               </div>
               {stockErrors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-1">
