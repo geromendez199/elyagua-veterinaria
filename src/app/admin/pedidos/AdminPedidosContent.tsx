@@ -133,15 +133,7 @@ export default function AdminPedidosContent() {
       }
 
       const message = generateConfirmationMessage(pedido)
-      try {
-        await fetch('/api/send-whatsapp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: pedido.telefono, message }),
-        })
-      } catch (err) {
-        console.error('WhatsApp send error:', err)
-      }
+      openWhatsAppWithMessage(pedido.telefono, message)
     }
 
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'confirmado' } : p))
