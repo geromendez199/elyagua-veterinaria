@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
-import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
+import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag, Gift } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
 import { createClient } from '@/lib/supabase-browser'
 import { formatPrice } from '@/lib/formatPrice'
@@ -502,12 +502,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                   {/* Cupón de descuento */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-2"><span>💚</span> Código de descuento</p>
+                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-2"><Gift size={14} className="text-primary" /> Código de descuento</p>
                     {appliedCoupon ? (
                       <div className="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between">
                         <div>
                           <p className="font-bold text-primary">{appliedCoupon.codigo}</p>
-                          <p className="text-xs text-primary/70">💚 {appliedCoupon.descuento_porcentaje}% de descuento</p>
+                          <p className="text-xs text-primary/70 flex items-center gap-1"><Gift size={12} className="text-primary" /> {appliedCoupon.descuento_porcentaje}% de descuento</p>
                         </div>
                         <button
                           onClick={() => removeCoupon()}
@@ -790,7 +790,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   {appliedCoupon && (
                     <div className="flex justify-between items-center text-green-700">
-                      <span className="text-sm">💚 Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span className="text-sm flex items-center gap-1"><Gift size={14} className="text-primary" /> Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
                       <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
                     </div>
                   )}
@@ -816,7 +816,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
                 {appliedCoupon && (
                   <div className="flex justify-between items-center text-sm text-green-700">
-                    <span>🏷️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                    <span className="flex items-center gap-1"><Gift size={14} className="text-primary" /> Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
                     <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
                   </div>
                 )}
