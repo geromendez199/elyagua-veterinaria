@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, Settings } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, Settings, BarChart3 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -165,6 +165,16 @@ export default function AdminDashboardPage() {
       color: 'from-rose-400 to-rose-600',
       badge: null,
     },
+    {
+      href: '/admin/analytics',
+      icon: BarChart3,
+      titulo: 'Analíticas',
+      descripcion: 'Reportes y estadísticas',
+      stat: 0,
+      statLabel: 'datos',
+      color: 'from-emerald-400 to-emerald-600',
+      badge: null,
+    },
   ]
 
   const maxCantidad = topProductos[0]?.cantidad || 1
@@ -210,7 +220,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Cards de secciones */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {secciones.map(({ href, icon: Icon, titulo, descripcion, stat, statLabel, color, badge }) => (
             <Link
               key={href}
