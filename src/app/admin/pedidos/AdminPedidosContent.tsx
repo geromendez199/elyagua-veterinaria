@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-browser'
 import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
+import { logAuditAction } from '@/lib/audit-log'
 
 interface Pedido {
   id: string
@@ -48,6 +49,7 @@ export default function AdminPedidosContent() {
   const [accionando, setAccionando] = useState<string | null>(null)
   const [nuevoToast, setNuevoToast] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg)
@@ -121,11 +123,24 @@ export default function AdminPedidosContent() {
       return
     }
 
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: 'pendiente', new: 'confirmado' } })
+
     if (pedido) {
       for (const prod of pedido.productos) {
         if (prod.id) {
           await supabase.rpc('decrement_stock', { p_id: prod.id, p_amount: prod.cantidad })
         }
+      }
+
+      const message = generateConfirmationMessage(pedido)
+      try {
+        await fetch('/api/send-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: pedido.telefono, message }),
+        })
+      } catch (err) {
+        console.error('WhatsApp send error:', err)
       }
     }
 
@@ -135,36 +150,42 @@ export default function AdminPedidosContent() {
 
   const handleEnviar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'enviado' }).eq('id', id)
     if (error) {
       showToast('Error al marcar como enviado. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'enviado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'enviado' } : p))
     setAccionando(null)
   }
 
   const handleEntregar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'entregado' }).eq('id', id)
     if (error) {
       showToast('Error al marcar como entregado. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'entregado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'entregado' } : p))
     setAccionando(null)
   }
 
   const handleCancelar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
     if (error) {
       showToast('Error al cancelar el pedido. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'cancelado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'cancelado' } : p))
     setAccionando(null)
   }
@@ -194,7 +215,12 @@ export default function AdminPedidosContent() {
   const pedidosFiltrados = pedidos.filter((p) => {
     const matchEstado = filtro === 'todos' || estadoNormalizado(p.estado) === filtro
     const matchCliente = !clienteDniFilter || p.cliente_dni === clienteDniFilter
-    return matchEstado && matchCliente
+    const matchSearch = !searchTerm ||
+      p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.telefono.includes(searchTerm) ||
+      p.id.includes(searchTerm) ||
+      (p.cliente_dni && p.cliente_dni.includes(searchTerm))
+    return matchEstado && matchCliente && matchSearch
   })
 
   if (loading) return (
@@ -251,8 +277,15 @@ export default function AdminPedidosContent() {
         </div>
       </div>
 
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 space-y-3 px-4 py-3">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar por nombre, teléfono, DNI o ID del pedido..."
+          className="w-full max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary text-gray-900"
+        />
+        <div className="flex gap-1 overflow-x-auto">
           {(['todos', 'pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado'] as Filtro[]).map((f) => (
             <button
               key={f}

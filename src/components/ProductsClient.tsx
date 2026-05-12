@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
 import { ArrowUpDown, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+import { createClient } from '@/lib/supabase-browser'
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
 
@@ -24,6 +25,8 @@ interface ProductsClientProps {
 
 export default function ProductsClient({ initialProducts, searchQuery = '', initialCategory = null }: ProductsClientProps) {
   const router = useRouter()
+  const supabase = createClient()
+  const [products, setProducts] = useState<Product[]>(initialProducts)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(initialCategory)
   const [sortBy, setSortBy] = useState<SortOption>('default')
   const [minPrice, setMinPrice] = useState('')
@@ -31,6 +34,24 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [showPriceFilter, setShowPriceFilter] = useState(false)
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
   const [selectedLab, setSelectedLab] = useState<string | null>(null)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('productos-stock')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos', filter: 'activo=eq.true' },
+        (payload) => {
+          const updated = payload.new as Product
+          setProducts((prev) =>
+            prev.map((p) => (p.id === updated.id ? { ...p, stock: updated.stock, updated_at: updated.updated_at } : p))
+          )
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
   const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
@@ -46,21 +67,21 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    for (const p of initialProducts) {
+    for (const p of products) {
       counts[p.categoria] = (counts[p.categoria] || 0) + 1
     }
     return counts
-  }, [initialProducts])
+  }, [products])
 
   const labCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    for (const p of initialProducts) {
+    for (const p of products) {
       if (p.laboratorio) {
         counts[p.laboratorio] = (counts[p.laboratorio] || 0) + 1
       }
     }
     return counts
-  }, [initialProducts])
+  }, [products])
 
   const handleCategoryChange = (cat: Category | null) => {
     setSelectedCategory(cat)
@@ -72,13 +93,13 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   }
 
   const filteredProducts = useMemo(() => {
-    let products = [...initialProducts]
+    let filtered = [...products]
 
-    if (selectedCategory) products = products.filter((p) => p.categoria === selectedCategory)
+    if (selectedCategory) filtered = filtered.filter((p) => p.categoria === selectedCategory)
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
-      products = products.filter(
+      filtered = filtered.filter(
         (p) =>
           p.nombre.toLowerCase().includes(q) ||
           p.descripcion?.toLowerCase().includes(q) ||
@@ -86,22 +107,22 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
       )
     }
 
-    if (minPrice !== '') products = products.filter((p) => p.precio >= parseFloat(minPrice))
-    if (maxPrice !== '') products = products.filter((p) => p.precio <= parseFloat(maxPrice))
+    if (minPrice !== '') filtered = filtered.filter((p) => p.precio >= parseFloat(minPrice))
+    if (maxPrice !== '') filtered = filtered.filter((p) => p.precio <= parseFloat(maxPrice))
 
-    if (stockFilter === 'in-stock') products = products.filter((p) => p.stock > 0)
-    if (stockFilter === 'low-stock') products = products.filter((p) => p.stock > 0 && p.stock <= 5)
+    if (stockFilter === 'in-stock') filtered = filtered.filter((p) => p.stock > 0)
+    if (stockFilter === 'low-stock') filtered = filtered.filter((p) => p.stock > 0 && p.stock <= 5)
 
-    if (selectedLab) products = products.filter((p) => p.laboratorio === selectedLab)
+    if (selectedLab) filtered = filtered.filter((p) => p.laboratorio === selectedLab)
 
     switch (sortBy) {
-      case 'price-asc':  products.sort((a, b) => a.precio - b.precio); break
-      case 'price-desc': products.sort((a, b) => b.precio - a.precio); break
-      case 'name-asc':   products.sort((a, b) => a.nombre.localeCompare(b.nombre)); break
+      case 'price-asc':  filtered.sort((a, b) => a.precio - b.precio); break
+      case 'price-desc': filtered.sort((a, b) => b.precio - a.precio); break
+      case 'name-asc':   filtered.sort((a, b) => a.nombre.localeCompare(b.nombre)); break
     }
 
-    return products
-  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
+    return filtered
+  }, [products, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
 
   return (
     <div>

@@ -7,6 +7,7 @@ import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag } from
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { Cliente } from '@/types'
+import { logAuditAction } from '@/lib/audit-log'
 
 interface ClienteConStats extends Cliente {
   pedidos_count: number
@@ -80,7 +81,9 @@ export default function AdminClientesPage() {
 
   const saveNota = async (id: string) => {
     setSavingNota(true)
+    const oldCliente = clientes.find((c) => c.id === id)
     await supabase.from('clientes').update({ notas: notaValue, updated_at: new Date().toISOString() }).eq('id', id)
+    await logAuditAction('update_cliente_nota', 'clientes', id, { nota: { old: oldCliente?.notas || '', new: notaValue } })
     setClientes(prev => prev.map(c => c.id === id ? { ...c, notas: notaValue } : c))
     setEditingId(null)
     setSavingNota(false)
@@ -89,10 +92,12 @@ export default function AdminClientesPage() {
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
+  const searchLower = busqueda.toLowerCase()
   const clientesFiltrados = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    c.nombre.toLowerCase().includes(searchLower) ||
     c.dni.includes(busqueda) ||
-    (c.telefono || '').includes(busqueda)
+    (c.telefono || '').includes(busqueda) ||
+    (c.notas || '').toLowerCase().includes(searchLower)
   )
 
   if (loading) return (

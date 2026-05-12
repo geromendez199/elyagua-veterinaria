@@ -18,21 +18,14 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
 
   const [inputValue, setInputValue] = useState(q)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [suggestions, setSuggestions] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const suggestions = inputValue.trim().length >= 2
-    ? products
-        .filter((p) =>
-          p.nombre.toLowerCase().includes(inputValue.toLowerCase()) ||
-          p.descripcion?.toLowerCase().includes(inputValue.toLowerCase())
-        )
-        .slice(0, 6)
-    : []
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isOpen = showSuggestions && suggestions.length > 0
 
-  // Cerrar dropdown al hacer clic afuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -40,16 +33,35 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
       }
     }
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setInputValue(value)
     setShowSuggestions(true)
-    if (value) {
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (value.trim().length >= 2) {
+      setLoading(true)
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`)
+          const data = await res.json()
+          setSuggestions(data)
+        } catch {
+          setSuggestions([])
+        } finally {
+          setLoading(false)
+        }
+      }, 300)
       router.push(`/productos?q=${encodeURIComponent(value)}`)
     } else {
+      setSuggestions([])
       router.push('/productos')
     }
   }
@@ -95,6 +107,15 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
       {/* Dropdown de sugerencias */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 bg-white border-2 border-t-0 border-primary rounded-b-xl shadow-xl z-50 overflow-hidden">
+          {loading && (
+            <div className="px-4 py-8 text-center">
+              <div className="animate-spin inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+              <p className="text-xs text-gray-400 mt-2">Buscando...</p>
+            </div>
+          )}
+          {!loading && suggestions.length === 0 && inputValue.trim().length >= 2 && (
+            <div className="px-4 py-6 text-center text-gray-400 text-sm">No se encontraron productos</div>
+          )}
           {suggestions.map((product, i) => (
             <button
               key={product.id}
@@ -110,6 +131,7 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
                   width={40}
                   height={40}
                   className="w-10 h-10 object-cover rounded-lg shrink-0"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-10 h-10 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center">

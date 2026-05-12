@@ -9,6 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
+import { logAuditAction } from '@/lib/audit-log'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
@@ -67,11 +68,13 @@ export default function AdminProductosPage() {
     const newStock = parseInt(stockValue)
     if (isNaN(newStock) || newStock < 0) { setEditingStockId(null); return }
     try {
+      const oldProduct = products.find((p) => p.id === id)
       const { error } = await supabase
         .from('productos')
         .update({ stock: newStock, updated_at: new Date().toISOString() })
         .eq('id', id)
       if (error) throw error
+      await logAuditAction('update_stock', 'productos', id, { old_stock: oldProduct?.stock, new_stock: newStock }, user?.email)
       setProducts((prev) => prev.map((p) => p.id === id ? { ...p, stock: newStock } : p))
     } catch (err: any) {
       showToast('Error al actualizar stock: ' + err.message)
@@ -265,6 +268,7 @@ export default function AdminProductosPage() {
     setEditSaveError('')
 
     try {
+      const oldProduct = products.find((p) => p.id === editProduct.id)
       let imagen_url = editProduct.imagen_url
 
       if (editImageFile) {
@@ -277,7 +281,6 @@ export default function AdminProductosPage() {
         if (uploadError) throw uploadError
         const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filename)
         imagen_url = urlData.publicUrl
-        // Borrar imagen anterior de Storage (en background, no bloquea)
         if (oldUrl) deleteStorageFile(oldUrl)
       }
 
@@ -297,6 +300,14 @@ export default function AdminProductosPage() {
         })
         .eq('id', editProduct.id)
       if (error) throw error
+
+      const changes: Record<string, any> = {}
+      if (oldProduct?.precio !== editProduct.precio) changes.precio = { old: oldProduct?.precio, new: editProduct.precio }
+      if (oldProduct?.stock !== editProduct.stock) changes.stock = { old: oldProduct?.stock, new: editProduct.stock }
+      if (oldProduct?.activo !== editProduct.activo) changes.activo = { old: oldProduct?.activo, new: editProduct.activo }
+      if (Object.keys(changes).length > 0) {
+        await logAuditAction('update_product', 'productos', editProduct.id, changes, user?.email)
+      }
 
       setProducts((prev) =>
         prev
@@ -320,6 +331,7 @@ export default function AdminProductosPage() {
         .update({ activo: newActivo, updated_at: new Date().toISOString() })
         .eq('id', product.id)
       if (error) throw error
+      await logAuditAction('update_product', 'productos', product.id, { activo: { old: product.activo, new: newActivo } }, user?.email)
       setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, activo: newActivo } : p))
     } catch (err: any) {
       showToast('Error al actualizar: ' + err.message)

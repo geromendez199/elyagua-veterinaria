@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
@@ -34,7 +34,9 @@ const STEPS = ['Carrito', 'Datos del pedido']
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
+  const supabase = createClient()
   const [step, setStep] = useState<'cart' | 'checkout'>('cart')
+  const [liveStock, setLiveStock] = useState<Record<string, number>>({})
 
   const [formData, setFormData] = useState<OrderFormData>({
     nombre: '',
@@ -57,6 +59,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const currentStep = step === 'cart' ? 0 : 1
 
+  useEffect(() => {
+    if (items.length === 0) return
+    const channel = supabase
+      .channel('cart-stock-watch')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos', filter: 'activo=eq.true' },
+        (payload) => {
+          const { id, stock } = payload.new as { id: string; stock: number }
+          setLiveStock((prev) => ({ ...prev, [id]: stock }))
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [items.length, supabase])
+
   // ── Validación de stock antes de pasar al checkout ─────────────
   const [checkingStock, setCheckingStock] = useState(false)
   const [stockErrors, setStockErrors] = useState<string[]>([])
@@ -71,12 +90,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       const errors: string[] = []
       for (const item of items) {
         const current = data?.find((p) => p.id === item.product.id)
-        const available = current?.stock ?? 0
-        if (available < item.quantity) {
+        const liveAvailable = liveStock[item.product.id] ?? current?.stock ?? 0
+        if (liveAvailable < item.quantity) {
           errors.push(
-            available === 0
+            liveAvailable === 0
               ? `"${item.product.nombre}" ya no tiene stock`
-              : `"${item.product.nombre}": solo quedan ${available} (tenés ${item.quantity} en el carrito)`
+              : `"${item.product.nombre}": solo quedan ${liveAvailable} (tenés ${item.quantity} en el carrito)`
           )
         }
       }
@@ -145,10 +164,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
   }
 
-  const handleAddressSelect = (suggestion: string) => {
+  const handleAddressSelect = async (suggestion: string) => {
     handleChange('direccion', suggestion)
     setShowAddressSuggestions(false)
     setAddressSuggestions([])
+    try {
+      const res = await fetch('/api/validate-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: suggestion }),
+      })
+      const { valid } = await res.json()
+      if (!valid) {
+        setErrors((prev) => ({ ...prev, direccion: 'Dirección no validada por el sistema' }))
+      }
+    } catch {}
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
@@ -205,6 +235,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       if (!data) {
         setCouponError('Cupón inválido o inactivo')
+        return
+      }
+
+      const now = new Date()
+      if (data.expires_at && new Date(data.expires_at) < now) {
+        setCouponError('Cupón expirado')
         return
       }
 
@@ -297,6 +333,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           direccion: formData.direccion || null,
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total: finalTotal,
+          estado: 'pendiente',
           cupón_codigo: appliedCoupon?.codigo || null,
           cliente_dni: formData.dni || null,
           metodo_pago: formData.metodoPago || 'efectivo',
