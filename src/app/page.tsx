@@ -42,9 +42,11 @@ export default async function Home() {
               height={250}
               className="h-36 md:h-48 w-auto mx-auto"
             />
-            <p className="text-lg md:text-3xl text-white max-w-2xl mx-auto px-2">
-              Tu veterinaria de confianza con productos de calidad y atención profesional para tus mascotas
-            </p>
+            <div className="max-w-2xl mx-auto px-2 space-y-1">
+              <p className="text-xl md:text-3xl font-bold text-white">En qué podemos ayudarte?</p>
+              <p className="text-base md:text-lg text-white/85">Ingresa para conocer nuestro catálogo.</p>
+              <p className="text-base md:text-lg text-white/85">Contactanos ahora para que te asesoremos.</p>
+            </div>
             {/* Buscador en home */}
             <div className="w-full max-w-xl px-4 sm:px-0">
               <Suspense fallback={<div className="h-14 bg-white/20 rounded-xl animate-pulse" />}>
@@ -96,8 +98,8 @@ export default async function Home() {
                 <Clock size={20} className="text-primary" />
               </div>
               <div>
-                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Lun–Dom</p>
-                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Atención integral de lunes a domingo.</p>
+                <p className="font-bold text-xs md:text-sm text-gray-800 leading-tight">Horario Extendido</p>
+                <p className="text-xs text-gray-500 mt-0.5 hidden md:block">Lun–Vie 7:30–21:00 · Sábado y domingo abiertos</p>
               </div>
             </div>
           </div>
@@ -106,6 +108,155 @@ export default async function Home() {
 
       {/* Carrusel de productos */}
       <ProductCarousel products={products} />
+
+      {/* Institucional Section */}
+      <section className="py-14 md:py-20 bg-white border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-4">
+          {/* Encabezado */}
+          <div className="text-center mb-12">
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary mb-3">Quiénes somos</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+              Más que una veterinaria,<br className="hidden md:block" /> un equipo comprometido
+            </h2>
+            <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Somos un equipo de profesionales que trabajamos todos los días de manera interdisciplinaria para brindar un servicio a la altura de quienes confían en nosotros. Cada consulta, cada producto y cada diagnóstico es el resultado de años de formación, dedicación y amor genuino por los animales.
+            </p>
+          </div>
+
+          {/* Pilares */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
+            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Vocación y pasión</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Elegimos esta profesión porque creemos que el bienestar animal es un compromiso que se ejerce con el corazón y con rigor científico a partes iguales.</p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Trabajo en equipo</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Veterinarios, especialistas y asesores trabajan de forma coordinada para que cada caso tenga la mejor respuesta posible, sin importar su complejidad.</p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Confianza y transparencia</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Informamos con claridad, recomendamos con honestidad y construimos vínculos duraderos con cada familia que elige El Yagua para cuidar a sus mascotas.</p>
+            </div>
+          </div>
+
+          {/* Servicios */}
+          <div className="mb-10">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center">Nuestros servicios</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-primary/5 border border-primary/15 rounded-2xl p-6">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  Atención clínica completa
+                </h4>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Consultas y atención integral de animales de compañía</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Estudios complementarios de diagnóstico</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Radiografías y ecografías</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Cirugías programadas y de urgencia</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Internación con monitoreo continuo</li>
+                </ul>
+              </div>
+              <div className="bg-primary/5 border border-primary/15 rounded-2xl p-6">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  Tienda y farmacia
+                </h4>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Farmacia veterinaria completa con medicamentos de primera línea</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Alimentos balanceados para todas las etapas</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Accesorios, juguetes y productos de higiene y cuidado</li>
+                  <li className="flex items-start gap-2"><span className="text-primary mt-0.5">·</span>Asesoramiento personalizado en cada compra</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Equipo */}
+          <div className="bg-gray-50 rounded-2xl p-6 md:p-8 mb-10 border border-gray-100">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3">Un equipo altamente capacitado</h3>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+              Contamos con un equipo de profesionales altamente capacitado en distintas especializaciones, lo que nos permite abordar cada caso desde múltiples perspectivas clínicas. Esta mirada interdisciplinaria es lo que distingue a El Yagua: no derivamos lo que podemos resolver, y cuando la complejidad lo exige, trabajamos en red con especialistas de referencia para garantizar el mejor resultado posible.
+            </p>
+          </div>
+
+          {/* Frase destacada */}
+          <div className="bg-primary rounded-2xl p-8 md:p-10 text-center text-white">
+            <p className="text-xl md:text-2xl font-semibold leading-relaxed max-w-2xl mx-auto">
+              &ldquo;Tu mascota no es solo un animal — es parte de tu familia. Y nosotros la tratamos como tal.&rdquo;
+            </p>
+            <p className="mt-4 text-white/70 text-sm font-medium">— El equipo de El Yagua Veterinaria</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Horarios Section */}
+      <section className="py-10 md:py-14 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Nuestro Horario</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Lunes a Viernes */}
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Atención Completa</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Lun — Vie</p>
+              <p className="text-lg font-semibold text-primary mb-3">7:30 — 21:00 h</p>
+              <p className="text-xs text-gray-600">Atención veterinaria, venta de productos y asesoramiento</p>
+            </div>
+
+            {/* Sábado */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl border border-orange-200 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-orange-600 uppercase tracking-wider mb-2">Fin de Semana</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Sábado</p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Atención integral</p>
+                  <p className="text-lg font-semibold text-orange-600">9:00 — 12:00 h</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Veterinaria</p>
+                  <p className="text-lg font-semibold text-orange-600">16:00 — 20:00 h</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Domingo */}
+            <div className="bg-gradient-to-br from-primary-light/5 to-primary-light/10 rounded-xl border border-primary-light/20 p-6 md:p-8 text-center">
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Fin de Semana</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Domingo</p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-lg font-semibold text-primary">10:00 — 12:00 h</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-primary">16:00 — 20:00 h</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="bg-gray-50 border-t border-gray-100 py-10 md:py-14">

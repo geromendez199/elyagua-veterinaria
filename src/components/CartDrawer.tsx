@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
-import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
+import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag, Gift } from 'lucide-react'
 import { OrderFormData, DeliveryType } from '@/types'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
@@ -33,14 +34,16 @@ const STEPS = ['Carrito', 'Datos del pedido']
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
+  const supabase = createClient()
   const [step, setStep] = useState<'cart' | 'checkout'>('cart')
+  const [liveStock, setLiveStock] = useState<Record<string, number>>({})
 
   const [formData, setFormData] = useState<OrderFormData>({
     nombre: '',
     telefono: '',
     deliveryType: 'retiro',
     dni: '',
-    metodoPago: 'efectivo',
+    metodoPago: 'debito',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -56,6 +59,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const currentStep = step === 'cart' ? 0 : 1
 
+  useEffect(() => {
+    if (items.length === 0) return
+    const channel = supabase
+      .channel('cart-stock-watch')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos', filter: 'activo=eq.true' },
+        (payload) => {
+          const { id, stock } = payload.new as { id: string; stock: number }
+          setLiveStock((prev) => ({ ...prev, [id]: stock }))
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [items.length, supabase])
+
   // ── Validación de stock antes de pasar al checkout ─────────────
   const [checkingStock, setCheckingStock] = useState(false)
   const [stockErrors, setStockErrors] = useState<string[]>([])
@@ -70,12 +90,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       const errors: string[] = []
       for (const item of items) {
         const current = data?.find((p) => p.id === item.product.id)
-        const available = current?.stock ?? 0
-        if (available < item.quantity) {
+        const liveAvailable = liveStock[item.product.id] ?? current?.stock ?? 0
+        if (liveAvailable < item.quantity) {
           errors.push(
-            available === 0
+            liveAvailable === 0
               ? `"${item.product.nombre}" ya no tiene stock`
-              : `"${item.product.nombre}": solo quedan ${available} (tenés ${item.quantity} en el carrito)`
+              : `"${item.product.nombre}": solo quedan ${liveAvailable} (tenés ${item.quantity} en el carrito)`
           )
         }
       }
@@ -144,10 +164,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
   }
 
-  const handleAddressSelect = (suggestion: string) => {
+  const handleAddressSelect = async (suggestion: string) => {
     handleChange('direccion', suggestion)
     setShowAddressSuggestions(false)
     setAddressSuggestions([])
+    try {
+      const res = await fetch('/api/validate-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: suggestion }),
+      })
+      const { valid } = await res.json()
+      if (!valid) {
+        setErrors((prev) => ({ ...prev, direccion: 'Dirección no validada por el sistema' }))
+      }
+    } catch {}
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
@@ -207,6 +238,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         return
       }
 
+      const now = new Date()
+      if (data.expires_at && new Date(data.expires_at) < now) {
+        setCouponError('Cupón expirado')
+        return
+      }
+
       applyCoupon(data.codigo, data.descuento_porcentaje)
       setCouponCode('')
     } catch {
@@ -257,7 +294,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       )
       .join('\n\n')
 
-    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
+    const metodoPagoLabel = { efectivo: 'Efectivo (-10%)', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria (precio lista)' }
     const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
     const message = [
@@ -296,6 +333,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           direccion: formData.direccion || null,
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total: finalTotal,
+          estado: 'pendiente',
           cupón_codigo: appliedCoupon?.codigo || null,
           cliente_dni: formData.dni || null,
           metodo_pago: formData.metodoPago || 'efectivo',
@@ -318,7 +356,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     clearCart()
     onClose()
     setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'efectivo' })
+    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
     setDniLookup('idle')
@@ -409,12 +447,25 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.product.id} className="border border-gray-200 rounded-xl p-3">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{item.product.nombre}</h4>
-                          <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                        <div className="flex items-start gap-3">
+                          <div className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+                            <Image
+                              src={item.product.imagen_url || '/placeholder-product.png'}
+                              alt={item.product.nombre}
+                              fill
+                              className="object-contain p-1"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">{item.product.nombre}</h4>
+                              <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-2">{formatPrice(item.product.precio)} c/u</p>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-400">{formatPrice(item.product.precio)} c/u</p>
+                        <div className="flex items-center justify-between mt-2 pl-[68px]">
+                          <p className="text-xs text-gray-400"></p>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2">
                               <button
@@ -447,6 +498,48 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Cupón de descuento */}
+                  <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-2"><Gift size={14} className="text-primary" /> Código de descuento</p>
+                    {appliedCoupon ? (
+                      <div className="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-primary">{appliedCoupon.codigo}</p>
+                          <p className="text-xs text-primary/70 flex items-center gap-1"><Gift size={12} className="text-primary" /> {appliedCoupon.descuento_porcentaje}% de descuento</p>
+                        </div>
+                        <button
+                          onClick={() => removeCoupon()}
+                          className="text-red-500 hover:text-red-700 transition"
+                          title="Remover cupón"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+                          onKeyDown={(e) => e.key === 'Enter' && validateCoupon()}
+                          placeholder="Ingresá tu código"
+                          disabled={couponLoading}
+                          className="flex-1 border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-primary disabled:opacity-50"
+                        />
+                        <button
+                          onClick={validateCoupon}
+                          disabled={!couponCode.trim() || couponLoading}
+                          className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          {couponLoading ? 'Validando...' : 'Aplicar'}
+                        </button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <p className="text-red-500 text-xs font-semibold">{couponError}</p>
+                    )}
                   </div>
 
                   {/* Info de envío */}
@@ -486,7 +579,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     { value: 'retiro', label: 'Retiro en tienda', sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
-                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Costo a coordinar',       icon: Truck  },
+                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Gratis',                  icon: Truck  },
                   ] as const).map(({ value, label, sub, icon: Icon }) => (
                     <label
                       key={value}
@@ -604,13 +697,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="space-y-2">
                   {(formData.deliveryType === 'retiro'
                     ? [
-                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Precio de lista' },
+                        { value: 'efectivo',      label: 'Efectivo',              desc: '10% de descuento' },
                         { value: 'debito',         label: 'Débito',                desc: 'Precio de lista' },
                         { value: 'credito',        label: 'Crédito',               desc: 'Con recargo' },
                       ]
                     : [
                         { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
-                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Te enviamos el CBU/alias por WhatsApp' },
+                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Precio de lista · CBU/alias por WhatsApp' },
                       ]
                   ).map(opt => (
                     <label
@@ -677,14 +770,34 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2">
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tu pedido</p>
                 {items.map((item) => (
-                  <div key={item.product.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate mr-2">{item.product.nombre} ×{item.quantity}</span>
+                  <div key={item.product.id} className="flex items-center gap-2 text-sm">
+                    <div className="relative w-9 h-9 shrink-0 rounded-md overflow-hidden bg-white border border-gray-200">
+                      <Image
+                        src={item.product.imagen_url || '/placeholder-product.png'}
+                        alt={item.product.nombre}
+                        fill
+                        className="object-contain p-0.5"
+                      />
+                    </div>
+                    <span className="text-gray-600 truncate flex-1">{item.product.nombre} ×{item.quantity}</span>
                     <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 pt-3 mt-1 flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="text-primary font-bold text-xl">{formatPrice(total)}</span>
+                <div className="border-t border-gray-200 pt-3 mt-1 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Subtotal</span>
+                    <span className="text-gray-900 font-semibold">{formatPrice(total)}</span>
+                  </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between items-center text-green-700">
+                      <span className="text-sm flex items-center gap-1"><Gift size={14} className="text-primary" /> Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="text-primary font-bold text-xl">{formatPrice(appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total)}</span>
+                  </div>
                 </div>
               </div>
 
@@ -696,9 +809,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2 shrink-0">
           {step === 'cart' && items.length > 0 && (
             <>
-              <div className="flex justify-between items-center text-lg font-bold text-gray-900">
-                <span>Total:</span>
-                <span className="text-primary">{formatPrice(total)}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm text-gray-600">
+                  <span>Subtotal:</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center text-sm text-green-700">
+                    <span className="flex items-center gap-1"><Gift size={14} className="text-primary" /> Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                    <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+                  <span>Total:</span>
+                  <span className="text-primary">{formatPrice(appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total)}</span>
+                </div>
               </div>
               {stockErrors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-1">

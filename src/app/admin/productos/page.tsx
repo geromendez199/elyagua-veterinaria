@@ -2,19 +2,22 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { Product, Category } from '@/types'
 import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
+import { logAuditAction } from '@/lib/audit-log'
 
 const CATEGORIAS: Category[] = ['alimentos', 'juguetes', 'medicamentos', 'accesorios']
 
 const emptyForm = {
   nombre: '',
   descripcion: '',
+  presentacion: '',
+  laboratorio: '',
   precio: '',
   stock: '',
   categoria: 'alimentos' as Category,
@@ -25,6 +28,7 @@ const inputCls = 'w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:bor
 
 export default function AdminProductosPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -64,11 +68,13 @@ export default function AdminProductosPage() {
     const newStock = parseInt(stockValue)
     if (isNaN(newStock) || newStock < 0) { setEditingStockId(null); return }
     try {
+      const oldProduct = products.find((p) => p.id === id)
       const { error } = await supabase
         .from('productos')
         .update({ stock: newStock, updated_at: new Date().toISOString() })
         .eq('id', id)
       if (error) throw error
+      await logAuditAction('update_stock', 'productos', id, { old_stock: oldProduct?.stock, new_stock: newStock }, user?.email)
       setProducts((prev) => prev.map((p) => p.id === id ? { ...p, stock: newStock } : p))
     } catch (err: any) {
       showToast('Error al actualizar stock: ' + err.message)
@@ -76,6 +82,11 @@ export default function AdminProductosPage() {
       setEditingStockId(null)
     }
   }
+
+  // ── Laboratorios únicos para sugerencias ────────────────────────
+  const uniqueLabs = Array.from(
+    new Set(products.map((p) => p.laboratorio).filter(Boolean))
+  ).sort()
 
   // ── Cambio rápido de imagen (clic en imagen de tabla) ─────────
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
@@ -85,9 +96,9 @@ export default function AdminProductosPage() {
   useEffect(() => { checkAuth() }, [])
 
   const checkAuth = async () => {
-    const { data } = await supabase.auth.getSession()
-    if (!data.session) { router.push('/admin'); return }
-    setUser(data.session.user)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/admin'); return }
+    setUser(user)
     fetchProducts()
   }
 
@@ -202,6 +213,8 @@ export default function AdminProductosPage() {
         .insert([{
           nombre: form.nombre,
           descripcion: form.descripcion,
+          presentacion: form.presentacion || null,
+          laboratorio: form.laboratorio || null,
           precio: parseFloat(form.precio),
           stock: parseInt(form.stock),
           categoria: form.categoria,
@@ -255,6 +268,7 @@ export default function AdminProductosPage() {
     setEditSaveError('')
 
     try {
+      const oldProduct = products.find((p) => p.id === editProduct.id)
       let imagen_url = editProduct.imagen_url
 
       if (editImageFile) {
@@ -267,7 +281,6 @@ export default function AdminProductosPage() {
         if (uploadError) throw uploadError
         const { data: urlData } = supabase.storage.from('productos').getPublicUrl(filename)
         imagen_url = urlData.publicUrl
-        // Borrar imagen anterior de Storage (en background, no bloquea)
         if (oldUrl) deleteStorageFile(oldUrl)
       }
 
@@ -276,6 +289,8 @@ export default function AdminProductosPage() {
         .update({
           nombre: editProduct.nombre,
           descripcion: editProduct.descripcion,
+          presentacion: editProduct.presentacion || null,
+          laboratorio: editProduct.laboratorio || null,
           precio: editProduct.precio,
           stock: editProduct.stock,
           categoria: editProduct.categoria,
@@ -285,6 +300,14 @@ export default function AdminProductosPage() {
         })
         .eq('id', editProduct.id)
       if (error) throw error
+
+      const changes: Record<string, any> = {}
+      if (oldProduct?.precio !== editProduct.precio) changes.precio = { old: oldProduct?.precio, new: editProduct.precio }
+      if (oldProduct?.stock !== editProduct.stock) changes.stock = { old: oldProduct?.stock, new: editProduct.stock }
+      if (oldProduct?.activo !== editProduct.activo) changes.activo = { old: oldProduct?.activo, new: editProduct.activo }
+      if (Object.keys(changes).length > 0) {
+        await logAuditAction('update_product', 'productos', editProduct.id, changes, user?.email)
+      }
 
       setProducts((prev) =>
         prev
@@ -308,6 +331,7 @@ export default function AdminProductosPage() {
         .update({ activo: newActivo, updated_at: new Date().toISOString() })
         .eq('id', product.id)
       if (error) throw error
+      await logAuditAction('update_product', 'productos', product.id, { activo: { old: product.activo, new: newActivo } }, user?.email)
       setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, activo: newActivo } : p))
     } catch (err: any) {
       showToast('Error al actualizar: ' + err.message)
@@ -751,6 +775,37 @@ export default function AdminProductosPage() {
                 />
               </div>
 
+              {/* Presentación y Laboratorio */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación</label>
+                  <input
+                    type="text"
+                    value={form.presentacion}
+                    onChange={(e) => setForm({ ...form, presentacion: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: 450 ml, 100g"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lab-new" className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <input
+                    id="lab-new"
+                    type="text"
+                    value={form.laboratorio}
+                    onChange={(e) => setForm({ ...form, laboratorio: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: Babs, Holliday"
+                    list="labs-list"
+                  />
+                  <datalist id="labs-list">
+                    {uniqueLabs.map((lab) => (
+                      <option key={lab} value={lab} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
               {/* Precio y Stock */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -899,6 +954,37 @@ export default function AdminProductosPage() {
                   className={`${inputCls} resize-none`}
                   rows={3}
                 />
+              </div>
+
+              {/* Presentación y Laboratorio */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación</label>
+                  <input
+                    type="text"
+                    value={editProduct.presentacion || ''}
+                    onChange={(e) => setEditProduct({ ...editProduct, presentacion: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: 450 ml, 100g"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lab-edit" className="block text-sm font-semibold text-gray-700 mb-1">Laboratorio</label>
+                  <input
+                    id="lab-edit"
+                    type="text"
+                    value={editProduct.laboratorio || ''}
+                    onChange={(e) => setEditProduct({ ...editProduct, laboratorio: e.target.value })}
+                    className={inputCls}
+                    placeholder="Ej: Babs, Holliday"
+                    list="labs-list-edit"
+                  />
+                  <datalist id="labs-list-edit">
+                    {uniqueLabs.map((lab) => (
+                      <option key={lab} value={lab} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
 
               {/* Precio y Stock */}

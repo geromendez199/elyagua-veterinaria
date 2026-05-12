@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
-import { ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUpDown, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase-browser'
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
 
@@ -16,6 +18,8 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-asc',   label: 'Nombre: A–Z' },
 ]
 
+const ITEMS_PER_PAGE = 20
+
 interface ProductsClientProps {
   initialProducts: Product[]
   searchQuery?: string
@@ -24,6 +28,9 @@ interface ProductsClientProps {
 
 export default function ProductsClient({ initialProducts, searchQuery = '', initialCategory = null }: ProductsClientProps) {
   const router = useRouter()
+  const supabase = createClient()
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [products, setProducts] = useState<Product[]>(initialProducts)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(initialCategory)
   const [sortBy, setSortBy] = useState<SortOption>('default')
   const [minPrice, setMinPrice] = useState('')
@@ -31,36 +38,60 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [showPriceFilter, setShowPriceFilter] = useState(false)
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
   const [selectedLab, setSelectedLab] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('productos-stock')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'productos', filter: 'activo=eq.true' },
+        (payload) => {
+          const updated = payload.new as Product
+          setProducts((prev) =>
+            prev.map((p) => (p.id === updated.id ? { ...p, stock: updated.stock, updated_at: updated.updated_at } : p))
+          )
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase])
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
   const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
 
-  const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
+  const clearPriceFilter = () => { setMinPrice(''); setMaxPrice(''); setCurrentPage(1) }
   const clearFilters = () => {
     setMinPrice('')
     setMaxPrice('')
     setStockFilter('all')
     setSelectedCategory(null)
     setSelectedLab(null)
+    setCurrentPage(1)
   }
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    for (const p of initialProducts) {
+    for (const p of products) {
       counts[p.categoria] = (counts[p.categoria] || 0) + 1
     }
     return counts
-  }, [initialProducts])
+  }, [products])
 
   const labCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    for (const p of initialProducts) {
+    for (const p of products) {
       if (p.laboratorio) {
         counts[p.laboratorio] = (counts[p.laboratorio] || 0) + 1
       }
     }
     return counts
-  }, [initialProducts])
+  }, [products])
 
   const handleCategoryChange = (cat: Category | null) => {
     setSelectedCategory(cat)
@@ -72,13 +103,13 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   }
 
   const filteredProducts = useMemo(() => {
-    let products = [...initialProducts]
+    let filtered = [...products]
 
-    if (selectedCategory) products = products.filter((p) => p.categoria === selectedCategory)
+    if (selectedCategory) filtered = filtered.filter((p) => p.categoria === selectedCategory)
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
-      products = products.filter(
+      filtered = filtered.filter(
         (p) =>
           p.nombre.toLowerCase().includes(q) ||
           p.descripcion?.toLowerCase().includes(q) ||
@@ -86,22 +117,58 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
       )
     }
 
-    if (minPrice !== '') products = products.filter((p) => p.precio >= parseFloat(minPrice))
-    if (maxPrice !== '') products = products.filter((p) => p.precio <= parseFloat(maxPrice))
+    if (minPrice !== '') filtered = filtered.filter((p) => p.precio >= parseFloat(minPrice))
+    if (maxPrice !== '') filtered = filtered.filter((p) => p.precio <= parseFloat(maxPrice))
 
-    if (stockFilter === 'in-stock') products = products.filter((p) => p.stock > 0)
-    if (stockFilter === 'low-stock') products = products.filter((p) => p.stock > 0 && p.stock <= 5)
+    if (stockFilter === 'in-stock') filtered = filtered.filter((p) => p.stock > 0)
+    if (stockFilter === 'low-stock') filtered = filtered.filter((p) => p.stock > 0 && p.stock <= 5)
 
-    if (selectedLab) products = products.filter((p) => p.laboratorio === selectedLab)
+    if (selectedLab) filtered = filtered.filter((p) => p.laboratorio === selectedLab)
 
     switch (sortBy) {
-      case 'price-asc':  products.sort((a, b) => a.precio - b.precio); break
-      case 'price-desc': products.sort((a, b) => b.precio - a.precio); break
-      case 'name-asc':   products.sort((a, b) => a.nombre.localeCompare(b.nombre)); break
+      case 'price-asc':  filtered.sort((a, b) => a.precio - b.precio); break
+      case 'price-desc': filtered.sort((a, b) => b.precio - a.precio); break
+      case 'name-asc':   filtered.sort((a, b) => a.nombre.localeCompare(b.nombre)); break
     }
 
-    return products
-  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
+    return filtered
+  }, [products, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
+
+  const paginatedProducts = useMemo(() => {
+    // Mostrar todos los productos hasta la página actual (acumulativo)
+    const end = currentPage * ITEMS_PER_PAGE
+    return filteredProducts.slice(0, end)
+  }, [filteredProducts, currentPage])
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const hasMore = currentPage < totalPages
+
+  const totalPagesRef = useRef(totalPages)
+  const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    totalPagesRef.current = totalPages
+  }, [totalPages])
+
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
+
+  useEffect(() => {
+    if (!sentinelRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && currentPageRef.current < totalPagesRef.current) {
+          setCurrentPage((prev) => prev + 1)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div>
@@ -204,43 +271,41 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
             </div>
           </div>
 
-          {Object.keys(labCounts).length > 0 && (
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <span className="text-sm font-semibold text-gray-700 shrink-0">Laboratorio:</span>
-              <div className="flex flex-wrap items-center gap-2 flex-1">
-                <button
-                  onClick={() => setSelectedLab(null)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                    selectedLab === null
-                      ? 'bg-primary text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
-                  }`}
-                >
-                  Todos
-                </button>
-                {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
-                  <button
-                    key={lab}
-                    onClick={() => setSelectedLab(lab)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                      selectedLab === lab
-                        ? 'bg-primary text-white'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:border-primary'
-                    }`}
-                  >
-                    {lab} ({count})
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
               className="w-full flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-red-500 transition py-2 border border-gray-200 rounded-lg hover:border-red-200"
             >
               <X size={14} /> Limpiar todos los filtros
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Filtro de laboratorios — siempre visible si hay labs */}
+      {Object.keys(labCounts).length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm font-semibold text-gray-600 shrink-0">Laboratorio:</span>
+          <div className="relative">
+            <select
+              value={selectedLab ?? ''}
+              onChange={(e) => setSelectedLab(e.target.value || null)}
+              className={`appearance-none border-2 rounded-lg pl-3 pr-8 py-2 text-sm font-medium outline-none cursor-pointer transition bg-white ${
+                selectedLab
+                  ? 'border-primary text-primary'
+                  : 'border-gray-200 text-gray-700 hover:border-primary'
+              }`}
+            >
+              <option value="">Todos los laboratorios</option>
+              {Object.entries(labCounts).sort(([a], [b]) => a.localeCompare(b)).map(([lab, count]) => (
+                <option key={lab} value={lab}>{lab} ({count})</option>
+              ))}
+            </select>
+            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+          {selectedLab && (
+            <button onClick={() => setSelectedLab(null)} className="text-gray-400 hover:text-red-500 transition">
+              <X size={15} />
             </button>
           )}
         </div>
@@ -264,21 +329,40 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
       {filteredProducts.length === 0 ? (
         <div className="text-center py-16">
-          <svg viewBox="0 0 100 100" className="w-16 h-16 mx-auto mb-4 text-gray-200" fill="currentColor">
-            <ellipse cx="50" cy="65" rx="22" ry="18"/>
-            <circle cx="27" cy="38" r="11"/>
-            <circle cx="73" cy="38" r="11"/>
-            <circle cx="18" cy="57" r="9"/>
-            <circle cx="82" cy="57" r="9"/>
-          </svg>
+          <div className="relative w-24 h-24 mx-auto mb-4 opacity-20">
+            <Image
+              src="/logo-color.png"
+              alt="El Yagua Veterinaria"
+              fill
+              className="object-contain"
+            />
+          </div>
           <p className="text-gray-500 text-lg font-semibold">No se encontraron productos</p>
           <p className="text-sm text-gray-400 mt-1">Probá con otra búsqueda, categoría o rango de precio.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {paginatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {filteredProducts.length > 0 && (
+            <div className="text-center text-sm text-gray-500 py-4">
+              Mostrando {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+            </div>
+          )}
+
+          {/* Sentinel elemento para infinite scroll */}
+          <div ref={sentinelRef} className="py-8 flex justify-center">
+            {hasMore && (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm text-gray-500">Cargando más...</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

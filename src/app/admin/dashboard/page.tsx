@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle } from 'lucide-react'
+import { createClient } from '@/lib/supabase-browser'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, Settings, BarChart3 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -42,26 +42,32 @@ export default function AdminDashboardPage() {
   const [mes, setMes] = useState<MesStats>({ ventas: 0, ventas_anterior: 0, pedidos: 0, pedidos_anterior: 0, ticket_promedio: 0 })
   const [topProductos, setTopProductos] = useState<TopProducto[]>([])
   const [stockBajo, setStockBajo] = useState<{ id: string; nombre: string; stock: number }[]>([])
+  const [cuponesActivos, setCuponesActivos] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
-      setUserEmail(data.session.user.email || '')
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/admin'); return }
+      const displayName = user.user_metadata?.full_name || user.email || 'Admin'
+      setUserEmail(displayName)
 
       const [
         { count: productosCount },
         { data: pedidos },
         { count: clientesCount },
         { data: lowStock },
+        { count: cuponesCount },
       ] = await Promise.all([
         supabase.from('productos').select('*', { count: 'exact', head: true }).eq('activo', true),
-        supabase.from('pedidos').select('estado, total, productos, created_at'),
+        supabase.from('pedidos').select('estado, total, productos, created_at').order('created_at', { ascending: false }).limit(1000),
         supabase.from('clientes').select('*', { count: 'exact', head: true }),
         supabase.from('productos').select('id, nombre, stock').eq('activo', true).lt('stock', 5).order('stock', { ascending: true }).limit(10),
+        supabase.from('cupones').select('*', { count: 'exact', head: true }).eq('activo', true),
       ])
       setStockBajo(lowStock || [])
+      setCuponesActivos(cuponesCount || 0)
 
       const ahora = new Date()
       const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
@@ -109,6 +115,7 @@ export default function AdminDashboardPage() {
   }, [router])
 
   const handleLogout = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/admin')
   }
@@ -152,6 +159,26 @@ export default function AdminDashboardPage() {
       color: 'from-violet-500 to-violet-700',
       badge: null,
     },
+    {
+      href: '/admin/cupones',
+      icon: Tag,
+      titulo: 'Cupones',
+      descripcion: 'Crear y gestionar descuentos',
+      stat: cuponesActivos,
+      statLabel: 'disponibles',
+      color: 'from-rose-400 to-rose-600',
+      badge: null,
+    },
+    {
+      href: '/admin/analytics',
+      icon: BarChart3,
+      titulo: 'Analíticas',
+      descripcion: 'Reportes y estadísticas',
+      stat: 0,
+      statLabel: 'datos',
+      color: 'from-emerald-400 to-emerald-600',
+      badge: null,
+    },
   ]
 
   const maxCantidad = topProductos[0]?.cantidad || 1
@@ -168,13 +195,23 @@ export default function AdminDashboardPage() {
               <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userEmail}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition font-medium"
-          >
-            <LogOut size={16} />
-            <span className="hidden sm:inline">Salir</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/perfil"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition font-medium"
+              title="Mi perfil"
+            >
+              <Settings size={16} />
+              <span className="hidden sm:inline">Perfil</span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition font-medium"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -187,7 +224,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Cards de secciones */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {secciones.map(({ href, icon: Icon, titulo, descripcion, stat, statLabel, color, badge }) => (
             <Link
               key={href}

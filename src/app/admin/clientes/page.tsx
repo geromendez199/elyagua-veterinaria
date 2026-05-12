@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { Cliente } from '@/types'
+import { logAuditAction } from '@/lib/audit-log'
 
 interface ClienteConStats extends Cliente {
   pedidos_count: number
@@ -18,6 +19,7 @@ interface ClienteConStats extends Cliente {
 
 export default function AdminClientesPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [clientes, setClientes] = useState<ClienteConStats[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -27,11 +29,12 @@ export default function AdminClientesPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/admin'); return }
       await fetchData()
     }
     init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   const fetchData = async () => {
@@ -78,7 +81,9 @@ export default function AdminClientesPage() {
 
   const saveNota = async (id: string) => {
     setSavingNota(true)
+    const oldCliente = clientes.find((c) => c.id === id)
     await supabase.from('clientes').update({ notas: notaValue, updated_at: new Date().toISOString() }).eq('id', id)
+    await logAuditAction('update_cliente_nota', 'clientes', id, { nota: { old: oldCliente?.notas || '', new: notaValue } })
     setClientes(prev => prev.map(c => c.id === id ? { ...c, notas: notaValue } : c))
     setEditingId(null)
     setSavingNota(false)
@@ -87,10 +92,12 @@ export default function AdminClientesPage() {
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
+  const searchLower = busqueda.toLowerCase()
   const clientesFiltrados = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    c.nombre.toLowerCase().includes(searchLower) ||
     c.dni.includes(busqueda) ||
-    (c.telefono || '').includes(busqueda)
+    (c.telefono || '').includes(busqueda) ||
+    (c.notas || '').toLowerCase().includes(searchLower)
   )
 
   if (loading) return (

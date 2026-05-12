@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Product } from '@/types'
+import { createClient } from '@/lib/supabase-browser'
 
 export interface CartItem {
   product: Product
@@ -24,24 +25,41 @@ const STORAGE_KEY = 'elyagua-cart'
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [hydrated, setHydrated] = useState(false)
+  const supabase = createClient()
 
-  // Cargar carrito desde localStorage al montar
+  // Cargar carrito desde localStorage + cloud sync
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setItems(JSON.parse(saved))
-    } catch {}
-    setHydrated(true)
+    const initCart = async () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) setItems(JSON.parse(saved))
+      } catch {}
+      setHydrated(true)
+    }
+    initCart()
   }, [])
 
-  // Guardar en localStorage cada vez que cambia el carrito
+  // Guardar en localStorage + sync a cloud
   useEffect(() => {
     if (hydrated) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+        ;(async () => {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            await supabase.from('carts').upsert(
+              {
+                user_id: user.id,
+                items: items.map((i) => ({ product_id: i.product.id, quantity: i.quantity })),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id' }
+            )
+          }
+        })()
       } catch {}
     }
-  }, [items, hydrated])
+  }, [items, hydrated, supabase])
 
   const addItem = (product: Product, quantity: number) => {
     setItems((prev) => {

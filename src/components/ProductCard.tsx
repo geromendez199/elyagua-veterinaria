@@ -45,6 +45,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-contain p-3 group-hover:scale-105 transition duration-300"
+              loading="lazy"
+              quality={75}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-50">
@@ -55,6 +57,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <circle cx="18" cy="57" r="9"/>
                 <circle cx="82" cy="57" r="9"/>
               </svg>
+            </div>
+          )}
+          {/* Presentación badge en esquina inferior derecha */}
+          {product.presentacion && (
+            <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md">
+              <p className="text-sm font-bold text-primary">
+                {product.presentacion}
+              </p>
             </div>
           )}
           {/* Botones compartir y wishlist */}
@@ -94,9 +104,13 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.nombre}
             </h3>
           </div>
-          <p className="text-gray-500 text-xs mb-3 line-clamp-2 flex-1 hidden md:block">
-            {product.descripcion}
-          </p>
+          {product.laboratorio && (
+            <div className="mb-3 hidden md:block">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium text-gray-600">Laboratorio:</span> {product.laboratorio}
+              </p>
+            </div>
+          )}
           <div className="flex justify-between items-end mt-auto gap-2">
             <div>
               <p className="text-base md:text-xl font-bold text-primary">

@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase-browser'
+import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle, Download } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
+import { logAuditAction } from '@/lib/audit-log'
 
 interface Pedido {
   id: string
@@ -39,6 +40,7 @@ function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 
 
 export default function AdminPedidosContent() {
   const router = useRouter()
+  const supabase = createClient()
   const searchParams = useSearchParams()
   const clienteDniFilter = searchParams.get('cliente_dni')
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -47,6 +49,7 @@ export default function AdminPedidosContent() {
   const [accionando, setAccionando] = useState<string | null>(null)
   const [nuevoToast, setNuevoToast] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg)
@@ -56,8 +59,8 @@ export default function AdminPedidosContent() {
 
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/admin'); return }
       const { data: rows } = await supabase
         .from('pedidos')
         .select('*')
@@ -66,6 +69,7 @@ export default function AdminPedidosContent() {
       setLoading(false)
     }
     init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   useEffect(() => {
@@ -119,12 +123,17 @@ export default function AdminPedidosContent() {
       return
     }
 
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: 'pendiente', new: 'confirmado' } })
+
     if (pedido) {
       for (const prod of pedido.productos) {
         if (prod.id) {
           await supabase.rpc('decrement_stock', { p_id: prod.id, p_amount: prod.cantidad })
         }
       }
+
+      const message = generateConfirmationMessage(pedido)
+      openWhatsAppWithMessage(pedido.telefono, message)
     }
 
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'confirmado' } : p))
@@ -133,36 +142,42 @@ export default function AdminPedidosContent() {
 
   const handleEnviar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'enviado' }).eq('id', id)
     if (error) {
       showToast('Error al marcar como enviado. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'enviado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'enviado' } : p))
     setAccionando(null)
   }
 
   const handleEntregar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'entregado' }).eq('id', id)
     if (error) {
       showToast('Error al marcar como entregado. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'entregado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'entregado' } : p))
     setAccionando(null)
   }
 
   const handleCancelar = async (id: string) => {
     setAccionando(id)
+    const pedido = pedidos.find((p) => p.id === id)
     const { error } = await supabase.from('pedidos').update({ estado: 'cancelado' }).eq('id', id)
     if (error) {
       showToast('Error al cancelar el pedido. Revisá los permisos en Supabase.')
       setAccionando(null)
       return
     }
+    await logAuditAction('update_estado', 'pedidos', id, { estado: { old: pedido?.estado || 'pendiente', new: 'cancelado' } })
     setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estado: 'cancelado' } : p))
     setAccionando(null)
   }
@@ -180,6 +195,45 @@ export default function AdminPedidosContent() {
     setAccionando(null)
   }
 
+  const exportToCSV = async () => {
+    try {
+      // Obtener el token de sesión del usuario autenticado
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        showToast('Error: No estás autenticado')
+        return
+      }
+
+      const response = await fetch('/api/export-orders', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          showToast('No autorizado: debes estar logueado como admin')
+        } else {
+          throw new Error('Export failed')
+        }
+        return
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `pedidos-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      showToast('Descarga iniciada')
+    } catch (err) {
+      showToast('Error al descargar')
+    }
+  }
+
   const counts = {
     todos:      pedidos.length,
     pendiente:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'pendiente').length,
@@ -192,7 +246,12 @@ export default function AdminPedidosContent() {
   const pedidosFiltrados = pedidos.filter((p) => {
     const matchEstado = filtro === 'todos' || estadoNormalizado(p.estado) === filtro
     const matchCliente = !clienteDniFilter || p.cliente_dni === clienteDniFilter
-    return matchEstado && matchCliente
+    const matchSearch = !searchTerm ||
+      p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.telefono.includes(searchTerm) ||
+      p.id.includes(searchTerm) ||
+      (p.cliente_dni && p.cliente_dni.includes(searchTerm))
+    return matchEstado && matchCliente && matchSearch
   })
 
   if (loading) return (
@@ -226,6 +285,14 @@ export default function AdminPedidosContent() {
             )}
           </h1>
           <div className="ml-auto flex items-center gap-2 shrink-0">
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
+              title="Descargar como CSV"
+            >
+              <Download size={15} />
+              <span className="hidden sm:inline">Descargar</span>
+            </button>
             <Link
               href="/admin/clientes"
               className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
@@ -249,8 +316,15 @@ export default function AdminPedidosContent() {
         </div>
       </div>
 
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 space-y-3 px-4 py-3">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar por nombre, teléfono, DNI o ID del pedido..."
+          className="w-full max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary text-gray-900"
+        />
+        <div className="flex gap-1 overflow-x-auto">
           {(['todos', 'pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado'] as Filtro[]).map((f) => (
             <button
               key={f}
