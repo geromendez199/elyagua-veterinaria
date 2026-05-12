@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle } from 'lucide-react'
+import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle, Download } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { logAuditAction } from '@/lib/audit-log'
@@ -195,6 +195,25 @@ export default function AdminPedidosContent() {
     setAccionando(null)
   }
 
+  const exportToCSV = async () => {
+    try {
+      const response = await fetch('/api/export-orders')
+      if (!response.ok) throw new Error('Export failed')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `pedidos-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      showToast('Descarga iniciada')
+    } catch (err) {
+      showToast('Error al descargar')
+    }
+  }
+
   const counts = {
     todos:      pedidos.length,
     pendiente:  pedidos.filter((p) => estadoNormalizado(p.estado) === 'pendiente').length,
@@ -246,6 +265,14 @@ export default function AdminPedidosContent() {
             )}
           </h1>
           <div className="ml-auto flex items-center gap-2 shrink-0">
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
+              title="Descargar como CSV"
+            >
+              <Download size={15} />
+              <span className="hidden sm:inline">Descargar</span>
+            </button>
             <Link
               href="/admin/clientes"
               className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-2.5 sm:px-3 py-1.5 rounded-lg transition text-sm font-semibold"
