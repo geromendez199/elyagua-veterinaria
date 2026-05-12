@@ -197,8 +197,28 @@ export default function AdminPedidosContent() {
 
   const exportToCSV = async () => {
     try {
-      const response = await fetch('/api/export-orders')
-      if (!response.ok) throw new Error('Export failed')
+      // Obtener el token de sesión del usuario autenticado
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        showToast('Error: No estás autenticado')
+        return
+      }
+
+      const response = await fetch('/api/export-orders', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          showToast('No autorizado: debes estar logueado como admin')
+        } else {
+          throw new Error('Export failed')
+        }
+        return
+      }
+
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
