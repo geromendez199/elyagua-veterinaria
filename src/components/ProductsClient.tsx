@@ -135,9 +135,9 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   }, [products, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
 
   const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    const end = start + ITEMS_PER_PAGE
-    return filteredProducts.slice(start, end)
+    // Mostrar todos los productos hasta la página actual (acumulativo)
+    const end = currentPage * ITEMS_PER_PAGE
+    return filteredProducts.slice(0, end)
   }, [filteredProducts, currentPage])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
