@@ -502,7 +502,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                   {/* Cupón de descuento */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">🎟️ Código de descuento</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">🏷️ Código de descuento</p>
                     {appliedCoupon ? (
                       <div className="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between">
                         <div>
@@ -790,7 +790,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   {appliedCoupon && (
                     <div className="flex justify-between items-center text-green-700">
-                      <span className="text-sm">🎟️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span className="text-sm">🏷️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
                       <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
                     </div>
                   )}
