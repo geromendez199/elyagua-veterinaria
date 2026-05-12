@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -46,9 +46,10 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
-      setUserEmail(data.session.user.email || '')
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/admin'); return }
+      setUserEmail(user.email || '')
 
       const [
         { count: productosCount },
@@ -57,7 +58,7 @@ export default function AdminDashboardPage() {
         { data: lowStock },
       ] = await Promise.all([
         supabase.from('productos').select('*', { count: 'exact', head: true }).eq('activo', true),
-        supabase.from('pedidos').select('estado, total, productos, created_at'),
+        supabase.from('pedidos').select('estado, total, productos, created_at').order('created_at', { ascending: false }).limit(1000),
         supabase.from('clientes').select('*', { count: 'exact', head: true }),
         supabase.from('productos').select('id, nombre, stock').eq('activo', true).lt('stock', 5).order('stock', { ascending: true }).limit(10),
       ])
@@ -109,6 +110,7 @@ export default function AdminDashboardPage() {
   }, [router])
 
   const handleLogout = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/admin')
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { Product, Category } from '@/types'
 import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard, Search } from 'lucide-react'
 import Image from 'next/image'
@@ -27,6 +27,7 @@ const inputCls = 'w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:bor
 
 export default function AdminProductosPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -92,9 +93,9 @@ export default function AdminProductosPage() {
   useEffect(() => { checkAuth() }, [])
 
   const checkAuth = async () => {
-    const { data } = await supabase.auth.getSession()
-    if (!data.session) { router.push('/admin'); return }
-    setUser(data.session.user)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/admin'); return }
+    setUser(user)
     fetchProducts()
   }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import { Package, MapPin, Truck, Phone, User, ArrowLeft, ShoppingBag, Check, X, Trash2, Users, Bell, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -39,6 +39,7 @@ function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 
 
 export default function AdminPedidosContent() {
   const router = useRouter()
+  const supabase = createClient()
   const searchParams = useSearchParams()
   const clienteDniFilter = searchParams.get('cliente_dni')
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -56,8 +57,8 @@ export default function AdminPedidosContent() {
 
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/admin'); return }
       const { data: rows } = await supabase
         .from('pedidos')
         .select('*')
@@ -66,6 +67,7 @@ export default function AdminPedidosContent() {
       setLoading(false)
     }
     init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   useEffect(() => {

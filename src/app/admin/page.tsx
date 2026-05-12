@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-browser'
 import Image from 'next/image'
 
 export default function AdminLoginPage() {
@@ -18,21 +18,22 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
+      const supabase = createClient()
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (authError) {
-        setError(`Error Supabase: ${authError.message} (status: ${authError.status})`)
+        setError('Email o contraseña incorrectos')
         return
       }
 
       if (data.user) {
         router.push('/admin/dashboard')
       }
-    } catch (err: any) {
-      setError(`Error inesperado: ${err.message}`)
+    } catch {
+      setError('Error al iniciar sesión. Intentá nuevamente.')
     } finally {
       setLoading(false)
     }
