@@ -10,7 +10,7 @@ import { formatPrice } from '@/lib/formatPrice'
 interface Coupon {
   id: string
   codigo: string
-  descuento: number
+  descuento_porcentaje: number
   expires_at: string | null
   activo: boolean
   created_at: string
@@ -65,13 +65,13 @@ export default function AdminCuponesPage() {
       if (editingId) {
         await supabase.from('cupones').update({
           codigo: formData.codigo,
-          descuento,
+          descuento_porcentaje: descuento,
           expires_at: formData.expires_at || null,
         }).eq('id', editingId)
       } else {
         await supabase.from('cupones').insert({
           codigo: formData.codigo,
-          descuento,
+          descuento_porcentaje: descuento,
           expires_at: formData.expires_at || null,
           activo: true,
         })
@@ -102,7 +102,7 @@ export default function AdminCuponesPage() {
   const handleEdit = (coupon: Coupon) => {
     setFormData({
       codigo: coupon.codigo,
-      descuento: String(coupon.descuento),
+      descuento: String(coupon.descuento_porcentaje),
       expires_at: coupon.expires_at ? coupon.expires_at.split('T')[0] : '',
     })
     setEditingId(coupon.id)
@@ -189,7 +189,7 @@ export default function AdminCuponesPage() {
                         <span className="font-bold text-primary text-lg">{coupon.codigo}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-gray-900">${coupon.descuento}</span>
+                        <span className="font-bold text-gray-900">{coupon.descuento_porcentaje}%</span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {coupon.expires_at
@@ -250,13 +250,15 @@ export default function AdminCuponesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Descuento ($)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Descuento (%)</label>
                 <input
                   type="number"
                   value={formData.descuento}
                   onChange={(e) => setFormData({ ...formData, descuento: e.target.value })}
-                  placeholder="ej: 500"
-                  step="10"
+                  placeholder="ej: 10"
+                  min="0"
+                  max="100"
+                  step="5"
                   className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
                 />
               </div>

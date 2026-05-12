@@ -500,6 +500,48 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     ))}
                   </div>
 
+                  {/* Cupón de descuento */}
+                  <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">🎟️ Código de descuento</p>
+                    {appliedCoupon ? (
+                      <div className="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-green-700">{appliedCoupon.codigo}</p>
+                          <p className="text-xs text-green-600">{appliedCoupon.descuento_porcentaje}% de descuento</p>
+                        </div>
+                        <button
+                          onClick={() => removeCoupon()}
+                          className="text-red-500 hover:text-red-700 transition"
+                          title="Remover cupón"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+                          onKeyDown={(e) => e.key === 'Enter' && validateCoupon()}
+                          placeholder="Ingresá tu código"
+                          disabled={couponLoading}
+                          className="flex-1 border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-primary disabled:opacity-50"
+                        />
+                        <button
+                          onClick={validateCoupon}
+                          disabled={!couponCode.trim() || couponLoading}
+                          className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          {couponLoading ? 'Validando...' : 'Aplicar'}
+                        </button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <p className="text-red-500 text-xs font-semibold">{couponError}</p>
+                    )}
+                  </div>
+
                   {/* Info de envío */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Opciones de entrega</p>
@@ -741,9 +783,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 pt-3 mt-1 flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="text-primary font-bold text-xl">{formatPrice(total)}</span>
+                <div className="border-t border-gray-200 pt-3 mt-1 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Subtotal</span>
+                    <span className="text-gray-900 font-semibold">{formatPrice(total)}</span>
+                  </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between items-center text-green-700">
+                      <span className="text-sm">🎟️ Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span className="font-semibold">-{formatPrice(total - (total * (1 - appliedCoupon.descuento_porcentaje / 100)))}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="text-primary font-bold text-xl">{formatPrice(appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total)}</span>
+                  </div>
                 </div>
               </div>
 
