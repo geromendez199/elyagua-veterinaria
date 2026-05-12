@@ -17,6 +17,8 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-asc',   label: 'Nombre: A–Z' },
 ]
 
+const ITEMS_PER_PAGE = 20
+
 interface ProductsClientProps {
   initialProducts: Product[]
   searchQuery?: string
@@ -34,6 +36,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [showPriceFilter, setShowPriceFilter] = useState(false)
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
   const [selectedLab, setSelectedLab] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     const channel = supabase
@@ -56,14 +59,19 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
   const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
 
-  const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
+  const clearPriceFilter = () => { setMinPrice(''); setMaxPrice(''); setCurrentPage(1) }
   const clearFilters = () => {
     setMinPrice('')
     setMaxPrice('')
     setStockFilter('all')
     setSelectedCategory(null)
     setSelectedLab(null)
+    setCurrentPage(1)
   }
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -123,6 +131,15 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
     return filtered
   }, [products, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    const end = start + ITEMS_PER_PAGE
+    return filteredProducts.slice(start, end)
+  }, [filteredProducts, currentPage])
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const hasMore = currentPage < totalPages
 
   return (
     <div>
@@ -299,10 +316,29 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
           <p className="text-sm text-gray-400 mt-1">Probá con otra búsqueda, categoría o rango de precio.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {paginatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg transition"
+              >
+                Cargar más ({currentPage * ITEMS_PER_PAGE} de {filteredProducts.length})
+              </button>
+            </div>
+          )}
+
+          {filteredProducts.length > 0 && (
+            <div className="text-center text-sm text-gray-500 py-4">
+              Mostrando {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+            </div>
+          )}
         </div>
       )}
     </div>
