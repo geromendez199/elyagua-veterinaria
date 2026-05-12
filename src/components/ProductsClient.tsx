@@ -6,6 +6,7 @@ import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
 import { ArrowUpDown, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase-browser'
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
@@ -142,12 +143,23 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
   const hasMore = currentPage < totalPages
 
+  const totalPagesRef = useRef(totalPages)
+  const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    totalPagesRef.current = totalPages
+  }, [totalPages])
+
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
+
   useEffect(() => {
     if (!sentinelRef.current) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && currentPage < totalPages) {
+        if (entries[0].isIntersecting && currentPageRef.current < totalPagesRef.current) {
           setCurrentPage((prev) => prev + 1)
         }
       },
@@ -156,7 +168,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
     observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-  }, [currentPage, totalPages])
+  }, [])
 
   return (
     <div>
@@ -317,18 +329,14 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
       {filteredProducts.length === 0 ? (
         <div className="text-center py-16">
-          <svg viewBox="0 0 100 100" className="w-20 h-20 mx-auto mb-4 text-gray-200" fill="currentColor">
-            {/* Almohadilla central */}
-            <ellipse cx="50" cy="64" rx="20" ry="15"/>
-            {/* Dedo central izquierdo */}
-            <ellipse cx="36" cy="43" rx="7.5" ry="10" transform="rotate(-12 36 43)"/>
-            {/* Dedo central derecho */}
-            <ellipse cx="64" cy="43" rx="7.5" ry="10" transform="rotate(12 64 43)"/>
-            {/* Dedo exterior izquierdo */}
-            <ellipse cx="21" cy="54" rx="6" ry="8" transform="rotate(-28 21 54)"/>
-            {/* Dedo exterior derecho */}
-            <ellipse cx="79" cy="54" rx="6" ry="8" transform="rotate(28 79 54)"/>
-          </svg>
+          <div className="relative w-24 h-24 mx-auto mb-4 opacity-20">
+            <Image
+              src="/logo-color.png"
+              alt="El Yagua Veterinaria"
+              fill
+              className="object-contain"
+            />
+          </div>
           <p className="text-gray-500 text-lg font-semibold">No se encontraron productos</p>
           <p className="text-sm text-gray-400 mt-1">Probá con otra búsqueda, categoría o rango de precio.</p>
         </div>
