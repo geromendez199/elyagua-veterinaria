@@ -42,6 +42,7 @@ export default function AdminDashboardPage() {
   const [mes, setMes] = useState<MesStats>({ ventas: 0, ventas_anterior: 0, pedidos: 0, pedidos_anterior: 0, ticket_promedio: 0 })
   const [topProductos, setTopProductos] = useState<TopProducto[]>([])
   const [stockBajo, setStockBajo] = useState<{ id: string; nombre: string; stock: number }[]>([])
+  const [cuponesActivos, setCuponesActivos] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -57,13 +58,16 @@ export default function AdminDashboardPage() {
         { data: pedidos },
         { count: clientesCount },
         { data: lowStock },
+        { count: cuponesCount },
       ] = await Promise.all([
         supabase.from('productos').select('*', { count: 'exact', head: true }).eq('activo', true),
         supabase.from('pedidos').select('estado, total, productos, created_at').order('created_at', { ascending: false }).limit(1000),
         supabase.from('clientes').select('*', { count: 'exact', head: true }),
         supabase.from('productos').select('id, nombre, stock').eq('activo', true).lt('stock', 5).order('stock', { ascending: true }).limit(10),
+        supabase.from('cupones').select('*', { count: 'exact', head: true }).eq('activo', true),
       ])
       setStockBajo(lowStock || [])
+      setCuponesActivos(cuponesCount || 0)
 
       const ahora = new Date()
       const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
@@ -160,7 +164,7 @@ export default function AdminDashboardPage() {
       icon: Tag,
       titulo: 'Cupones',
       descripcion: 'Crear y gestionar descuentos',
-      stat: 0,
+      stat: cuponesActivos,
       statLabel: 'disponibles',
       color: 'from-rose-400 to-rose-600',
       badge: null,
