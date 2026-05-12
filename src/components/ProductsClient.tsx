@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
@@ -28,6 +28,7 @@ interface ProductsClientProps {
 export default function ProductsClient({ initialProducts, searchQuery = '', initialCategory = null }: ProductsClientProps) {
   const router = useRouter()
   const supabase = createClient()
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(initialCategory)
   const [sortBy, setSortBy] = useState<SortOption>('default')
@@ -140,6 +141,22 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
   const hasMore = currentPage < totalPages
+
+  useEffect(() => {
+    if (!sentinelRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && currentPage < totalPages) {
+          setCurrentPage((prev) => prev + 1)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [currentPage, totalPages])
 
   return (
     <div>
@@ -323,22 +340,21 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
             ))}
           </div>
 
-          {hasMore && (
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={() => setCurrentPage(p => p + 1)}
-                className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg transition"
-              >
-                Cargar más ({currentPage * ITEMS_PER_PAGE} de {filteredProducts.length})
-              </button>
-            </div>
-          )}
-
           {filteredProducts.length > 0 && (
             <div className="text-center text-sm text-gray-500 py-4">
               Mostrando {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
             </div>
           )}
+
+          {/* Sentinel elemento para infinite scroll */}
+          <div ref={sentinelRef} className="py-8 flex justify-center">
+            {hasMore && (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm text-gray-500">Cargando más...</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
