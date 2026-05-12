@@ -133,26 +133,34 @@ export default async function ProductoDetallePage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {/* Producto principal */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            {/* Imagen */}
-            <div className="relative aspect-square bg-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            {/* Imagen - Galería */}
+            <div className="relative bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center min-h-96">
               {product.imagen_url ? (
-                <Image
-                  src={product.imagen_url}
-                  alt={product.nombre}
-                  fill
-                  className="object-contain p-6"
-                  priority
-                />
+                <div className="relative w-full h-96 md:h-full md:min-h-96 flex items-center justify-center">
+                  <Image
+                    src={product.imagen_url}
+                    alt={product.nombre}
+                    width={500}
+                    height={500}
+                    className="object-contain p-8 w-full h-full"
+                    priority
+                    quality={85}
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-700">
+                    Imagen del producto
+                  </div>
+                </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                  <svg viewBox="0 0 100 100" className="w-20 h-20 text-gray-200" fill="currentColor">
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 py-20">
+                  <svg viewBox="0 0 100 100" className="w-24 h-24 text-gray-300 mb-3" fill="currentColor">
                     <ellipse cx="50" cy="65" rx="22" ry="18"/>
                     <circle cx="27" cy="38" r="11"/>
                     <circle cx="73" cy="38" r="11"/>
                     <circle cx="18" cy="57" r="9"/>
                     <circle cx="82" cy="57" r="9"/>
                   </svg>
+                  <p className="text-sm text-gray-400">Sin imagen disponible</p>
                 </div>
               )}
             </div>
@@ -204,19 +212,35 @@ export default async function ProductoDetallePage({ params }: PageProps) {
 
               <div className="mt-auto">
                 {/* Precio */}
-                <div className="mb-4">
-                  <p className="text-4xl font-bold text-primary">
+                <div className="mb-6">
+                  <p className="text-4xl font-bold text-primary mb-3">
                     {formatPrice(product.precio)}
                   </p>
-                  <p className={`text-sm font-semibold mt-1 flex items-center gap-1.5 ${
-                    product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'
-                  }`}>
-                    {product.stock === 0
-                      ? <><XCircle size={15} /> Sin stock</>
-                      : product.stock < 5
-                      ? <><AlertTriangle size={15} /> Últimas {product.stock} unidades</>
-                      : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</> }
-                  </p>
+
+                  {/* Stock Status */}
+                  <div className="space-y-2">
+                    <p className={`text-sm font-semibold flex items-center gap-1.5 ${
+                      product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'
+                    }`}>
+                      {product.stock === 0
+                        ? <><XCircle size={15} /> Sin stock</>
+                        : product.stock < 5
+                        ? <><AlertTriangle size={15} /> Últimas {product.stock} unidades</>
+                        : <><CheckCircle2 size={15} /> En stock</>}
+                    </p>
+
+                    {/* Stock Bar */}
+                    {product.stock > 0 && (
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            product.stock < 5 ? 'bg-orange-500' : product.stock < 10 ? 'bg-yellow-500' : 'bg-green-500'
+                          }`}
+                          style={{ width: `${Math.min((product.stock / 20) * 100, 100)}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Botón agregar al carrito */}
@@ -255,9 +279,46 @@ export default async function ProductoDetallePage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Detalles del producto */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 mb-10">
+          <h2 className="text-lg font-bold text-gray-900 mb-6">Especificaciones del producto</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="pb-4 border-b border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Categoría</p>
+                <p className="font-semibold text-gray-900 capitalize">{product.categoria}</p>
+              </div>
+              {product.presentacion && (
+                <div className="pb-4 border-b border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Presentación</p>
+                  <p className="font-semibold text-gray-900">{product.presentacion}</p>
+                </div>
+              )}
+              {product.laboratorio && (
+                <div className="pb-4 border-b border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Laboratorio</p>
+                  <p className="font-semibold text-gray-900">{product.laboratorio}</p>
+                </div>
+              )}
+            </div>
+            <div className="space-y-4">
+              <div className="pb-4 border-b border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Disponibilidad</p>
+                <p className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {product.stock > 0 ? `${product.stock} unidades` : 'Agotado'}
+                </p>
+              </div>
+              <div className="pb-4 border-b border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Precio</p>
+                <p className="font-semibold text-primary text-lg">{formatPrice(product.precio)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Productos relacionados */}
         {related.length > 0 && (
-          <div className="mt-12">
+          <div className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-5">
               Más productos de <span className="text-primary capitalize">{product.categoria}</span>
             </h2>
