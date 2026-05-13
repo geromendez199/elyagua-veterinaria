@@ -107,10 +107,24 @@ interface VaccinationCalendarProps {
   edadActual: number
 }
 
+const formatAgeForDisplay = (edadDecimal: number): string => {
+  const years = Math.floor(edadDecimal)
+  const months = Math.round((edadDecimal - years) * 12)
+
+  if (years === 0) {
+    return months === 1 ? `${months} mes` : `${months} meses`
+  }
+  if (months === 0) {
+    return years === 1 ? `${years} año` : `${years} años`
+  }
+  return `${years} año${years !== 1 ? 's' : ''} y ${months} mes${months !== 1 ? 'es' : ''}`
+}
+
 export default function VaccinationCalendar({ tipoMascota, edadActual }: VaccinationCalendarProps) {
   const schedule = tipoMascota === 'perro' ? PERRO_SCHEDULE : GATO_SCHEDULE
   const tipoLabel = tipoMascota === 'perro' ? 'PERRO' : 'GATO'
   const icon = tipoMascota === 'perro' ? '🐕' : '🐱'
+  const edadFormato = formatAgeForDisplay(edadActual)
 
   return (
     <div className="w-full bg-white rounded-2xl border-2 border-primary/20 overflow-hidden shadow-lg">
@@ -119,7 +133,7 @@ export default function VaccinationCalendar({ tipoMascota, edadActual }: Vaccina
         <span className="text-3xl">{icon}</span>
         <div>
           <h3 className="text-xl md:text-2xl font-bold">Calendario de Vacunación</h3>
-          <p className="text-primary-light text-sm">{tipoLabel} • Edad actual: {edadActual} años</p>
+          <p className="text-primary-light text-sm">{tipoLabel} • Edad actual: {edadFormato}</p>
         </div>
       </div>
 

@@ -9,8 +9,25 @@ interface ConsejoGrouped {
   [key: string]: Consejo[] | undefined
 }
 
+// Convert years + months to decimal age for API
+const getDecimalAge = (years: number, months: number): number => {
+  return years + months / 12
+}
+
+// Format age for display
+const formatAge = (years: number, months: number): string => {
+  if (years === 0) {
+    return months === 1 ? `${months} mes` : `${months} meses`
+  }
+  if (months === 0) {
+    return years === 1 ? `${years} año` : `${years} años`
+  }
+  return `${years} año${years !== 1 ? 's' : ''} y ${months} mes${months !== 1 ? 'es' : ''}`
+}
+
 export default function ConsejoPage() {
-  const [edad, setEdad] = useState(3)
+  const [years, setYears] = useState(0)
+  const [months, setMonths] = useState(0)
   const [tipo, setTipo] = useState<'perro' | 'gato'>('perro')
   const [consejos, setConsejos] = useState<Consejo[]>([])
   const [grouped, setGrouped] = useState<ConsejoGrouped>({})
@@ -21,6 +38,7 @@ export default function ConsejoPage() {
     setLoading(true)
     setSubmitted(true)
     try {
+      const edad = getDecimalAge(years, months)
       const res = await fetch(`/api/consejos?edad=${edad}&tipo=${tipo}`)
       if (!res.ok) throw new Error('Error fetching consejos')
       const data = await res.json()
@@ -49,26 +67,41 @@ export default function ConsejoPage() {
 
           {/* Form */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-10 space-y-6 max-w-2xl mx-auto">
-            {/* Edad Slider */}
+            {/* Edad Input */}
             <div>
               <label className="block text-left mb-4">
                 <span className="text-lg font-bold">¿Cuántos años tiene tu mascota?</span>
                 <p className="text-primary-light text-sm mt-1">
-                  Edad actual: <span className="font-bold text-white text-2xl">{edad} años</span>
+                  Edad actual: <span className="font-bold text-white text-2xl">{formatAge(years, months)}</span>
                 </p>
               </label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={edad}
-                onChange={(e) => setEdad(parseInt(e.target.value))}
-                className="w-full h-3 bg-white/30 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-              <div className="flex justify-between text-xs text-primary-light mt-2">
-                <span>Recién nacido</span>
-                <span>20+ años</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-primary-light block mb-2">Años</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="25"
+                    value={years}
+                    onChange={(e) => setYears(Math.min(25, Math.max(0, parseInt(e.target.value) || 0)))}
+                    className="w-full bg-white/20 border border-white/30 text-white font-bold text-center py-2 rounded-lg focus:border-white outline-none text-lg"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-primary-light block mb-2">Meses (0-11)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="11"
+                    value={months}
+                    onChange={(e) => setMonths(Math.min(11, Math.max(0, parseInt(e.target.value) || 0)))}
+                    className="w-full bg-white/20 border border-white/30 text-white font-bold text-center py-2 rounded-lg focus:border-white outline-none text-lg"
+                  />
+                </div>
               </div>
+              <p className="text-xs text-primary-light mt-3 text-left">
+                💡 <strong>Tip:</strong> Los cachorros reciben sus primeras vacunas a partir de las 6-8 semanas de edad.
+              </p>
             </div>
 
             {/* Tipo Mascota */}
@@ -152,7 +185,7 @@ export default function ConsejoPage() {
                 {/* Vaccination Calendar - Always show first */}
                 {tipo && (
                   <div>
-                    <VaccinationCalendar tipoMascota={tipo} edadActual={edad} />
+                    <VaccinationCalendar tipoMascota={tipo} edadActual={getDecimalAge(years, months)} />
                   </div>
                 )}
 
