@@ -186,11 +186,21 @@ export default function AdminDashboardPage() {
     {
       href: '/admin/info',
       icon: BookOpen,
-      titulo: 'Consejos',
-      descripcion: 'Tips, tablas e infografías veterinarias',
+      titulo: 'Consejos Veterinarios',
+      descripcion: 'Artículos, tips e infografías',
       stat: null,
       statLabel: '',
       color: 'from-teal-400 to-teal-600',
+      badge: null,
+    },
+    {
+      href: '/admin/consejos',
+      icon: BookOpen,
+      titulo: 'Consejos Personalizables',
+      descripcion: 'Recomendaciones por edad y tipo',
+      stat: null,
+      statLabel: '',
+      color: 'from-cyan-400 to-cyan-600',
       badge: null,
     },
   ]
