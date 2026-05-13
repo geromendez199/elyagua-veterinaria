@@ -84,11 +84,11 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
         <span>1m</span>
         <span>3m</span>
         <span>6m</span>
-        <span>1y</span>
-        <span>3y</span>
-        <span>5y</span>
-        <span>10y</span>
-        <span>20y</span>
+        <span>1 año</span>
+        <span>3 años</span>
+        <span>5 años</span>
+        <span>10 años</span>
+        <span>20 años</span>
       </div>
 
       {/* CSS for slider styling */}
