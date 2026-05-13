@@ -28,9 +28,8 @@ function CarouselCard({ product }: { product: Product }) {
       <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           {product.imagen_url ? (
-            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          ) : null}
-          {!product.imagen_url && (
+            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" />
+          ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
               <div className="text-center">
                 <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth="1.5">

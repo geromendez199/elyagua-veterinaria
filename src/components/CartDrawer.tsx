@@ -416,13 +416,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                               src={item.product.imagen_url}
                               alt={item.product.nombre}
                               className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // Si la imagen falla, mostrar placeholder
-                                (e.target as HTMLImageElement).style.display = 'none'
-                              }}
                             />
-                          ) : null}
-                          {!item.product.imagen_url && (
+                          ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                               <svg viewBox="0 0 24 24" className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>

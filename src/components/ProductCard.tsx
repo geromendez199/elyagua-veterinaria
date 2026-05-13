@@ -45,14 +45,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-contain p-3 group-hover:scale-105 transition duration-300"
-              onError={(e) => {
-                // Si la imagen falla, mostrar placeholder
-                const img = e.target as HTMLImageElement
-                img.style.display = 'none'
-              }}
             />
-          ) : null}
-          {!product.imagen_url && (
+          ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
               <div className="text-center">
                 <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth="1.5">
