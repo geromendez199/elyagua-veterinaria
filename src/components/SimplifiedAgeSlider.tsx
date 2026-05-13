@@ -12,7 +12,9 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
   const displayText =
     months === 0
       ? `${years} ${years === 1 ? 'año' : 'años'}`
-      : `${years} a ${months} ${months === 1 ? 'mes' : 'meses'}`
+      : years === 0
+        ? `${months} ${months === 1 ? 'mes' : 'meses'}`
+        : `${years} ${years === 1 ? 'año' : 'años'} y ${months} ${months === 1 ? 'mes' : 'meses'}`
 
   // Quick preset buttons
   const presets = [
