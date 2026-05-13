@@ -34,21 +34,13 @@ export default async function Home() {
       <section className="bg-primary text-white py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col items-center justify-center text-center gap-6">
-            {/* Logo con "VETERINARIA" recortado + texto HTML reemplazado */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="overflow-hidden h-[100px] md:h-[132px]">
-                <Image
-                  src="/logo-blanco-vertical.png"
-                  alt="El Yagua Hospital Veterinario"
-                  width={200}
-                  height={250}
-                  className="h-36 md:h-48 w-auto mx-auto"
-                />
-              </div>
-              <p className="text-white font-bold tracking-[0.3em] text-xs md:text-sm uppercase">
-                Hospital Veterinario
-              </p>
-            </div>
+            <Image
+              src="/logo-blanco-vertical.png"
+              alt="El Yagua Veterinaria"
+              width={200}
+              height={250}
+              className="h-36 md:h-48 w-auto mx-auto"
+            />
             <div className="max-w-2xl mx-auto px-2 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">¿En qué podemos ayudarte?</h1>
               <p className="text-base md:text-xl text-white">
