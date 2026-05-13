@@ -100,7 +100,7 @@ export default function ConsejoPage() {
       </section>
 
       {/* Articles Grid */}
-      <section className="py-12 md:py-20">
+      <section className="py-12 md:py-20 bg-primary text-white">
         <div className="max-w-7xl mx-auto px-4">
           {loadingArticles ? (
             <div className="text-center py-20">
@@ -120,7 +120,7 @@ export default function ConsejoPage() {
                 <Link
                   key={art.id}
                   href={`/info/${art.slug}`}
-                  className="group flex flex-col border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition bg-white"
+                  className="group flex flex-col border border-gray-100 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition bg-white hover:bg-gray-50"
                 >
                   {/* Imagen */}
                   <div className="relative w-full h-52 bg-gray-50">
@@ -168,9 +168,6 @@ export default function ConsejoPage() {
           )}
         </div>
       </section>
-
-      {/* Divider */}
-      <div className="border-t-2 border-gray-100" />
 
       {/* SECTION 2: Consejos Personalizados (Interactive) */}
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-12 md:py-20">
