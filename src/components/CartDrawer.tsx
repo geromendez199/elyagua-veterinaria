@@ -152,13 +152,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
-    const pagoActual = formData.metodoPago || 'debito'
-    const pagoIncompatible = type === 'envio' && ['debito', 'credito'].includes(pagoActual)
     setFormData({
       ...formData,
       deliveryType: type,
       direccion: type === 'retiro' ? '' : formData.direccion,
-      metodoPago: pagoIncompatible ? 'transferencia' : pagoActual,
     })
   }
 
@@ -531,8 +528,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <Truck size={15} className="text-primary" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800 text-sm">Envío a domicilio</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Consultá disponibilidad al confirmar el pedido</p>
+                        <p className="font-semibold text-gray-800 text-sm">Envío a domicilio · Gratis</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Coordinamos la entrega por WhatsApp</p>
                       </div>
                     </div>
                   </div>
@@ -550,8 +547,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿Cómo recibís tu pedido?</p>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { value: 'retiro', label: 'Retiro en tienda', sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
-                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Costo a coordinar',       icon: Truck  },
+                    { value: 'retiro', label: 'Retiro en tienda',  sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
+                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Gratis',                  icon: Truck  },
                   ] as const).map(({ value, label, sub, icon: Icon }) => (
                     <label
                       key={value}
@@ -667,17 +664,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {formData.deliveryType === 'retiro' ? '¿Cómo pagás en tienda?' : '¿Cómo pagás el envío?'}
                 </p>
                 <div className="space-y-2">
-                  {(formData.deliveryType === 'retiro'
-                    ? [
-                        { value: 'debito',         label: 'Débito / Transferencia', desc: 'Precio de lista' },
-                        { value: 'efectivo',       label: 'Efectivo',               desc: '-10% descuento' },
-                        { value: 'credito',        label: 'Tarjeta Crédito',        desc: 'Hasta 3 pagos (con recargo)' },
-                      ]
-                    : [
-                        { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Te enviamos el CBU/alias por WhatsApp' },
-                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
-                      ]
-                  ).map(opt => (
+                  {([
+                    { value: 'debito',   label: 'Débito / Transferencia', desc: 'Precio de lista' },
+                    { value: 'efectivo', label: 'Efectivo',               desc: '-10% descuento' },
+                    { value: 'credito',  label: 'Tarjeta Crédito',        desc: 'Hasta 3 pagos (con recargo)' },
+                  ]).map(opt => (
                     <label
                       key={opt.value}
                       className={`flex items-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer transition ${
