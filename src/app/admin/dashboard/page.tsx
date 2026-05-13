@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -183,6 +183,16 @@ export default function AdminDashboardPage() {
       color: 'from-rose-400 to-rose-600',
       badge: null,
     },
+    {
+      href: '/admin/info',
+      icon: BookOpen,
+      titulo: 'Info / Artículos',
+      descripcion: 'Publicar consejos y artículos veterinarios',
+      stat: null,
+      statLabel: '',
+      color: 'from-teal-400 to-teal-600',
+      badge: null,
+    },
   ]
 
   const maxCantidad = topProductos[0]?.cantidad || 1
@@ -239,8 +249,8 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-gray-500 mb-4">{descripcion}</p>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{stat}</p>
-                    <p className="text-xs text-gray-400">{statLabel}</p>
+                    {stat !== null && <p className="text-2xl font-bold text-gray-900">{stat}</p>}
+                    {statLabel && <p className="text-xs text-gray-400">{statLabel}</p>}
                   </div>
                   <div className="w-8 h-8 bg-gray-100 group-hover:bg-primary rounded-full flex items-center justify-center transition-colors">
                     <ChevronRight size={16} className="text-gray-400 group-hover:text-white transition-colors" />

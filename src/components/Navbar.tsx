@@ -78,6 +78,7 @@ export default function Navbar() {
                 <>
                   <Link href="/" className="hover:text-primary-light transition font-medium">Inicio</Link>
                   <Link href="/productos" className="hover:text-primary-light transition font-medium">Productos</Link>
+                  <Link href="/info" className="hover:text-primary-light transition font-medium">Info</Link>
                   <Link href="/quienes-somos" className="hover:text-primary-light transition font-medium">Quiénes Somos</Link>
                   <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
                   <button
@@ -157,8 +158,8 @@ export default function Navbar() {
             <div className="md:hidden mt-3 pb-3 border-t border-white/20 flex flex-col gap-1 pt-3">
               <Link href="/" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Inicio</Link>
               <Link href="/productos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Productos</Link>
+              <Link href="/info" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Info</Link>
               <Link href="/quienes-somos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Quiénes Somos</Link>
-              <Link href="/favoritos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Favoritos</Link>
               <Link href="/contacto" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Contacto</Link>
             </div>
           )}

@@ -42,3 +42,19 @@ export interface Cliente {
   created_at: string
   updated_at: string
 }
+
+export type ArticuloCategoria = 'Nutrición' | 'Salud' | 'Prevención' | 'Cuidados' | 'General'
+
+export interface Articulo {
+  id: string
+  titulo: string
+  slug: string
+  resumen: string
+  contenido: string
+  imagen_url: string | null
+  autor: string
+  categoria: ArticuloCategoria
+  activo: boolean
+  created_at: string
+  updated_at: string
+}
