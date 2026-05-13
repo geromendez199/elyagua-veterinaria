@@ -78,17 +78,30 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
         />
       </div>
 
-      {/* Scale labels - Detailed for young pets */}
-      <div className="flex justify-between text-xs text-white/60 font-semibold px-1">
-        <span>0</span>
-        <span>1m</span>
-        <span>3m</span>
-        <span>6m</span>
-        <span>12m</span>
-        <span>2 años</span>
-        <span>5 años</span>
-        <span>10 años</span>
-        <span>20 años</span>
+      {/* Scale labels - Positioned to match exact slider values */}
+      <div className="relative h-6 px-1">
+        {[
+          { label: '0', value: 0 },
+          { label: '1m', value: 1 / 12 },
+          { label: '3m', value: 3 / 12 },
+          { label: '6m', value: 6 / 12 },
+          { label: '12m', value: 1 },
+          { label: '2 años', value: 2 },
+          { label: '5 años', value: 5 },
+          { label: '10 años', value: 10 },
+          { label: '20 años', value: 20 },
+        ].map((item) => (
+          <span
+            key={item.label}
+            className="absolute text-xs text-white/60 font-semibold whitespace-nowrap"
+            style={{
+              left: `${(item.value / 20.5) * 100}%`,
+              transform: 'translateX(-50%)',
+            }}
+          >
+            {item.label}
+          </span>
+        ))}
       </div>
 
       {/* CSS for slider styling */}
