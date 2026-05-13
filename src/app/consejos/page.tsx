@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria, Consejo, CONSEJO_CATEGORIES } from '@/types'
 import VaccinationCalendar from '@/components/VaccinationCalendar'
-import AgePhaseSlider from '@/components/AgePhaseSlider'
+import SimplifiedAgeSlider from '@/components/SimplifiedAgeSlider'
 import { BookOpen, Calendar, User } from 'lucide-react'
 import type { Metadata } from 'next'
 
@@ -41,7 +41,7 @@ export default function ConsejoPage() {
   const [loadingArticles, setLoadingArticles] = useState(true)
 
   // Interactive section state
-  const [weeksAge, setWeeksAge] = useState(8) // Start at first vaccine age
+  const [ageInYears, setAgeInYears] = useState(1.5) // Default: 1.5 years
   const [tipo, setTipo] = useState<'perro' | 'gato'>('perro')
   const [consejos, setConsejos] = useState<Consejo[]>([])
   const [grouped, setGrouped] = useState<ConsejoGrouped>({})
@@ -73,8 +73,7 @@ export default function ConsejoPage() {
     setLoading(true)
     setSubmitted(true)
     try {
-      const edad = weeksToDecimalYears(weeksAge)
-      const res = await fetch(`/api/consejos?edad=${edad}&tipo=${tipo}`)
+      const res = await fetch(`/api/consejos?edad=${ageInYears}&tipo=${tipo}`)
       if (!res.ok) throw new Error('Error fetching consejos')
       const data = await res.json()
       setConsejos(data.consejos || [])
@@ -185,11 +184,8 @@ export default function ConsejoPage() {
 
           {/* Form */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 md:p-10 space-y-6 max-w-2xl mx-auto">
-            {/* Age Phase Slider */}
-            <div className="text-left">
-              <label className="block text-lg font-bold mb-6">¿Cuántos años tiene tu mascota?</label>
-              <AgePhaseSlider value={weeksAge} onChange={setWeeksAge} />
-            </div>
+            {/* Age Slider */}
+            <SimplifiedAgeSlider value={ageInYears} onChange={setAgeInYears} />
 
             {/* Tipo Mascota */}
             <div>
@@ -272,7 +268,7 @@ export default function ConsejoPage() {
                 {/* Vaccination Calendar - Always show first */}
                 {tipo && (
                   <div>
-                    <VaccinationCalendar tipoMascota={tipo} edadActual={weeksToDecimalYears(weeksAge)} />
+                    <VaccinationCalendar tipoMascota={tipo} edadActual={ageInYears} />
                   </div>
                 )}
 
