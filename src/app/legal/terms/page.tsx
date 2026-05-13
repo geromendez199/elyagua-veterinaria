@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
-import { WA_URL, PHONE_DISPLAY } from '@/lib/constants'
+import { WA_URL } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Términos y Condiciones',

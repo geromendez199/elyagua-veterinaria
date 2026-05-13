@@ -21,27 +21,25 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 const STORAGE_KEY = 'elyagua-cart'
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
-  const [hydrated, setHydrated] = useState(false)
+function loadFromStorage(): CartItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  } catch {
+    return []
+  }
+}
 
-  // Cargar carrito desde localStorage al montar
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setItems(JSON.parse(saved))
-    } catch {}
-    setHydrated(true)
-  }, [])
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>(loadFromStorage)
 
   // Guardar en localStorage cada vez que cambia el carrito
   useEffect(() => {
-    if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-      } catch {}
-    }
-  }, [items, hydrated])
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    } catch {}
+  }, [items])
 
   const addItem = (product: Product, quantity: number) => {
     setItems((prev) => {

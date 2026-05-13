@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
 
 /**
  * Webhook endpoint for Mercado Pago payment notifications
@@ -20,7 +19,8 @@ export async function POST(request: NextRequest) {
 
     // Mercado Pago sends action=payment.created and data.id
     if (body.action === 'payment.created' || body.action === 'payment.updated') {
-      const paymentId = body.data?.id
+      // paymentId reserved for future MP integration
+      void body.data?.id
 
       // TODO: Fetch full payment details from Mercado Pago API
       // const payment = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
@@ -52,9 +52,12 @@ export async function POST(request: NextRequest) {
  * window.location.href = mpPreference.init_point // Redirect to MP checkout
  */
 export async function createMercadoPagoPreference(
-  total: number,
-  items: Array<{ product: { id: string; nombre: string; precio: number }; quantity: number }>,
-  customer: { nombre: string; email: string; telefono: string }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _total: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _items: Array<{ product: { id: string; nombre: string; precio: number }; quantity: number }>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _customer: { nombre: string; email: string; telefono: string }
 ) {
   // TODO: Implement when ready
   // const preference = {

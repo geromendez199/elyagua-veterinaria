@@ -31,8 +31,8 @@ export default function AdminLoginPage() {
       if (data.user) {
         router.push('/admin/dashboard')
       }
-    } catch (err: any) {
-      setError(`Error inesperado: ${err.message}`)
+    } catch (err: unknown) {
+      setError(`Error inesperado: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setLoading(false)
     }

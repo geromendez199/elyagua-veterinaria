@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introducción</h2>
             <p>
-              El Yagua Veterinaria ("nosotros", "nuestro", "la empresa") se compromete a proteger tu privacidad. Esta Política
+              El Yagua Veterinaria (&ldquo;nosotros&rdquo;, &ldquo;nuestro&rdquo;, &ldquo;la empresa&rdquo;) se compromete a proteger tu privacidad. Esta Política
               de Privacidad explica cómo recopilamos, usamos, divulgamos y salvaguardamos tu información cuando utilizas nuestro
               sitio web elyagua-veterinaria.vercel.app.
             </p>

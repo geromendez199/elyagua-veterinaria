@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Plus, Trash2, Edit2, LogOut, ShoppingBag, Tag } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Edit2, LogOut, Tag } from 'lucide-react'
 import Link from 'next/link'
-import { formatPrice } from '@/lib/formatPrice'
 
 interface Coupon {
   id: string
@@ -26,7 +25,21 @@ export default function AdminCuponesPage() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
 
-  useEffect(() => { checkAuth() }, [])
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3000)
+  }
+
+  const fetchCoupons = async () => {
+    try {
+      const { data } = await supabase.from('cupones').select('*').order('created_at', { ascending: false })
+      setCoupons(data || [])
+    } catch (err: unknown) {
+      showToast('Error cargando cupones: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -34,21 +47,8 @@ export default function AdminCuponesPage() {
     await fetchCoupons()
   }
 
-  const fetchCoupons = async () => {
-    try {
-      const { data } = await supabase.from('cupones').select('*').order('created_at', { ascending: false })
-      setCoupons(data || [])
-    } catch (err: any) {
-      showToast('Error cargando cupones: ' + err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(''), 3000)
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { checkAuth() }, [])
 
   const handleSave = async () => {
     if (!formData.codigo || !formData.descuento_porcentaje) {
@@ -80,8 +80,8 @@ export default function AdminCuponesPage() {
       setEditingId(null)
       setShowModal(false)
       await fetchCoupons()
-    } catch (err: any) {
-      showToast('Error: ' + err.message)
+    } catch (err: unknown) {
+      showToast('Error: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setSaving(false)
     }
@@ -93,8 +93,8 @@ export default function AdminCuponesPage() {
       await supabase.from('cupones').delete().eq('id', id)
       showToast('Cupón eliminado')
       await fetchCoupons()
-    } catch (err: any) {
-      showToast('Error: ' + err.message)
+    } catch (err: unknown) {
+      showToast('Error: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 

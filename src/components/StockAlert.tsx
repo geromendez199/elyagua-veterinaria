@@ -38,7 +38,7 @@ export default function StockAlert({ productId, productName, inStock }: StockAle
       setNombre('')
 
       setTimeout(() => setMessage(''), 3000)
-    } catch (error) {
+    } catch {
       setMessage('Error al suscribirse. Intentá de nuevo.')
     } finally {
       setLoading(false)

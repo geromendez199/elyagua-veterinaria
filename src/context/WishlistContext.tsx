@@ -15,25 +15,24 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
 const STORAGE_KEY = 'elyagua-wishlist'
 
+function loadFromStorage(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  } catch {
+    return []
+  }
+}
+
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<string[]>([])
-  const [hydrated, setHydrated] = useState(false)
+  const [items, setItems] = useState<string[]>(loadFromStorage)
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setItems(JSON.parse(saved))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
     } catch {}
-    setHydrated(true)
-  }, [])
-
-  useEffect(() => {
-    if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-      } catch {}
-    }
-  }, [items, hydrated])
+  }, [items])
 
   const addItem = (productId: string) => {
     setItems((prev) => prev.includes(productId) ? prev : [...prev, productId])

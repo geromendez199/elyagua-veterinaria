@@ -33,7 +33,7 @@ const ESTADO_CONFIG = {
 
 function estadoNormalizado(estado: string | null): 'pendiente' | 'confirmado' | 'enviado' | 'entregado' | 'cancelado' {
   const validStates = ['confirmado', 'enviado', 'entregado', 'cancelado']
-  if (validStates.includes(estado || '')) return estado as any
+  if (validStates.includes(estado || '')) return estado as 'confirmado' | 'enviado' | 'entregado' | 'cancelado'
   return 'pendiente'
 }
 

@@ -35,7 +35,6 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
   const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
 
-  const clearPriceFilter = () => { setMinPrice(''); setMaxPrice('') }
   const clearFilters = () => {
     setMinPrice('')
     setMaxPrice('')

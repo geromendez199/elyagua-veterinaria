@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
 import InstagramIcon from '@/components/InstagramIcon'
 import FacebookIcon from '@/components/FacebookIcon'
-import { PHONE, WA_URL, WA_NUMBER, INSTAGRAM_URL, FACEBOOK_URL, EMERGENCY_PHONE, MAPS_URL } from '@/lib/constants'
+import { PHONE, WA_URL, INSTAGRAM_URL, FACEBOOK_URL, EMERGENCY_PHONE } from '@/lib/constants'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',

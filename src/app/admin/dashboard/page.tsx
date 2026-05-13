@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
         if (adminData?.nombre) {
           setUserName(adminData.nombre)
         }
-      } catch (err) {
+      } catch {
         // Si no existe en tabla, usar el email como fallback
         setUserName(email)
       }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import NextImage from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
@@ -128,7 +129,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
       )
       const data = await res.json()
-      const items = (data.direcciones || []).map((d: any) => d.nomenclatura as string).filter(Boolean)
+      const items = (data.direcciones || []).map((d: { nomenclatura?: string }) => d.nomenclatura as string).filter(Boolean)
       setAddressSuggestions(items)
     } catch {
       setAddressSuggestions([])
@@ -180,7 +181,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const handleBlur = (field: keyof FormTouched) => {
     setTouched((prev) => ({ ...prev, [field]: true }))
     const value =
-      field === 'direccion' ? formData.direccion || '' : (formData as any)[field]
+      field === 'direccion' ? formData.direccion || '' : (formData as unknown as Record<string, string>)[field]
     setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
   }
 
@@ -410,12 +411,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     {items.map((item) => (
                       <div key={item.product.id} className="border border-gray-200 rounded-xl p-3 flex gap-3">
                         {/* Imagen del producto */}
-                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0 relative">
                           {item.product.imagen_url ? (
-                            <img
+                            <NextImage
                               src={item.product.imagen_url}
                               alt={item.product.nombre}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="80px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">

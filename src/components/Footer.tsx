@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import InstagramIcon from './InstagramIcon'
 import FacebookIcon from './FacebookIcon'
-import { PHONE, PHONE_DISPLAY, MAPS_URL, WA_URL, INSTAGRAM_URL, FACEBOOK_URL } from '@/lib/constants'
+import { PHONE, PHONE_DISPLAY, MAPS_URL, INSTAGRAM_URL, FACEBOOK_URL } from '@/lib/constants'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -57,7 +57,7 @@ export default function Footer() {
             <ul className="text-sm space-y-3 text-gray-300">
               <li>
                 <a
-                  href="{MAPS_URL}"
+                  href={MAPS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-2 hover:text-primary transition"
@@ -74,7 +74,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="{INSTAGRAM_URL}"
+                  href={INSTAGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-primary transition"
@@ -85,7 +85,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="{FACEBOOK_URL}"
+                  href={FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-primary transition"

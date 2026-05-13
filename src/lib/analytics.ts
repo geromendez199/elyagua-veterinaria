@@ -7,7 +7,7 @@ export const pageview = (url: string) => {
   })
 }
 
-export const event = (action: string, params?: Record<string, any>) => {
+export const event = (action: string, params?: Record<string, string | number | boolean | undefined>) => {
   if (!GA_ID) return
   window.gtag?.('event', action, params)
 }
@@ -21,5 +21,5 @@ export const purchaseEvent = (value: number, currency: string = 'ARS', transacti
 }
 
 declare global {
-  function gtag(...args: any[]): void
+  function gtag(...args: (string | number | boolean | object | undefined)[]): void
 }

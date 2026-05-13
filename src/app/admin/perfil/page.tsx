@@ -42,7 +42,7 @@ export default function AdminPerfilPage() {
         if (data) {
           setProfile(data)
         }
-      } catch (err) {
+      } catch {
         // Si no existe, crear registro
         await supabase.from('administradores').insert({
           email,
@@ -75,8 +75,8 @@ export default function AdminPerfilPage() {
 
       if (error) throw error
       showMessage('Perfil actualizado correctamente', 'success')
-    } catch (err: any) {
-      showMessage('Error al guardar: ' + err.message, 'error')
+    } catch (err: unknown) {
+      showMessage('Error al guardar: ' + (err instanceof Error ? err.message : String(err)), 'error')
     } finally {
       setSaving(false)
     }

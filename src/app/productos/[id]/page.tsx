@@ -210,11 +210,11 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                     {formatPrice(product.precio)}
                   </p>
                   <p className={`text-sm font-semibold mt-1 flex items-center gap-1.5 ${
-                    product.stock === 0 ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'
+                    product.stock === 0 ? 'text-red-500' : product.stock < LOW_STOCK_THRESHOLD ? 'text-orange-500' : 'text-green-600'
                   }`}>
                     {product.stock === 0
                       ? <><XCircle size={15} /> Sin stock</>
-                      : product.stock < 5
+                      : product.stock < LOW_STOCK_THRESHOLD
                       ? <><AlertTriangle size={15} /> Últimas {product.stock} unidades</>
                       : <><CheckCircle2 size={15} /> En stock ({product.stock} disponibles)</> }
                   </p>

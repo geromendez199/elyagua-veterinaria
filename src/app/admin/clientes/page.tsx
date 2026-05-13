@@ -25,15 +25,6 @@ export default function AdminClientesPage() {
   const [savingNota, setSavingNota] = useState(false)
   const [busqueda, setBusqueda] = useState('')
 
-  useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) { router.push('/admin'); return }
-      await fetchData()
-    }
-    init()
-  }, [router])
-
   const fetchData = async () => {
     const [{ data: clientesData }, { data: pedidosData }] = await Promise.all([
       supabase.from('clientes').select('*').order('created_at', { ascending: false }),
@@ -69,6 +60,15 @@ export default function AdminClientesPage() {
     }))
     setLoading(false)
   }
+
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) { router.push('/admin'); return }
+      await fetchData()
+    }
+    init()
+  }, [router])
 
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar este cliente?')) return
@@ -147,7 +147,7 @@ export default function AdminClientesPage() {
             <p className="text-sm mt-1">Se crean automáticamente cuando un cliente ingresa su DNI al hacer un pedido.</p>
           </div>
         ) : clientesFiltrados.length === 0 ? (
-          <p className="text-center py-12 text-gray-400">No se encontraron clientes para "{busqueda}"</p>
+          <p className="text-center py-12 text-gray-400">No se encontraron clientes para &ldquo;{busqueda}&rdquo;</p>
         ) : (
           <div className="space-y-3">
             {clientesFiltrados.map(cliente => (

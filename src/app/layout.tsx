@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
-import { PHONE, SITE_URL, INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
+import { PHONE, SITE_URL } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";

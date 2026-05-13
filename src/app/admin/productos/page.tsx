@@ -27,7 +27,7 @@ export default function AdminProductosPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ email?: string } | null>(null)
 
   // ── Modal nuevo producto ───────────────────────────────────────
   const [showModal, setShowModal] = useState(false)
@@ -70,8 +70,8 @@ export default function AdminProductosPage() {
         .eq('id', id)
       if (error) throw error
       setProducts((prev) => prev.map((p) => p.id === id ? { ...p, stock: newStock } : p))
-    } catch (err: any) {
-      showToast('Error al actualizar stock: ' + err.message)
+    } catch (err: unknown) {
+      showToast('Error al actualizar stock: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setEditingStockId(null)
     }
@@ -81,15 +81,6 @@ export default function AdminProductosPage() {
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
   const existingImageRef = useRef<HTMLInputElement>(null)
   const uploadTargetId = useRef<string | null>(null)
-
-  useEffect(() => { checkAuth() }, [])
-
-  const checkAuth = async () => {
-    const { data } = await supabase.auth.getSession()
-    if (!data.session) { router.push('/admin'); return }
-    setUser(data.session.user)
-    fetchProducts()
-  }
 
   const fetchProducts = async () => {
     try {
@@ -105,6 +96,16 @@ export default function AdminProductosPage() {
       setLoading(false)
     }
   }
+
+  const checkAuth = async () => {
+    const { data } = await supabase.auth.getSession()
+    if (!data.session) { router.push('/admin'); return }
+    setUser(data.session.user)
+    fetchProducts()
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { checkAuth() }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -163,8 +164,8 @@ export default function AdminProductosPage() {
       if (oldUrl) await deleteStorageFile(oldUrl)
 
       setProducts((prev) => prev.map((p) => p.id === productId ? { ...p, imagen_url } : p))
-    } catch (err: any) {
-      showToast('Error al subir imagen: ' + err.message)
+    } catch (err: unknown) {
+      showToast('Error al subir imagen: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setUploadingImageId(null)
       uploadTargetId.current = null
@@ -217,8 +218,8 @@ export default function AdminProductosPage() {
       setForm(emptyForm)
       setImageFile(null)
       setImagePreview(null)
-    } catch (err: any) {
-      setSaveError(err.message || 'Error al guardar el producto')
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : 'Error al guardar el producto')
     } finally {
       setSaving(false)
     }
@@ -292,8 +293,8 @@ export default function AdminProductosPage() {
           .sort((a, b) => a.nombre.localeCompare(b.nombre))
       )
       closeEditModal()
-    } catch (err: any) {
-      setEditSaveError(err.message || 'Error al guardar')
+    } catch (err: unknown) {
+      setEditSaveError(err instanceof Error ? err.message : 'Error al guardar')
     } finally {
       setEditSaving(false)
     }
@@ -309,8 +310,8 @@ export default function AdminProductosPage() {
         .eq('id', product.id)
       if (error) throw error
       setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, activo: newActivo } : p))
-    } catch (err: any) {
-      showToast('Error al actualizar: ' + err.message)
+    } catch (err: unknown) {
+      showToast('Error al actualizar: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -674,7 +675,7 @@ export default function AdminProductosPage() {
           {products.length === 0 && (
             <div className="text-center py-16 text-gray-400">
               <p className="text-lg">No hay productos todavía.</p>
-              <p className="text-sm mt-1">Usá el botón "Nuevo producto" para agregar el primero.</p>
+              <p className="text-sm mt-1">Usá el botón &ldquo;Nuevo producto&rdquo; para agregar el primero.</p>
             </div>
           )}
         </div>
