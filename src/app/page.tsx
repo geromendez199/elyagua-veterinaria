@@ -78,14 +78,14 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Foto */}
             <div className="rounded-2xl overflow-hidden shadow-lg">
-              <div className="relative w-full aspect-square">
-                <Image
-                  src="/team.jpg"
-                  alt="Equipo de El Yagua Veterinaria"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <Image
+                src="/team.jpg"
+                alt="Equipo de El Yagua Veterinaria"
+                width={600}
+                height={600}
+                className="w-full h-auto object-cover"
+                priority
+              />
             </div>
 
             {/* Contenido */}
