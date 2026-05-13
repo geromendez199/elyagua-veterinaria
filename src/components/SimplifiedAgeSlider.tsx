@@ -5,6 +5,22 @@ interface SimplifiedAgeSliderProps {
   onChange: (value: number) => void
 }
 
+interface WeekBand {
+  label: string
+  minWeeks: number
+  maxWeeks: number
+  color: string
+}
+
+interface YearBand {
+  label: string
+  minMonths: number
+  maxYears: number
+  color: string
+}
+
+type AgeBand = WeekBand | YearBand
+
 export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSliderProps) {
   const years = Math.floor(value)
   const months = Math.round((value - years) * 12)
@@ -17,7 +33,7 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
         : `${years} ${years === 1 ? 'año' : 'años'} y ${months} ${months === 1 ? 'mes' : 'meses'}`
 
   // Age range bands based on developmental stages
-  const ageBands = [
+  const ageBands: AgeBand[] = [
     { label: '6-8 sem', minWeeks: 6, maxWeeks: 8, color: 'bg-red-100 text-red-700 border-red-300' },
     { label: '8-10 sem', minWeeks: 8, maxWeeks: 10, color: 'bg-orange-100 text-orange-700 border-orange-300' },
     { label: '12-14 sem', minWeeks: 12, maxWeeks: 14, color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
@@ -26,25 +42,31 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
     { label: 'Anual', minMonths: 12, maxYears: 20, color: 'bg-purple-100 text-purple-700 border-purple-300' },
   ]
 
-  const handleBandClick = (band: typeof ageBands[0]) => {
-    if ('minWeeks' in band && 'maxWeeks' in band) {
-      const midWeeks = (band.minWeeks + band.maxWeeks) / 2
+  const handleBandClick = (band: AgeBand) => {
+    if ('minWeeks' in band) {
+      const weekBand = band as WeekBand
+      const midWeeks = (weekBand.minWeeks + weekBand.maxWeeks) / 2
       onChange(midWeeks / 52) // Convert weeks to years
-    } else if ('minMonths' in band) {
-      const midMonths = band.minMonths + (band.maxYears - 1) * 12 / 2
+    } else {
+      const yearBand = band as YearBand
+      const midMonths = yearBand.minMonths + (yearBand.maxYears - 1) * 12 / 2
       onChange(midMonths / 12)
     }
   }
 
-  const getActiveBand = () => {
+  const getActiveBand = (): AgeBand | null => {
     const months = value * 12
     for (const band of ageBands) {
-      if ('minWeeks' in band && 'maxWeeks' in band) {
-        const minMonths = (band.minWeeks / 52) * 12
-        const maxMonths = (band.maxWeeks / 52) * 12
+      if ('minWeeks' in band) {
+        const weekBand = band as WeekBand
+        const minMonths = (weekBand.minWeeks / 52) * 12
+        const maxMonths = (weekBand.maxWeeks / 52) * 12
         if (months >= minMonths && months <= maxMonths) return band
-      } else if (months >= band.minMonths) {
-        return band
+      } else {
+        const yearBand = band as YearBand
+        if (months >= yearBand.minMonths) {
+          return band
+        }
       }
     }
     return null
