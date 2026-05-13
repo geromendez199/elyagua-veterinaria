@@ -747,9 +747,27 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <span className="text-gray-900 font-semibold shrink-0">{formatPrice(item.product.precio * item.quantity)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 pt-3 mt-1 flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="text-primary font-bold text-xl">{formatPrice(total)}</span>
+                <div className="border-t border-gray-200 pt-3 mt-1 space-y-1">
+                  {appliedCoupon && (
+                    <>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>Subtotal</span>
+                        <span>{formatPrice(total)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-rose-600 font-semibold">
+                        <span>Descuento ({appliedCoupon.codigo} · {appliedCoupon.descuento_porcentaje}%)</span>
+                        <span>-{formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="text-primary font-bold text-xl">
+                      {appliedCoupon
+                        ? formatPrice(total * (1 - appliedCoupon.descuento_porcentaje / 100))
+                        : formatPrice(total)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
