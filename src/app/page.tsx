@@ -72,6 +72,43 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Quiénes Somos Section */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Foto */}
+            <div className="rounded-2xl overflow-hidden shadow-lg">
+              <div className="relative w-full aspect-square">
+                <Image
+                  src="/team.jpg"
+                  alt="Equipo de El Yagua Veterinaria"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div>
+              <span className="text-primary font-bold text-sm uppercase tracking-wide">Nuestro Equipo</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 my-4">Quiénes Somos</h2>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                El Yagua Veterinaria es un equipo profesional dedicado al bienestar y cuidado de tus mascotas desde 2015. Ubicados en Bv. Lehmann 609, Rafaela, nos especializamos en ofrecer productos de calidad premium y atención profesional personalizada.
+              </p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Cada miembro de nuestro equipo está comprometido con la excelencia veterinaria y la satisfacción de nuestros clientes, tratando a cada mascota como si fuera parte de nuestra familia.
+              </p>
+              <Link
+                href="/quienes-somos"
+                className="inline-block bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primary-dark transition"
+              >
+                Conoce más sobre nosotros
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features strip */}
       <section className="py-8 md:py-12 bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4">
