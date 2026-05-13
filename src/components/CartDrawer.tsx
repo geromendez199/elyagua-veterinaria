@@ -41,7 +41,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     telefono: '',
     deliveryType: 'retiro',
     dni: '',
-    metodoPago: 'efectivo',
+    metodoPago: 'debito',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -152,13 +152,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
-    const pagoActual = formData.metodoPago || 'efectivo'
+    const pagoActual = formData.metodoPago || 'debito'
     const pagoIncompatible = type === 'envio' && ['debito', 'credito'].includes(pagoActual)
     setFormData({
       ...formData,
       deliveryType: type,
       direccion: type === 'retiro' ? '' : formData.direccion,
-      metodoPago: pagoIncompatible ? 'efectivo' : pagoActual,
+      metodoPago: pagoIncompatible ? 'transferencia' : pagoActual,
     })
   }
 
@@ -258,7 +258,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       )
       .join('\n\n')
 
-    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito (precio lista)', credito: 'Crédito (con recargo)', transferencia: 'Transferencia bancaria' }
+    const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito / Transferencia', credito: 'Crédito (hasta 3 pagos, con recargo)', transferencia: 'Transferencia bancaria' }
     const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
     const message = [
@@ -319,7 +319,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     clearCart()
     onClose()
     setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'efectivo' })
+    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
     setDniLookup('idle')
@@ -669,13 +669,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="space-y-2">
                   {(formData.deliveryType === 'retiro'
                     ? [
-                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Precio de lista' },
-                        { value: 'debito',         label: 'Débito',                desc: 'Precio de lista' },
-                        { value: 'credito',        label: 'Crédito',               desc: 'Con recargo' },
+                        { value: 'debito',         label: 'Débito / Transferencia', desc: 'Precio de lista' },
+                        { value: 'efectivo',       label: 'Efectivo',               desc: '-10% descuento' },
+                        { value: 'credito',        label: 'Tarjeta Crédito',        desc: 'Hasta 3 pagos (con recargo)' },
                       ]
                     : [
-                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
                         { value: 'transferencia', label: 'Transferencia bancaria', desc: 'Te enviamos el CBU/alias por WhatsApp' },
+                        { value: 'efectivo',      label: 'Efectivo',              desc: 'Pagás al recibir el pedido' },
                       ]
                   ).map(opt => (
                     <label
