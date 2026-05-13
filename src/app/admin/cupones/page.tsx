@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase-browser'
+import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Plus, Trash2, Edit2, LogOut, ShoppingBag, Tag } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -18,7 +18,6 @@ interface Coupon {
 
 export default function AdminCuponesPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
