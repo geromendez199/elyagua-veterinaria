@@ -143,14 +143,8 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                   fill
                   className="object-contain p-6"
                   priority
-                  onError={(e) => {
-                    // Si la imagen falla, mostrar placeholder
-                    const img = e.target as HTMLImageElement
-                    img.style.display = 'none'
-                  }}
                 />
-              ) : null}
-              {!product.imagen_url && (
+              ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                   <div className="text-center">
                     <svg viewBox="0 0 24 24" className="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" strokeWidth="1.5">
