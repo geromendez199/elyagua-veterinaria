@@ -4,8 +4,10 @@ import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria } from '@/types'
 import { BookOpen, Calendar, User } from 'lucide-react'
 
-export const metadata = {
-  title: 'Info y Consejos | El Yagua Veterinaria',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Info y Consejos',
   description: 'Artículos e información útil sobre salud, nutrición y cuidado de mascotas, escritos por nuestro equipo veterinario.',
 }
 

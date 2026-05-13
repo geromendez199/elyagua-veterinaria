@@ -27,7 +27,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://elyagua-veterinaria.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'El Yagua Veterinaria',
     template: '%s | El Yagua Veterinaria',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'El Yagua Veterinaria',
     description: 'Tu veterinaria de confianza en Rafaela. Pedí online y retirá en tienda o recibilo en tu domicilio.',
-    url: 'https://elyagua-veterinaria.vercel.app',
+    url: SITE_URL,
     siteName: 'El Yagua Veterinaria',
     locale: 'es_AR',
     type: 'website',
@@ -66,7 +66,7 @@ const localBusinessJsonLd = {
   name: 'El Yagua Veterinaria',
   url: SITE_URL,
   telephone: PHONE,
-  image: 'https://elyagua-veterinaria.vercel.app/logo-color.png',
+  image: `${SITE_URL}/logo-color.png`,
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'Bv Lehmann 609',

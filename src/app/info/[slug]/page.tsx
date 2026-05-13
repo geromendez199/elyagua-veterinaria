@@ -41,9 +41,9 @@ function formatDate(dateStr: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const art = await getArticulo(slug)
-  if (!art) return { title: 'Artículo no encontrado | El Yagua Veterinaria' }
+  if (!art) return { title: 'Artículo no encontrado' }
   return {
-    title: `${art.titulo} | El Yagua Veterinaria`,
+    title: art.titulo,
     description: art.resumen,
   }
 }

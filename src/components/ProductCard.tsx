@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
 import { useState } from 'react'
 import { formatPrice } from '@/lib/formatPrice'
-import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
+import { LOW_STOCK_THRESHOLD, SITE_URL } from '@/lib/constants'
 
 interface ProductCardProps {
   product: Product
@@ -29,7 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault()
-    const url = `https://elyagua-veterinaria.vercel.app/productos/${product.id}`
+    const url = `${SITE_URL}/productos/${product.id}`
     const text = `🐾 *${product.nombre}*\n${formatPrice(product.precio)}\n\n${url}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }

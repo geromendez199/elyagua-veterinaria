@@ -2,8 +2,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, Target, Award } from 'lucide-react'
 
-export const metadata = {
-  title: 'Quiénes Somos | El Yagua Veterinaria',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Quiénes Somos',
   description: 'Conoce al equipo profesional de El Yagua Veterinaria dedicado al cuidado de tus mascotas.',
 }
 

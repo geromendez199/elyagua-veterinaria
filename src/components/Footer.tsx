@@ -37,6 +37,8 @@ export default function Footer() {
             <ul className="text-sm space-y-2.5 text-gray-300">
               <li><Link href="/" className="hover:text-primary transition">Inicio</Link></li>
               <li><Link href="/productos" className="hover:text-primary transition">Productos</Link></li>
+              <li><Link href="/info" className="hover:text-primary transition">Info y Consejos</Link></li>
+              <li><Link href="/quienes-somos" className="hover:text-primary transition">Quiénes Somos</Link></li>
               <li><Link href="/contacto" className="hover:text-primary transition">Contacto</Link></li>
             </ul>
           </div>
