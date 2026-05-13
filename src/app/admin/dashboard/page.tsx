@@ -38,6 +38,7 @@ function Tendencia({ actual, anterior }: { actual: number; anterior: number }) {
 export default function AdminDashboardPage() {
   const router = useRouter()
   const [userEmail, setUserEmail] = useState('')
+  const [userName, setUserName] = useState('')
   const [stats, setStats] = useState<Stats>({ productos_activos: 0, pedidos_pendientes: 0, total_clientes: 0 })
   const [mes, setMes] = useState<MesStats>({ ventas: 0, ventas_anterior: 0, pedidos: 0, pedidos_anterior: 0, ticket_promedio: 0 })
   const [topProductos, setTopProductos] = useState<TopProducto[]>([])
@@ -49,7 +50,23 @@ export default function AdminDashboardPage() {
     const init = async () => {
       const { data } = await supabase.auth.getSession()
       if (!data.session) { router.push('/admin'); return }
-      setUserEmail(data.session.user.email || '')
+      const email = data.session.user.email || ''
+      setUserEmail(email)
+
+      // Buscar nombre del usuario en tabla de administradores
+      try {
+        const { data: adminData } = await supabase
+          .from('administradores')
+          .select('nombre')
+          .eq('email', email)
+          .single()
+        if (adminData?.nombre) {
+          setUserName(adminData.nombre)
+        }
+      } catch (err) {
+        // Si no existe en tabla, usar el email como fallback
+        setUserName(email)
+      }
 
       const [
         { count: productosCount },
@@ -179,7 +196,7 @@ export default function AdminDashboardPage() {
             <Image src="/logo-color.png" alt="El Yagua" width={120} height={60} className="h-10 w-auto" />
             <div className="hidden sm:block border-l border-gray-200 pl-3">
               <p className="text-xs text-gray-400">Panel de administración</p>
-              <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userEmail}</p>
+              <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userName || userEmail}</p>
             </div>
           </div>
           <button
