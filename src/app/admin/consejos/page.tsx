@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { ArrowLeft, Loader2, X, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Consejo, ConsejoCategoria, ConsejoTipoMascota, CONSEJO_CATEGORIES } from '@/types'
+import AdminAgeRangeSlider from '@/components/AdminAgeRangeSlider'
 
 interface FormData {
   titulo: string
@@ -423,29 +424,12 @@ export default function AdminConsejos() {
               </div>
 
               {/* Age Range */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-2">Edad Mínima</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.edad_minima}
-                    onChange={(e) => setForm({ ...form, edad_minima: parseInt(e.target.value) || 0 })}
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-2">Edad Máxima (dejar vacío = sin límite)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.edad_maxima}
-                    onChange={(e) => setForm({ ...form, edad_maxima: e.target.value })}
-                    placeholder="ej: 7"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
+              <AdminAgeRangeSlider
+                minAge={form.edad_minima}
+                maxAge={form.edad_maxima}
+                onMinChange={(value) => setForm({ ...form, edad_minima: value })}
+                onMaxChange={(value) => setForm({ ...form, edad_maxima: value })}
+              />
 
               {/* Categoría */}
               <div>
