@@ -408,45 +408,103 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   <div className="space-y-3">
                     {items.map((item) => (
-                      <div key={item.product.id} className="border border-gray-200 rounded-xl p-3">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{item.product.nombre}</h4>
-                          <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                      <div key={item.product.id} className="border border-gray-200 rounded-xl p-3 flex gap-3">
+                        {/* Imagen del producto */}
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                          {item.product.imagen_url ? (
+                            <img
+                              src={item.product.imagen_url}
+                              alt={item.product.nombre}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-300">
+                              <span className="text-xs">Sin imagen</span>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-400">{formatPrice(item.product.precio)} c/u</p>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2">
+
+                        {/* Información del producto */}
+                        <div className="flex-1 flex flex-col">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h4 className="font-semibold text-gray-900 text-sm leading-tight">{item.product.nombre}</h4>
+                            <p className="font-bold text-primary text-sm shrink-0">{formatPrice(item.product.precio * item.quantity)}</p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-400">{formatPrice(item.product.precio)} c/u</p>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2">
+                                <button
+                                  onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                                  className="hover:text-primary p-1 text-gray-700"
+                                  aria-label={`Disminuir cantidad de ${item.product.nombre}`}
+                                >
+                                  <Minus size={14} />
+                                </button>
+                                <span className="font-bold w-5 text-center text-gray-900 text-sm" aria-label={`Cantidad: ${item.quantity}`}>
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                                  disabled={item.quantity >= item.product.stock}
+                                  className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                  aria-label={`Aumentar cantidad de ${item.product.nombre}`}
+                                >
+                                  <Plus size={14} />
+                                </button>
+                              </div>
                               <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                                className="hover:text-primary p-1 text-gray-700"
-                                aria-label={`Disminuir cantidad de ${item.product.nombre}`}
+                                onClick={() => removeItem(item.product.id)}
+                                className="text-gray-300 hover:text-red-500 p-1 transition"
+                                aria-label={`Eliminar ${item.product.nombre} del carrito`}
                               >
-                                <Minus size={14} />
-                              </button>
-                              <span className="font-bold w-5 text-center text-gray-900 text-sm" aria-label={`Cantidad: ${item.quantity}`}>
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                                disabled={item.quantity >= item.product.stock}
-                                className="hover:text-primary p-1 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                                aria-label={`Aumentar cantidad de ${item.product.nombre}`}
-                              >
-                                <Plus size={14} />
+                                <X size={16} />
                               </button>
                             </div>
-                            <button
-                              onClick={() => removeItem(item.product.id)}
-                              className="text-gray-300 hover:text-red-500 p-1 transition"
-                              aria-label={`Eliminar ${item.product.nombre} del carrito`}
-                            >
-                              <X size={16} />
-                            </button>
                           </div>
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Cupones */}
+                  <div className="mt-5 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Tag size={16} className="text-rose-500" />
+                      <p className="text-sm font-semibold text-gray-800">Aplicar cupón</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        placeholder="Código de cupón"
+                        className="flex-1 px-3 py-2 border border-rose-300 rounded-lg text-sm outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-200 bg-white"
+                        disabled={couponLoading || !!appliedCoupon}
+                      />
+                      <button
+                        onClick={validateCoupon}
+                        disabled={!couponCode.trim() || couponLoading || !!appliedCoupon}
+                        className="px-3 py-2 bg-rose-500 text-white rounded-lg font-semibold text-sm hover:bg-rose-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+                      >
+                        {couponLoading ? <Loader2 size={14} className="animate-spin" /> : 'Aplicar'}
+                      </button>
+                    </div>
+                    {couponError && <p className="text-xs text-red-500 mt-2">{couponError}</p>}
+                    {appliedCoupon && (
+                      <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded-lg flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-green-800">✓ Cupón aplicado</p>
+                          <p className="text-xs text-green-700">{appliedCoupon.codigo} ({appliedCoupon.descuento_porcentaje}% descuento)</p>
+                        </div>
+                        <button
+                          onClick={removeCoupon}
+                          className="text-green-700 hover:text-green-900 transition"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Info de envío */}
@@ -696,9 +754,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2 shrink-0">
           {step === 'cart' && items.length > 0 && (
             <>
+              {appliedCoupon && (
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal:</span>
+                    <span>{formatPrice(total)}</span>
+                  </div>
+                  <div className="flex justify-between text-rose-600 font-semibold">
+                    <span>Descuento ({appliedCoupon.descuento_porcentaje}%):</span>
+                    <span>-{formatPrice(total * (appliedCoupon.descuento_porcentaje / 100))}</span>
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-center text-lg font-bold text-gray-900">
                 <span>Total:</span>
-                <span className="text-primary">{formatPrice(total)}</span>
+                <span className="text-primary">
+                  {appliedCoupon
+                    ? formatPrice(total * (1 - appliedCoupon.descuento_porcentaje / 100))
+                    : formatPrice(total)
+                  }
+                </span>
               </div>
               {stockErrors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-1">
