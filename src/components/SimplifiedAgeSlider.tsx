@@ -18,10 +18,10 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
 
   // Quick preset buttons
   const presets = [
-    { label: '0-1m', minMonths: 0, maxMonths: 1 },
-    { label: '1-3m', minMonths: 1, maxMonths: 3 },
-    { label: '3-6m', minMonths: 3, maxMonths: 6 },
-    { label: '6-12m', minMonths: 6, maxMonths: 12 },
+    { label: '0 a 1 mes', minMonths: 0, maxMonths: 1 },
+    { label: '1 a 3 meses', minMonths: 1, maxMonths: 3 },
+    { label: '3 a 6 meses', minMonths: 3, maxMonths: 6 },
+    { label: '6 a 12 meses', minMonths: 6, maxMonths: 12 },
     { label: '+ 1 año', minMonths: 12, maxMonths: 240 },
   ]
 
