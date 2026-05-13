@@ -6,10 +6,10 @@ export const metadata: Metadata = {
 import ContactInfo from '@/components/ContactInfo'
 import { ContactInfo as ContactInfoType } from '@/types'
 import Link from 'next/link'
-import { ClipboardList, Phone, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardList, CheckCircle2 } from 'lucide-react'
 import InstagramIcon from '@/components/InstagramIcon'
 import FacebookIcon from '@/components/FacebookIcon'
-import { PHONE, WA_URL, INSTAGRAM_URL, FACEBOOK_URL, EMERGENCY_PHONE } from '@/lib/constants'
+import { PHONE, WA_URL, INSTAGRAM_URL, FACEBOOK_URL } from '@/lib/constants'
 
 const contactData: ContactInfoType = {
   direccion: 'Bv Lehmann 609, Rafaela, Santa Fe, Argentina',
@@ -39,59 +39,25 @@ export default function ContactoPage() {
           <ContactInfo info={contactData} />
         </div>
 
-        {/* Servicios + Emergencias */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-          {/* Servicios */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <ClipboardList size={22} className="text-primary" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">Servicios</h2>
+        {/* Servicios */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <ClipboardList size={22} className="text-primary" />
             </div>
-            <p className="text-gray-600 mb-5 text-sm leading-relaxed">
-              Atención integral de lunes a viernes en horario extendido. Contamos con un equipo profesional.
-            </p>
-            <ul className="space-y-3">
-              {['Atención veterinaria', 'Venta de productos', 'Asesoramiento profesional', 'Servicios especializados'].map((s) => (
-                <li key={s} className="flex items-center gap-2 text-gray-700 font-medium">
-                  <CheckCircle2 size={18} className="text-primary shrink-0" />
-                  {s}
-                </li>
-              ))}
-            </ul>
+            <h2 className="text-xl font-bold text-gray-900">Servicios</h2>
           </div>
-
-          {/* Emergencias */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <AlertCircle size={22} className="text-primary" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">¿Emergencia?</h2>
-            </div>
-            <p className="text-gray-600 mb-5 text-sm leading-relaxed">
-              Disponibles fuera de horario para atender situaciones urgentes de tu mascota.
-            </p>
-            <div className="space-y-3">
-              <a
-                href={`tel:${EMERGENCY_PHONE}`}
-                className="flex items-center justify-center gap-3 w-full bg-dark text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
-              >
-                <Phone size={18} />
-                {EMERGENCY_PHONE}
-              </a>
-              <a
-                href={WA_URL}
-                target="_blank"
-                className="flex items-center justify-center gap-3 w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-dark transition"
-              >
-                <MessageCircle size={18} />
-                WhatsApp
-              </a>
-            </div>
-          </div>
+          <p className="text-gray-600 mb-5 text-sm leading-relaxed">
+            Atención integral de lunes a viernes en horario extendido. Contamos con un equipo profesional.
+          </p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {['Atención veterinaria', 'Venta de productos', 'Asesoramiento profesional', 'Servicios especializados'].map((s) => (
+              <li key={s} className="flex items-center gap-2 text-gray-700 font-medium">
+                <CheckCircle2 size={18} className="text-primary shrink-0" />
+                {s}
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Redes sociales */}
