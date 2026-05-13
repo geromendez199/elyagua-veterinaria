@@ -11,10 +11,16 @@ import { ChevronRight, Share2, MapPin, XCircle, AlertTriangle, CheckCircle2, Tru
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL, SITE_URL, LOW_STOCK_THRESHOLD } from '@/lib/constants'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+// Pre-render all active product pages at build time → served from CDN, zero DB reads per visit
+export async function generateStaticParams() {
+  const { data } = await supabase.from('productos').select('id').eq('activo', true)
+  return (data || []).map((p) => ({ id: p.id }))
 }
 
 async function getProduct(id: string): Promise<Product | null> {

@@ -6,7 +6,13 @@ import { Articulo, ArticuloCategoria } from '@/types'
 import { ArrowLeft, Calendar, User, Tag } from 'lucide-react'
 import type { Metadata } from 'next'
 
-export const revalidate = 60
+export const revalidate = 3600
+
+// Pre-render all published articles at build time → served from CDN, zero DB reads per visit
+export async function generateStaticParams() {
+  const { data } = await supabase.from('articulos').select('slug').eq('activo', true)
+  return (data || []).map((a) => ({ slug: a.slug }))
+}
 
 const CATEGORIA_COLORS: Record<ArticuloCategoria, string> = {
   Nutrición:  'bg-amber-100 text-amber-700',

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Tips, tablas y artículos escritos por nuestro equipo veterinario para el cuidado y bienestar de tu mascota.',
 }
 
-export const revalidate = 60
+export const revalidate = 3600
 
 const CATEGORIA_COLORS: Record<ArticuloCategoria, string> = {
   Nutrición:  'bg-amber-100 text-amber-700',

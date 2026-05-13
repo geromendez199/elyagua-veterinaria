@@ -7,7 +7,7 @@ import SearchBar from '@/components/SearchBar'
 import { Product } from '@/types'
 import { Suspense } from 'react'
 
-export const revalidate = 60
+export const revalidate = 300
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {

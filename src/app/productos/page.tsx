@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Explorá nuestro catálogo de alimentos, medicamentos, juguetes y accesorios para tu mascota.',
 }
 
-export const revalidate = 60
+export const revalidate = 300
 
 async function getProducts(): Promise<Product[]> {
   try {
