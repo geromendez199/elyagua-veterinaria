@@ -468,9 +468,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
 
                   {/* Cupones */}
-                  <div className="mt-5 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                  <div className="mt-5 p-4 bg-primary/5 border border-primary/20 rounded-xl">
                     <div className="flex items-center gap-2 mb-3">
-                      <Tag size={16} className="text-rose-500" />
+                      <Tag size={16} className="text-primary" />
                       <p className="text-sm font-semibold text-gray-800">Aplicar cupón</p>
                     </div>
                     <div className="flex gap-2">
@@ -479,27 +479,27 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         placeholder="Código de cupón"
-                        className="flex-1 px-3 py-2 border border-rose-300 rounded-lg text-sm outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-200 bg-white"
+                        className="flex-1 px-3 py-2 border border-primary/30 rounded-lg text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                         disabled={couponLoading || !!appliedCoupon}
                       />
                       <button
                         onClick={validateCoupon}
                         disabled={!couponCode.trim() || couponLoading || !!appliedCoupon}
-                        className="px-3 py-2 bg-rose-500 text-white rounded-lg font-semibold text-sm hover:bg-rose-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+                        className="px-3 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
                       >
                         {couponLoading ? <Loader2 size={14} className="animate-spin" /> : 'Aplicar'}
                       </button>
                     </div>
                     {couponError && <p className="text-xs text-red-500 mt-2">{couponError}</p>}
                     {appliedCoupon && (
-                      <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded-lg flex items-center justify-between">
+                      <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-green-800">✓ Cupón aplicado</p>
-                          <p className="text-xs text-green-700">{appliedCoupon.codigo} ({appliedCoupon.descuento_porcentaje}% descuento)</p>
+                          <p className="text-sm font-semibold text-primary">✓ Cupón aplicado</p>
+                          <p className="text-xs text-primary/70">{appliedCoupon.codigo} ({appliedCoupon.descuento_porcentaje}% descuento)</p>
                         </div>
                         <button
                           onClick={removeCoupon}
-                          className="text-green-700 hover:text-green-900 transition"
+                          className="text-primary hover:text-primary-dark transition"
                         >
                           <X size={16} />
                         </button>
