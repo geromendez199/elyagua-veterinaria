@@ -15,7 +15,7 @@ export default function QuienesSomosPage() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Quiénes Somos</h1>
           <p className="text-lg md:text-xl text-primary-light max-w-2xl mx-auto">
-            Un equipo profesional dedicado al bienestar y cuidado de tus mascotas desde 2015
+            Un equipo profesional dedicado al bienestar y cuidado de tus mascotas
           </p>
         </div>
       </section>
