@@ -16,23 +16,38 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
         ? `${months} ${months === 1 ? 'mes' : 'meses'}`
         : `${years} ${years === 1 ? 'año' : 'años'} y ${months} ${months === 1 ? 'mes' : 'meses'}`
 
-  // Quick preset buttons
-  const presets = [
-    { label: '0 a 1 mes', minMonths: 0, maxMonths: 1 },
-    { label: '1 a 3 meses', minMonths: 1, maxMonths: 3 },
-    { label: '3 a 6 meses', minMonths: 3, maxMonths: 6 },
-    { label: '6 a 12 meses', minMonths: 6, maxMonths: 12 },
-    { label: '+ 1 año', minMonths: 12, maxMonths: 240 },
+  // Age range bands based on developmental stages
+  const ageBands = [
+    { label: '6-8 sem', minWeeks: 6, maxWeeks: 8, color: 'bg-red-100 text-red-700 border-red-300' },
+    { label: '8-10 sem', minWeeks: 8, maxWeeks: 10, color: 'bg-orange-100 text-orange-700 border-orange-300' },
+    { label: '12-14 sem', minWeeks: 12, maxWeeks: 14, color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+    { label: '16-18 sem', minWeeks: 16, maxWeeks: 18, color: 'bg-green-100 text-green-700 border-green-300' },
+    { label: '20-24 sem', minWeeks: 20, maxWeeks: 24, color: 'bg-blue-100 text-blue-700 border-blue-300' },
+    { label: 'Anual', minMonths: 12, maxYears: 20, color: 'bg-purple-100 text-purple-700 border-purple-300' },
   ]
 
-  const handlePreset = (minMonths: number, maxMonths: number) => {
-    const midMonths = (minMonths + maxMonths) / 2
-    onChange(midMonths / 12) // Convert to years
+  const handleBandClick = (band: typeof ageBands[0]) => {
+    if ('minWeeks' in band && 'maxWeeks' in band) {
+      const midWeeks = (band.minWeeks + band.maxWeeks) / 2
+      onChange(midWeeks / 52) // Convert weeks to years
+    } else if ('minMonths' in band) {
+      const midMonths = band.minMonths + (band.maxYears - 1) * 12 / 2
+      onChange(midMonths / 12)
+    }
   }
 
-  const isPresetActive = (minMonths: number, maxMonths: number): boolean => {
-    const currentMonths = value * 12
-    return currentMonths >= minMonths && currentMonths <= maxMonths
+  const getActiveBand = () => {
+    const months = value * 12
+    for (const band of ageBands) {
+      if ('minWeeks' in band && 'maxWeeks' in band) {
+        const minMonths = (band.minWeeks / 52) * 12
+        const maxMonths = (band.maxWeeks / 52) * 12
+        if (months >= minMonths && months <= maxMonths) return band
+      } else if (months >= band.minMonths) {
+        return band
+      }
+    }
+    return null
   }
 
   return (
@@ -47,21 +62,24 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
         <p className="text-4xl font-bold text-white">{displayText}</p>
       </div>
 
-      {/* Quick Preset Buttons */}
-      <div className="flex gap-2 flex-wrap justify-center">
-        {presets.map((preset) => (
-          <button
-            key={preset.label}
-            onClick={() => handlePreset(preset.minMonths, preset.maxMonths)}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-              isPresetActive(preset.minMonths, preset.maxMonths)
-                ? 'bg-white text-primary shadow-lg scale-105'
-                : 'border-2 border-white text-white hover:bg-white/10'
-            }`}
-          >
-            {preset.label}
-          </button>
-        ))}
+      {/* Age Range Bands - Visual Selection */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-white/70">Etapas de desarrollo:</p>
+        <div className="flex gap-2 flex-wrap justify-center">
+          {ageBands.map((band) => (
+            <button
+              key={band.label}
+              onClick={() => handleBandClick(band)}
+              className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all border-2 ${
+                getActiveBand() === band
+                  ? `${band.color} shadow-lg scale-110 border-current`
+                  : `${band.color} hover:shadow-md`
+              }`}
+            >
+              {band.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Slider */}
