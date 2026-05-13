@@ -3,12 +3,11 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria } from '@/types'
 import { BookOpen, Calendar, User } from 'lucide-react'
-
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Info y Consejos',
-  description: 'Artículos e información útil sobre salud, nutrición y cuidado de mascotas, escritos por nuestro equipo veterinario.',
+  title: 'Consejos Veterinarios',
+  description: 'Tips, tablas y artículos escritos por nuestro equipo veterinario para el cuidado y bienestar de tu mascota.',
 }
 
 export const revalidate = 60
@@ -51,9 +50,9 @@ export default async function InfoPage() {
       {/* Hero */}
       <section className="bg-primary text-white py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Info y Consejos</h1>
-          <p className="text-lg md:text-xl text-primary-light max-w-2xl mx-auto">
-            Artículos escritos por nuestro equipo veterinario para el bienestar de tu mascota
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Consejos Veterinarios</h1>
+          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
+            Tips, tablas y artículos escritos por nuestro equipo para el bienestar de tu mascota
           </p>
         </div>
       </section>
@@ -64,7 +63,7 @@ export default async function InfoPage() {
           {articulos.length === 0 ? (
             <div className="text-center py-20">
               <BookOpen size={48} className="text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">Próximamente publicaremos artículos y consejos veterinarios.</p>
+              <p className="text-gray-400 text-lg">Próximamente publicaremos consejos y artículos veterinarios.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -75,13 +74,13 @@ export default async function InfoPage() {
                   className="group flex flex-col border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition bg-white"
                 >
                   {/* Imagen */}
-                  <div className="relative w-full h-48 bg-gray-100">
+                  <div className="relative w-full h-52 bg-gray-50">
                     {art.imagen_url ? (
                       <Image
                         src={art.imagen_url}
                         alt={art.titulo}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-contain p-4 group-hover:scale-[1.03] transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     ) : (

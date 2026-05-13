@@ -186,8 +186,8 @@ export default function AdminDashboardPage() {
     {
       href: '/admin/info',
       icon: BookOpen,
-      titulo: 'Info / Artículos',
-      descripcion: 'Publicar consejos y artículos veterinarios',
+      titulo: 'Consejos',
+      descripcion: 'Tips, tablas e infografías veterinarias',
       stat: null,
       statLabel: '',
       color: 'from-teal-400 to-teal-600',

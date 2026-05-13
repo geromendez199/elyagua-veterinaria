@@ -183,7 +183,7 @@ export default function AdminInfoPage() {
           </Link>
           <div className="flex items-center gap-2">
             <BookOpen size={20} />
-            <h1 className="text-xl font-bold">Artículos / Info</h1>
+            <h1 className="text-xl font-bold">Consejos Veterinarios</h1>
           </div>
         </div>
         <button onClick={handleLogout} className="flex items-center gap-2 text-sm hover:bg-white/10 px-3 py-2 rounded-lg transition">
@@ -194,12 +194,12 @@ export default function AdminInfoPage() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Actions bar */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-500 text-sm">{articulos.length} artículo{articulos.length !== 1 ? 's' : ''}</p>
+          <p className="text-gray-500 text-sm">{articulos.length} consejo{articulos.length !== 1 ? 's' : ''} publicado{articulos.length !== 1 ? 's' : ''}</p>
           <button
             onClick={openNew}
             className="flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl hover:bg-primary-dark transition text-sm"
           >
-            <Plus size={16} /> Nuevo artículo
+            <Plus size={16} /> Nuevo consejo
           </button>
         </div>
 
@@ -209,7 +209,7 @@ export default function AdminInfoPage() {
         ) : articulos.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <BookOpen size={40} className="mx-auto mb-3 opacity-30" />
-            <p>No hay artículos todavía. ¡Creá el primero!</p>
+            <p>No hay consejos todavía. ¡Creá el primero!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -322,7 +322,9 @@ export default function AdminInfoPage() {
 
               {/* Imagen URL */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">URL de imagen <span className="text-gray-400 font-normal">(opcional)</span></label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  URL de imagen <span className="text-gray-400 font-normal">(opcional)</span>
+                </label>
                 <input
                   type="text"
                   value={form.imagen_url}
@@ -330,6 +332,9 @@ export default function AdminInfoPage() {
                   className={inputCls}
                   placeholder="https://..."
                 />
+                <p className="text-xs text-gray-400 mt-1">
+                  📌 La imagen se muestra al costado del texto (sin recorte). Ideal para infografías y tablas.
+                </p>
               </div>
 
               {/* Resumen */}

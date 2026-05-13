@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria } from '@/types'
 import { ArrowLeft, Calendar, User, Tag } from 'lucide-react'
+import type { Metadata } from 'next'
 
 export const revalidate = 60
 
@@ -38,7 +39,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const art = await getArticulo(slug)
   if (!art) return { title: 'Artículo no encontrado' }
@@ -54,32 +55,19 @@ export default async function ArticuloPage({ params }: { params: Promise<{ slug:
   if (!art) notFound()
 
   const paragraphs = art.contenido.split('\n\n').filter(Boolean)
+  const hasImage = !!art.imagen_url
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero imagen o color */}
-      {art.imagen_url && (
-        <div className="relative w-full h-64 md:h-96 bg-gray-100">
-          <Image
-            src={art.imagen_url}
-            alt={art.titulo}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
-      )}
+      <div className="max-w-5xl mx-auto px-4 py-10">
 
-      <div className="max-w-3xl mx-auto px-4 py-10">
         {/* Back */}
         <Link
           href="/info"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition mb-8"
         >
           <ArrowLeft size={16} />
-          Volver a Info y Consejos
+          Volver a Consejos Veterinarios
         </Link>
 
         {/* Categoría */}
@@ -112,14 +100,43 @@ export default async function ArticuloPage({ params }: { params: Promise<{ slug:
           {art.resumen}
         </p>
 
-        {/* Contenido */}
-        <div className="prose prose-gray max-w-none">
-          {paragraphs.map((p, i) => (
-            <p key={i} className="text-gray-700 leading-relaxed mb-5 text-base">
-              {p}
-            </p>
-          ))}
-        </div>
+        {/* Contenido — 2 columnas si hay imagen, 1 columna si no */}
+        {hasImage ? (
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
+
+            {/* Texto — columna izquierda (3/5) */}
+            <div className="md:col-span-3 prose prose-gray max-w-none">
+              {paragraphs.map((p, i) => (
+                <p key={i} className="text-gray-700 leading-relaxed mb-5 text-base">
+                  {p}
+                </p>
+              ))}
+            </div>
+
+            {/* Imagen — columna derecha (2/5), sticky al hacer scroll */}
+            <div className="md:col-span-2 md:sticky md:top-24">
+              <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
+                <Image
+                  src={art.imagen_url!}
+                  alt={art.titulo}
+                  width={600}
+                  height={600}
+                  className="w-full h-auto object-contain"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="prose prose-gray max-w-none">
+            {paragraphs.map((p, i) => (
+              <p key={i} className="text-gray-700 leading-relaxed mb-5 text-base">
+                {p}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* Footer del artículo */}
         <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -131,7 +148,7 @@ export default async function ArticuloPage({ params }: { params: Promise<{ slug:
             href="/info"
             className="text-sm font-semibold text-primary hover:text-primary-dark transition"
           >
-            ← Ver más artículos
+            ← Ver más consejos
           </Link>
         </div>
       </div>
