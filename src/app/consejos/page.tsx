@@ -41,7 +41,7 @@ export default function ConsejoPage() {
       <section className="bg-gradient-to-b from-primary to-primary-dark text-white py-12 md:py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
-            🐾 Consejos Veterinarios Personalizados
+            Consejos Veterinarios Personalizados
           </h1>
           <p className="text-base md:text-lg text-primary-light mb-8">
             Descubre recomendaciones específicas según la edad y tipo de tu mascota
