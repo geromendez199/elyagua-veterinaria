@@ -58,3 +58,40 @@ export interface Articulo {
   created_at: string
   updated_at: string
 }
+
+// Consejos (veterinary advice system)
+export type ConsejoTipoMascota = 'perro' | 'gato' | 'ambos'
+export type ConsejoCategoria =
+  | 'vacunacion'
+  | 'castracion'
+  | 'alimentos_prohibidos'
+  | 'alimentos_permitidos'
+  | 'emergencias'
+  | 'comportamiento'
+  | 'higiene'
+
+export interface Consejo {
+  id: string
+  titulo: string
+  contenido: string
+  imagen_url: string | null
+  tipo_mascota: ConsejoTipoMascota
+  edad_minima: number
+  edad_maxima: number | null
+  categoria: ConsejoCategoria
+  orden: number
+  activo: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Category metadata for UI
+export const CONSEJO_CATEGORIES = {
+  vacunacion: { label: 'Calendario de Vacunación', icon: '💉', color: 'blue' },
+  castracion: { label: 'Castración', icon: '✂️', color: 'rose' },
+  alimentos_prohibidos: { label: 'Alimentos ❌', icon: '🚫', color: 'red' },
+  alimentos_permitidos: { label: 'Alimentos ✅', icon: '✅', color: 'green' },
+  emergencias: { label: 'Emergencias', icon: '🆘', color: 'orange' },
+  comportamiento: { label: 'Comportamiento', icon: '🐾', color: 'purple' },
+  higiene: { label: 'Higiene', icon: '🛁', color: 'cyan' },
+} as const
