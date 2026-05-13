@@ -243,20 +243,19 @@ export default function ConsejoPage() {
 
       {/* Results Section */}
       {submitted && (
-        <section className="py-12 md:py-20 bg-gray-50">
+        <section className="py-12 md:py-20 bg-primary">
           <div className="max-w-6xl mx-auto px-4">
             {loading ? (
               <div className="text-center py-20">
                 <div className="inline-block">
-                  <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
                 </div>
-                <p className="mt-4 text-gray-600 font-semibold">Cargando consejos personalizados...</p>
+                <p className="mt-4 text-white font-semibold">Cargando consejos personalizados...</p>
               </div>
             ) : consejos.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-300">
-                <p className="text-2xl mb-2">😔</p>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No hay consejos disponibles</h3>
-                <p className="text-gray-600">
+              <div className="bg-transparent rounded-2xl p-12 text-center border-2 border-dashed border-white/30">
+                <h3 className="text-xl font-bold text-white mb-2">No hay consejos disponibles</h3>
+                <p className="text-white/80">
                   Intenta cambiar la edad o tipo de mascota para obtener recomendaciones.
                 </p>
               </div>
@@ -280,7 +279,7 @@ export default function ConsejoPage() {
                     <div key={categoria}>
                       <div className="flex items-center gap-3 mb-6">
                         <span className="text-3xl">{categoryInfo.icon}</span>
-                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{categoryInfo.label}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white">{categoryInfo.label}</h2>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
