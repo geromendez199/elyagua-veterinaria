@@ -22,7 +22,7 @@ export default function SimplifiedAgeSlider({ value, onChange }: SimplifiedAgeSl
     { label: '1-3m', minMonths: 1, maxMonths: 3 },
     { label: '3-6m', minMonths: 3, maxMonths: 6 },
     { label: '6-12m', minMonths: 6, maxMonths: 12 },
-    { label: '1y+', minMonths: 12, maxMonths: 240 },
+    { label: '+ 1 año', minMonths: 12, maxMonths: 240 },
   ]
 
   const handlePreset = (minMonths: number, maxMonths: number) => {
