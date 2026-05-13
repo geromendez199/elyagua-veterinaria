@@ -194,10 +194,10 @@ export default function AdminDashboardPage() {
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Image src="/logo-color.png" alt="El Yagua" width={120} height={60} className="h-10 w-auto" />
-            <div className="hidden sm:block border-l border-gray-200 pl-3">
+            <Link href="/admin/perfil" className="hidden sm:block border-l border-gray-200 pl-3 hover:opacity-70 transition">
               <p className="text-xs text-gray-400">Panel de administración</p>
               <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userName || userEmail}</p>
-            </div>
+            </Link>
           </div>
           <button
             onClick={handleLogout}
