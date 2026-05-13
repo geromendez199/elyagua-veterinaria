@@ -92,7 +92,7 @@ export default async function Home() {
               <span className="text-primary font-bold text-sm uppercase tracking-wide">Nuestro Equipo</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 my-4">Quiénes Somos</h2>
               <p className="text-gray-600 mb-4 leading-relaxed">
-                El Yagua Veterinaria es un equipo profesional dedicado al bienestar y cuidado de tus mascotas desde 2015. Ubicados en Bv. Lehmann 609, Rafaela, nos especializamos en ofrecer productos de calidad premium y atención profesional personalizada.
+                El Yagua Veterinaria es un equipo profesional dedicado al bienestar y cuidado de tus mascotas. Ubicados en Bv. Lehmann 609, Rafaela, nos especializamos en ofrecer productos de calidad premium y atención profesional personalizada.
               </p>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 Cada miembro de nuestro equipo está comprometido con la excelencia veterinaria y la satisfacción de nuestros clientes, tratando a cada mascota como si fuera parte de nuestra familia.
