@@ -175,7 +175,7 @@ export default function ConsejoPage() {
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
             Consejos Personalizados
           </h1>
-          <p className="text-base md:text-lg text-primary-light mb-8">
+          <p className="text-base md:text-lg text-white mb-8">
             Descubre recomendaciones específicas según la edad y tipo de tu mascota
           </p>
 
