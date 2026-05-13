@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { Product } from '@/types'
 
 export interface CartItem {
@@ -21,21 +21,23 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 const STORAGE_KEY = 'elyagua-cart'
 
-function loadFromStorage(): CartItem[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : []
-  } catch {
-    return []
-  }
-}
-
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(loadFromStorage)
+  // Start with [] on both server and client to avoid hydration mismatch,
+  // then load from localStorage after mount
+  const [items, setItems] = useState<CartItem[]>([])
+  const hydrated = useRef(false)
 
-  // Guardar en localStorage cada vez que cambia el carrito
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) setItems(JSON.parse(saved))
+    } catch {}
+    hydrated.current = true
+  }, [])
+
+  // Persist to localStorage — skip the very first render before hydration
+  useEffect(() => {
+    if (!hydrated.current) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
     } catch {}

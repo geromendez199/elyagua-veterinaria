@@ -40,6 +40,7 @@ export default async function Home() {
               width={200}
               height={250}
               className="h-36 md:h-48 w-auto mx-auto"
+              priority
             />
             <div className="max-w-2xl mx-auto px-2 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">¿En qué podemos ayudarte?</h1>

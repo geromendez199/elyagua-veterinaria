@@ -5,8 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingCart, Menu, X, Search } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import CartDrawer from './CartDrawer'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+
+// Carga el drawer solo cuando se necesita — no forma parte del bundle inicial
+const CartDrawer = dynamic(() => import('./CartDrawer'), { ssr: false })
 
 export default function Navbar() {
   const { itemCount } = useCart()

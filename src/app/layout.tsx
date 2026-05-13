@@ -14,6 +14,8 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
