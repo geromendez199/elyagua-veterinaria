@@ -91,7 +91,7 @@ export default function ConsejoPage() {
                         : 'border-white/30 bg-white/10 text-white hover:border-white/50'
                     }`}
                   >
-                    🐕 Perro
+                    Perro
                   </div>
                 </label>
                 <label className="flex-1 cursor-pointer">
@@ -110,7 +110,7 @@ export default function ConsejoPage() {
                         : 'border-white/30 bg-white/10 text-white hover:border-white/50'
                     }`}
                   >
-                    🐱 Gato
+                    Gato
                   </div>
                 </label>
               </div>
@@ -122,7 +122,7 @@ export default function ConsejoPage() {
               disabled={loading}
               className="w-full bg-white text-primary font-bold py-4 px-6 rounded-xl hover:bg-primary-light hover:text-white transition-all text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {loading ? '🔄 Buscando...' : '✨ Ver Consejos'}
+              {loading ? 'Buscando...' : 'Ver Consejos'}
             </button>
           </div>
         </div>
