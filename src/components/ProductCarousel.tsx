@@ -28,17 +28,19 @@ function CarouselCard({ product }: { product: Product }) {
       <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           {product.imagen_url ? (
-            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-50">
-            <svg viewBox="0 0 100 100" className="w-12 h-12 text-gray-200" fill="currentColor">
-              <ellipse cx="50" cy="65" rx="22" ry="18"/>
-              <circle cx="27" cy="38" r="11"/>
-              <circle cx="73" cy="38" r="11"/>
-              <circle cx="18" cy="57" r="9"/>
-              <circle cx="82" cy="57" r="9"/>
-            </svg>
-          </div>
+            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          ) : null}
+          {!product.imagen_url && (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
+              <div className="text-center">
+                <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="m21 15-5-5L7 21"/>
+                </svg>
+                <p className="text-xs text-gray-400 mt-1">Sin imagen</p>
+              </div>
+            </div>
           )}
           <span className="absolute top-2 left-2 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full capitalize">
             {product.categoria}

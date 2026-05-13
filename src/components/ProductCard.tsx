@@ -45,16 +45,23 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-contain p-3 group-hover:scale-105 transition duration-300"
+              onError={(e) => {
+                // Si la imagen falla, mostrar placeholder
+                const img = e.target as HTMLImageElement
+                img.style.display = 'none'
+              }}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-50">
-              <svg viewBox="0 0 100 100" className="w-12 h-12 text-gray-200" fill="currentColor">
-                <ellipse cx="50" cy="65" rx="22" ry="18"/>
-                <circle cx="27" cy="38" r="11"/>
-                <circle cx="73" cy="38" r="11"/>
-                <circle cx="18" cy="57" r="9"/>
-                <circle cx="82" cy="57" r="9"/>
-              </svg>
+          ) : null}
+          {!product.imagen_url && (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
+              <div className="text-center">
+                <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="m21 15-5-5L7 21"/>
+                </svg>
+                <p className="text-xs text-gray-400 mt-1">Sin imagen</p>
+              </div>
             </div>
           )}
           {/* Botones compartir y wishlist */}

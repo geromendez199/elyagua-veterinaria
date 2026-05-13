@@ -8,7 +8,7 @@ export interface Product {
   precio: number
   stock: number
   categoria: Category
-  imagen_url: string
+  imagen_url?: string | null
   activo: boolean
   presentacion?: string
   laboratorio?: string

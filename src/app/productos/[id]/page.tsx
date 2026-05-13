@@ -143,16 +143,23 @@ export default async function ProductoDetallePage({ params }: PageProps) {
                   fill
                   className="object-contain p-6"
                   priority
+                  onError={(e) => {
+                    // Si la imagen falla, mostrar placeholder
+                    const img = e.target as HTMLImageElement
+                    img.style.display = 'none'
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                  <svg viewBox="0 0 100 100" className="w-20 h-20 text-gray-200" fill="currentColor">
-                    <ellipse cx="50" cy="65" rx="22" ry="18"/>
-                    <circle cx="27" cy="38" r="11"/>
-                    <circle cx="73" cy="38" r="11"/>
-                    <circle cx="18" cy="57" r="9"/>
-                    <circle cx="82" cy="57" r="9"/>
-                  </svg>
+              ) : null}
+              {!product.imagen_url && (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                  <div className="text-center">
+                    <svg viewBox="0 0 24 24" className="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="m21 15-5-5L7 21"/>
+                    </svg>
+                    <p className="text-sm text-gray-400">Imagen no disponible</p>
+                  </div>
                 </div>
               )}
             </div>
