@@ -17,6 +17,7 @@ const emptyForm = {
   descripcion: '',
   precio: '',
   stock: '',
+  presentacion: '',
   categoria: 'alimentos' as Category,
   activo: true,
 }
@@ -781,6 +782,18 @@ export default function AdminProductosPage() {
                 </div>
               </div>
 
+              {/* Presentación */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación (ej: 100ml, 1L, etc.)</label>
+                <input
+                  type="text"
+                  value={form.presentacion || ''}
+                  onChange={(e) => setForm({ ...form, presentacion: e.target.value })}
+                  className={inputCls}
+                  placeholder="100ml"
+                />
+              </div>
+
               {/* Categoría */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría *</label>
@@ -927,6 +940,18 @@ export default function AdminProductosPage() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Presentación */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación (ej: 100ml, 1L, etc.)</label>
+                <input
+                  type="text"
+                  value={form.presentacion || ''}
+                  onChange={(e) => setForm({ ...form, presentacion: e.target.value })}
+                  className={inputCls}
+                  placeholder="100ml"
+                />
               </div>
 
               {/* Categoría */}

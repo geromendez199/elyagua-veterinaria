@@ -94,6 +94,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-bold text-sm md:text-base text-gray-800 mt-1 leading-tight line-clamp-2">
               {product.nombre}
             </h3>
+            {product.presentacion && (
+              <p className="text-xs text-gray-500 mt-0.5">{product.presentacion}</p>
+            )}
           </div>
           <p className="text-gray-500 text-xs mb-3 line-clamp-2 flex-1 hidden md:block">
             {product.descripcion}
