@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
       badge: null,
     },
     {
-      href: '/admin/consejos',
+      href: '/admin/info',
       icon: BookOpen,
       titulo: 'Consejos Veterinarios',
       descripcion: 'Artículos, tips e infografías',
