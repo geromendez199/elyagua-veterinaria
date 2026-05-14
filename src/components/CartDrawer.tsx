@@ -5,11 +5,12 @@ import NextImage from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
-import { OrderFormData, DeliveryType } from '@/types'
+import { OrderFormData, DeliveryType, Cliente } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
+import PuntosInfo from './PuntosInfo'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -91,17 +92,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   // ── DNI: auto-reconocimiento de cliente ──────────────────────
   const [dniLookup, setDniLookup] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
+  const [clienteActual, setClienteActual] = useState<Cliente | null>(null)
 
   const handleDniChange = async (value: string) => {
     const sanitized = value.replace(/\D/g, '').slice(0, 8)
     setFormData(prev => ({ ...prev, dni: sanitized }))
-    if (sanitized.length < 8) { setDniLookup('idle'); return }
+    if (sanitized.length < 8) { setDniLookup('idle'); setClienteActual(null); return }
     setDniLookup('loading')
     try {
-      const { data } = await supabase.from('clientes').select('nombre, telefono').eq('dni', sanitized).limit(1)
-      const found = data?.[0]
+      const { data } = await supabase.from('clientes').select('*').eq('dni', sanitized).limit(1)
+      const found = data?.[0] as Cliente | undefined
       if (found) {
         setDniLookup('found')
+        setClienteActual(found)
         setFormData(prev => ({
           ...prev,
           nombre: prev.nombre || found.nombre,
@@ -109,9 +112,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         }))
       } else {
         setDniLookup('notfound')
+        setClienteActual(null)
       }
     } catch {
       setDniLookup('idle')
+      setClienteActual(null)
     }
   }
 
@@ -301,6 +306,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         if (data?.[0]?.id) {
           purchaseEvent(finalTotal, 'ARS', data[0].id)
+
+          // Registrar puntos si hay DNI
+          if (formData.dni) {
+            try {
+              await fetch('/api/ordenes/registrar-puntos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  pedido_id: data[0].id,
+                  cliente_dni: formData.dni,
+                  productos: items.map((i) => ({ id: i.product.id, cantidad: i.quantity, puntos: i.product.puntos || 0 })),
+                }),
+              })
+            } catch {}
+          }
         }
 
         if (formData.dni) {
@@ -728,6 +748,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
                 )}
               </div>
+
+              {/* ── Puntos ── */}
+              {items.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                  <PuntosInfo items={items} clienteActual={clienteActual} />
+                </div>
+              )}
 
               {/* ── Resumen ── */}
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2">

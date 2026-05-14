@@ -18,6 +18,7 @@ const emptyForm = {
   precio: '',
   stock: '',
   presentacion: '',
+  puntos: '',
   categoria: 'alimentos' as Category,
   activo: true,
 }
@@ -75,6 +76,27 @@ export default function AdminProductosPage() {
       showToast('Error al actualizar stock: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setEditingStockId(null)
+    }
+  }
+
+  // ── Edición inline de puntos ───────────────────────────────────
+  const [editingPuntosId, setEditingPuntosId] = useState<string | null>(null)
+  const [puntosValue, setPuntosValue] = useState('')
+
+  const savePuntos = async (id: string) => {
+    const newPuntos = parseInt(puntosValue)
+    if (isNaN(newPuntos) || newPuntos < 0) { setEditingPuntosId(null); return }
+    try {
+      const { error } = await supabase
+        .from('productos')
+        .update({ puntos: newPuntos, updated_at: new Date().toISOString() })
+        .eq('id', id)
+      if (error) throw error
+      setProducts((prev) => prev.map((p) => p.id === id ? { ...p, puntos: newPuntos } : p))
+    } catch (err: unknown) {
+      showToast('Error al actualizar puntos: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setEditingPuntosId(null)
     }
   }
 
@@ -206,6 +228,8 @@ export default function AdminProductosPage() {
           descripcion: form.descripcion,
           precio: parseFloat(form.precio),
           stock: parseInt(form.stock),
+          presentacion: form.presentacion,
+          puntos: parseInt(form.puntos) || 0,
           categoria: form.categoria,
           imagen_url,
           activo: form.activo,
@@ -280,6 +304,8 @@ export default function AdminProductosPage() {
           descripcion: editProduct.descripcion,
           precio: editProduct.precio,
           stock: editProduct.stock,
+          presentacion: editProduct.presentacion,
+          puntos: editProduct.puntos,
           categoria: editProduct.categoria,
           activo: editProduct.activo,
           imagen_url,
@@ -547,6 +573,7 @@ export default function AdminProductosPage() {
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Categoría</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Precio</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Stock</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-700">Puntos</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Activo</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Acciones</th>
               </tr>
@@ -631,6 +658,33 @@ export default function AdminProductosPage() {
                         {product.stock}
                         {product.stock === 0 && ' ✕'}
                         {product.stock > 0 && product.stock < LOW_STOCK_THRESHOLD && ' ⚠'}
+                      </button>
+                    )}
+                  </td>
+
+                  {/* Puntos — edición inline */}
+                  <td className="px-4 py-3 text-center">
+                    {editingPuntosId === product.id ? (
+                      <input
+                        autoFocus
+                        type="number"
+                        min={0}
+                        value={puntosValue}
+                        onChange={(e) => setPuntosValue(e.target.value)}
+                        onBlur={() => savePuntos(product.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') savePuntos(product.id)
+                          if (e.key === 'Escape') setEditingPuntosId(null)
+                        }}
+                        className="w-16 text-center border-2 border-primary rounded-lg px-1 py-0.5 text-sm font-bold outline-none"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setEditingPuntosId(product.id); setPuntosValue(String(product.puntos || 0)) }}
+                        title="Clic para editar puntos"
+                        className="font-bold px-2 py-0.5 rounded text-sm hover:ring-2 hover:ring-primary/40 transition bg-amber-100 text-amber-700"
+                      >
+                        {product.puntos || 0}
                       </button>
                     )}
                   </td>
@@ -794,6 +848,19 @@ export default function AdminProductosPage() {
                 />
               </div>
 
+              {/* Puntos */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Puntos del programa de millas</label>
+                <input
+                  type="number"
+                  value={form.puntos || ''}
+                  onChange={(e) => setForm({ ...form, puntos: e.target.value })}
+                  className={inputCls}
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
+
               {/* Categoría */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría *</label>
@@ -947,10 +1014,23 @@ export default function AdminProductosPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Presentación (ej: 100ml, 1L, etc.)</label>
                 <input
                   type="text"
-                  value={form.presentacion || ''}
-                  onChange={(e) => setForm({ ...form, presentacion: e.target.value })}
+                  value={editProduct.presentacion || ''}
+                  onChange={(e) => setEditProduct({ ...editProduct, presentacion: e.target.value })}
                   className={inputCls}
                   placeholder="100ml"
+                />
+              </div>
+
+              {/* Puntos */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Puntos del programa de millas</label>
+                <input
+                  type="number"
+                  value={editProduct.puntos || ''}
+                  onChange={(e) => setEditProduct({ ...editProduct, puntos: parseInt(e.target.value) || 0 })}
+                  className={inputCls}
+                  placeholder="0"
+                  min="0"
                 />
               </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag } from 'lucide-react'
+import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag, Zap, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { Cliente } from '@/types'
@@ -24,6 +24,9 @@ export default function AdminClientesPage() {
   const [notaValue, setNotaValue] = useState('')
   const [savingNota, setSavingNota] = useState(false)
   const [busqueda, setBusqueda] = useState('')
+  const [adjustingPuntosId, setAdjustingPuntosId] = useState<string | null>(null)
+  const [puntosForm, setPuntosForm] = useState({ cantidad: '', motivo: '' })
+  const [savingPuntos, setSavingPuntos] = useState(false)
 
   const fetchData = async () => {
     const [{ data: clientesData }, { data: pedidosData }] = await Promise.all([
@@ -82,6 +85,32 @@ export default function AdminClientesPage() {
     setClientes(prev => prev.map(c => c.id === id ? { ...c, notas: notaValue } : c))
     setEditingId(null)
     setSavingNota(false)
+  }
+
+  const savePuntosAdjustment = async (clienteId: string) => {
+    if (!puntosForm.cantidad || !puntosForm.motivo.trim()) return
+    setSavingPuntos(true)
+    try {
+      const response = await fetch('/api/admin/clientes/puntos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_id: clienteId,
+          cantidad: parseInt(puntosForm.cantidad),
+          motivo: puntosForm.motivo,
+        }),
+      })
+      const result = await response.json()
+      if (result.success) {
+        await fetchData()
+        setAdjustingPuntosId(null)
+        setPuntosForm({ cantidad: '', motivo: '' })
+      }
+    } catch (err) {
+      console.error('Error adjusting points:', err)
+    } finally {
+      setSavingPuntos(false)
+    }
   }
 
   const formatDate = (iso: string) =>
@@ -218,6 +247,14 @@ export default function AdminClientesPage() {
                         <p className="text-xs text-gray-400">Cliente desde</p>
                         <p className="font-semibold text-gray-700 text-sm">{formatDate(cliente.created_at)}</p>
                       </div>
+                      <button
+                        onClick={() => { setAdjustingPuntosId(cliente.id); setPuntosForm({ cantidad: '', motivo: '' }) }}
+                        className="flex items-center gap-1.5 text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-1 rounded transition font-semibold col-span-2 sm:col-span-1"
+                        title="Ajustar puntos"
+                      >
+                        <Zap size={13} />
+                        <span>{cliente.puntos_acumulados || 0} puntos</span>
+                      </button>
                     </div>
 
                     {/* Productos pedidos */}
@@ -292,6 +329,84 @@ export default function AdminClientesPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Ajustar Puntos */}
+      {adjustingPuntosId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-bold text-gray-800">Ajustar puntos</h3>
+              <button
+                onClick={() => setAdjustingPuntosId(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {(() => {
+                const cliente = clientes.find(c => c.id === adjustingPuntosId)
+                return (
+                  <>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">Cliente</p>
+                      <p className="text-sm font-bold text-gray-900 mt-0.5">{cliente?.nombre}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Puntos actuales: <span className="font-bold text-amber-600">{cliente?.puntos_acumulados || 0}</span></p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Cantidad a ajustar *</label>
+                      <input
+                        type="number"
+                        value={puntosForm.cantidad}
+                        onChange={(e) => setPuntosForm({ ...puntosForm, cantidad: e.target.value })}
+                        placeholder="Ej: 10 (suma), -5 (resta)"
+                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Usa números negativos para restar puntos</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Motivo del ajuste *</label>
+                      <textarea
+                        value={puntosForm.motivo}
+                        onChange={(e) => setPuntosForm({ ...puntosForm, motivo: e.target.value })}
+                        placeholder="Ej: Ajuste por devolución, promoción especial, etc."
+                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => setAdjustingPuntosId(null)}
+                        className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-50 transition"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => savePuntosAdjustment(adjustingPuntosId)}
+                        disabled={savingPuntos || !puntosForm.cantidad || !puntosForm.motivo.trim()}
+                        className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {savingPuntos ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Ajustando...
+                          </>
+                        ) : (
+                          'Ajustar puntos'
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
