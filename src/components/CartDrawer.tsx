@@ -296,7 +296,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     window.open(whatsappUrl, '_blank')
 
     // Mostrar confirmación de YaguaMillas
-    const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
     if (totalYaguaMillas > 0 && formData.dni) {
       setYaguamillasConfirmData({
         cantidad: totalYaguaMillas,
