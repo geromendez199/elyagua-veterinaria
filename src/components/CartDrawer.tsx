@@ -263,6 +263,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito / Transferencia', credito: 'Crédito (hasta 3 pagos, con recargo)', transferencia: 'Transferencia bancaria' }
     const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
+    const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
+    const yaguamillasLine = totalYaguaMillas > 0 ? [`⭐ *YaguaMillas:* ${totalYaguaMillas}`] : []
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
@@ -282,6 +284,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `Subtotal: ${formatPrice(total)}`,
       ...discountLine,
       `💰 *TOTAL: ${formatPrice(finalTotal)}*`,
+      ...yaguamillasLine,
       `━━━━━━━━━━━━━━━`,
     ].join('\n')
 
@@ -491,6 +494,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     ))}
                   </div>
+
+                  {/* YaguaMillas Info */}
+                  {items.some(item => item.product.puntos) && (
+                    <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">⭐</span>
+                        <p className="text-sm font-semibold text-amber-900">YaguaMillas</p>
+                      </div>
+                      <p className="text-xs text-amber-700 mb-3">
+                        Acumularás <span className="font-bold text-amber-600">{items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)} YaguaMillas</span> con esta compra
+                      </p>
+                      <p className="text-xs text-amber-600 font-semibold">⚠️ Necesitás ingresar tu DNI en el paso 2 para que se acumulen</p>
+                    </div>
+                  )}
 
                   {/* Cupones */}
                   <div className="mt-5 p-4 bg-primary/5 border border-primary/20 rounded-xl">
