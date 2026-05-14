@@ -1,6 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
+import { Baby, Heart, ShieldCheck, AlertCircle } from 'lucide-react'
 
 type PetType = 'perro' | 'gato'
 
@@ -15,7 +16,7 @@ interface VaccineRow {
 interface VaccinationPhase {
   name: string
   ageRange: string
-  emoji: string
+  icon: React.ReactNode
   headerColor: string
   bodyColor: string
   altRowColor: string
@@ -27,7 +28,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '6 – 16 semanas',
-    emoji: '🐶',
+    icon: <Baby size={24} className="text-rose-500" />,
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
@@ -59,7 +60,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    emoji: '🐕',
+    icon: <Heart size={24} className="text-amber-500" />,
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
@@ -91,7 +92,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adulto',
     ageRange: '1 – 7 años',
-    emoji: '🐕‍🦺',
+    icon: <ShieldCheck size={24} className="text-blue-600" />,
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
@@ -123,7 +124,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '7+ años',
-    emoji: '🦴',
+    icon: <AlertCircle size={24} className="text-purple-600" />,
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
@@ -158,7 +159,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '8 – 16 semanas',
-    emoji: '🐱',
+    icon: <Baby size={24} className="text-rose-500" />,
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
@@ -190,7 +191,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    emoji: '🐈',
+    icon: <Heart size={24} className="text-amber-500" />,
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
@@ -222,7 +223,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adulto',
     ageRange: '1 – 10 años',
-    emoji: '🐈‍⬛',
+    icon: <ShieldCheck size={24} className="text-blue-600" />,
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
@@ -254,7 +255,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '10+ años',
-    emoji: '😸',
+    icon: <AlertCircle size={24} className="text-purple-600" />,
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
@@ -320,7 +321,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐕</span>
+            <Baby size={20} />
             Perro
           </button>
           <button
@@ -333,7 +334,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐱</span>
+            <Heart size={20} />
             Gato
           </button>
         </div>
@@ -345,7 +346,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
           <div key={phaseIdx} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <div className={`${phase.headerColor} text-white px-4 py-3 flex items-center justify-between`}>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{phase.emoji}</span>
+                {phase.icon}
                 <span className="font-bold text-base">{phase.name}</span>
               </div>
               <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
@@ -419,7 +420,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                   <td colSpan={4} className="px-5 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{phase.emoji}</span>
+                        {phase.icon}
                         <span className="font-bold text-lg">{phase.name}</span>
                       </div>
                       <span className="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full">
