@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Menu, X, Search } from 'lucide-react'
+import { ShoppingCart, Menu, X, Search, Star } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
@@ -84,6 +84,10 @@ export default function Navbar() {
                   <Link href="/consejos" className="hover:text-primary-light transition font-medium">Consejos</Link>
                   <Link href="/quienes-somos" className="hover:text-primary-light transition font-medium">Quiénes Somos</Link>
                   <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
+                  <Link href="/mis-yaguamillas" className="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-amber-900 px-3 py-1.5 rounded-lg transition font-semibold text-sm">
+                    <Star size={16} className="fill-current" />
+                    <span>Mis YaguaMillas</span>
+                  </Link>
                   <button
                     onClick={openSearch}
                     className="hover:text-primary-light transition"
@@ -164,6 +168,10 @@ export default function Navbar() {
               <Link href="/consejos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Consejos</Link>
               <Link href="/quienes-somos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Quiénes Somos</Link>
               <Link href="/contacto" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Contacto</Link>
+              <Link href="/mis-yaguamillas" onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-amber-900 px-3 py-2 rounded-lg transition font-semibold text-sm mt-2">
+                <Star size={16} className="fill-current" />
+                <span>Mis YaguaMillas</span>
+              </Link>
             </div>
           )}
         </div>

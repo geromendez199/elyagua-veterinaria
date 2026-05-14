@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect }
 import { supabase } from '@/lib/supabase'
-import { Cliente } from '@/types'
-import { Search, Star, TrendingUp, Calendar, Loader2 } from 'lucide-react'
+import { Cliente, Product } from '@/types'
+import { Search, Star, TrendingUp, Calendar, Loader2, ShoppingCart, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { formatPrice } from '@/lib/formatPrice'
+import { useCart } from '@/context/CartContext'
 
 interface PuntosHistorial {
   id: string
@@ -14,12 +18,39 @@ interface PuntosHistorial {
 }
 
 export default function MisYaguamillasPage() {
+  const { addItem } = useCart()
   const [dni, setDni] = useState('')
   const [loading, setLoading] = useState(false)
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [historial, setHistorial] = useState<PuntosHistorial[]>([])
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+  const [productosTop, setProductosTop] = useState<Product[]>([])
+  const [loadingProductos, setLoadingProductos] = useState(true)
+
+  useEffect(() => {
+    const fetchTopProductos = async () => {
+      try {
+        const { data } = await supabase
+          .from('productos')
+          .select('*')
+          .eq('activo', true)
+          .gt('puntos', 0)
+          .order('puntos', { ascending: false })
+          .limit(6)
+
+        if (data) {
+          setProductosTop(data)
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err)
+      } finally {
+        setLoadingProductos(false)
+      }
+    }
+
+    fetchTopProductos()
+  }, [])
 
   const handleBuscar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -262,6 +293,105 @@ export default function MisYaguamillasPage() {
             </button>
           </div>
         )}
+
+        {/* Mejores Productos para Acumular YaguaMillas */}
+        <div className="mt-12">
+          <div className="flex items-center gap-3 mb-8">
+            <Star size={28} className="fill-amber-400 text-amber-400" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Mejores Productos para Acumular YaguaMillas
+            </h2>
+          </div>
+
+          {loadingProductos ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 size={40} className="text-primary animate-spin" />
+            </div>
+          ) : productosTop.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl">
+              <p className="text-gray-500">No hay productos disponibles</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {productosTop.map((producto) => (
+                <div
+                  key={producto.id}
+                  className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden border border-gray-100"
+                >
+                  {/* Imagen */}
+                  <div className="relative h-48 bg-gray-100">
+                    {producto.imagen_url ? (
+                      <Image
+                        src={producto.imagen_url}
+                        alt={producto.nombre}
+                        fill
+                        className="object-cover"
+                        sizes="300px"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                        <svg viewBox="0 0 24 24" className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <path d="m21 15-5-5L7 21" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Badge YaguaMillas */}
+                    <div className="absolute top-3 right-3 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl p-3 shadow-lg">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Star size={16} className="fill-amber-600 text-amber-600" />
+                      </div>
+                      <p className="text-xl font-bold text-amber-900">{producto.puntos}</p>
+                      <p className="text-xs text-amber-800 font-semibold">millas</p>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-bold text-gray-900 line-clamp-2 text-sm">
+                        {producto.nombre}
+                      </h3>
+                      {producto.presentacion && (
+                        <p className="text-xs text-gray-500 mt-1">📦 {producto.presentacion}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        Precio: <span className="font-bold text-primary">{formatPrice(producto.precio)}</span>
+                      </p>
+                      <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded capitalize">
+                        {producto.categoria}
+                      </span>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="pt-3 border-t border-gray-100 space-y-2">
+                      <button
+                        onClick={() => addItem(producto, 1)}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+                      >
+                        <ShoppingCart size={16} />
+                        Agregar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/mejores-yaguamillas"
+              className="inline-block bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-xl transition flex items-center gap-2"
+            >
+              Ver todos los productos →
+            </Link>
+          </div>
+        </div>
 
         {/* Info General */}
         <div className="mt-12 bg-primary/5 rounded-2xl p-6 border border-primary/20">
