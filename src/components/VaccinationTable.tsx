@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
-import { Baby, Heart, ShieldCheck, AlertCircle } from 'lucide-react'
+import { Baby, Heart, ShieldCheck, AlertCircle, Dog, Cat } from 'lucide-react'
 
 type PetType = 'perro' | 'gato'
 
@@ -321,7 +321,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐕</span>
+            <Dog size={20} />
             Perro
           </button>
           <button
@@ -334,7 +334,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐱</span>
+            <Cat size={20} />
             Gato
           </button>
         </div>
