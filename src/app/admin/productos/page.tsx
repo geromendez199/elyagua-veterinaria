@@ -573,7 +573,7 @@ export default function AdminProductosPage() {
                 <th className="px-4 py-3 text-left font-semibold text-gray-700">Categoría</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Precio</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Stock</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Puntos</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-700">YaguaMillas</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Activo</th>
                 <th className="px-4 py-3 text-center font-semibold text-gray-700">Acciones</th>
               </tr>
@@ -848,9 +848,9 @@ export default function AdminProductosPage() {
                 />
               </div>
 
-              {/* Puntos */}
+              {/* YaguaMillas */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Puntos del programa de millas</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">YaguaMillas por este producto</label>
                 <input
                   type="number"
                   value={form.puntos || ''}
@@ -1021,9 +1021,9 @@ export default function AdminProductosPage() {
                 />
               </div>
 
-              {/* Puntos */}
+              {/* YaguaMillas */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Puntos del programa de millas</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">YaguaMillas por este producto</label>
                 <input
                   type="number"
                   value={editProduct.puntos || ''}

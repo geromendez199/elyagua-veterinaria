@@ -39,7 +39,7 @@ export default function PointsBadge({
       className={`inline-flex items-center gap-1 rounded-full ${sizes[size]} ${variants[variant]} ${className}`}
     >
       {showIcon && <Star size={iconSizes[size]} className="fill-current" />}
-      <span>{puntos} puntos</span>
+      <span>{puntos} YaguaMillas</span>
     </span>
   )
 }

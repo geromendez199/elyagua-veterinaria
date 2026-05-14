@@ -28,13 +28,13 @@ export default function PuntosInfo({ items, clienteActual }: PuntosInfoProps) {
     <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
       <div className="flex items-center gap-2 mb-3">
         <Star size={18} className="text-amber-500 fill-amber-500" />
-        <h3 className="font-bold text-amber-900">Programa de Puntos</h3>
+        <h3 className="font-bold text-amber-900">Programa YaguaMillas</h3>
       </div>
 
       {puntosCompra > 0 && (
         <div className="space-y-2">
           <p className="text-sm text-amber-800">
-            <span className="font-semibold">Acumularás {puntosCompra} puntos</span> con esta compra
+            <span className="font-semibold">Acumularás {puntosCompra} YaguaMillas</span> con esta compra
           </p>
 
           {items.some((item) => item.product.puntos) && (
@@ -43,7 +43,7 @@ export default function PuntosInfo({ items, clienteActual }: PuntosInfoProps) {
                 .filter((item) => item.product.puntos)
                 .map((item) => (
                   <div key={item.product.id}>
-                    {item.product.nombre} × {item.quantity} = {item.product.puntos! * item.quantity} pts
+                    {item.product.nombre} × {item.quantity} = {item.product.puntos! * item.quantity} millas
                   </div>
                 ))}
             </div>
@@ -54,11 +54,11 @@ export default function PuntosInfo({ items, clienteActual }: PuntosInfoProps) {
       {clienteActual && (
         <div className="pt-3 border-t border-amber-200 space-y-2">
           <p className="text-sm text-amber-800">
-            <span className="font-semibold">Puntos actuales:</span> {puntosActuales}
+            <span className="font-semibold">YaguaMillas actuales:</span> {puntosActuales}
           </p>
           {puntosCompra > 0 && (
             <p className="text-sm font-semibold text-amber-900 bg-white px-2 py-1 rounded">
-              📍 Después de pagar: <span className="text-amber-600">{puntosPostCompra} puntos</span>
+              📍 Después de pagar: <span className="text-amber-600">{puntosPostCompra} YaguaMillas</span>
             </p>
           )}
         </div>

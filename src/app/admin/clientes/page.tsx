@@ -250,10 +250,10 @@ export default function AdminClientesPage() {
                       <button
                         onClick={() => { setAdjustingPuntosId(cliente.id); setPuntosForm({ cantidad: '', motivo: '' }) }}
                         className="flex items-center gap-1.5 text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-1 rounded transition font-semibold col-span-2 sm:col-span-1"
-                        title="Ajustar puntos"
+                        title="Ajustar YaguaMillas"
                       >
                         <Zap size={13} />
-                        <span>{cliente.puntos_acumulados || 0} puntos</span>
+                        <span>{cliente.puntos_acumulados || 0} YaguaMillas</span>
                       </button>
                     </div>
 
@@ -330,12 +330,12 @@ export default function AdminClientesPage() {
         )}
       </div>
 
-      {/* Modal Ajustar Puntos */}
+      {/* Modal Ajustar YaguaMillas */}
       {adjustingPuntosId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
             <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-bold text-gray-800">Ajustar puntos</h3>
+              <h3 className="text-lg font-bold text-gray-800">Ajustar YaguaMillas</h3>
               <button
                 onClick={() => setAdjustingPuntosId(null)}
                 className="text-gray-400 hover:text-gray-600"
@@ -352,7 +352,7 @@ export default function AdminClientesPage() {
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-xs text-gray-500 font-semibold uppercase">Cliente</p>
                       <p className="text-sm font-bold text-gray-900 mt-0.5">{cliente?.nombre}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Puntos actuales: <span className="font-bold text-amber-600">{cliente?.puntos_acumulados || 0}</span></p>
+                      <p className="text-xs text-gray-500 mt-0.5">YaguaMillas actuales: <span className="font-bold text-amber-600">{cliente?.puntos_acumulados || 0}</span></p>
                     </div>
 
                     <div>
@@ -364,7 +364,7 @@ export default function AdminClientesPage() {
                         placeholder="Ej: 10 (suma), -5 (resta)"
                         className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Usa números negativos para restar puntos</p>
+                      <p className="text-xs text-gray-500 mt-1">Usa números negativos para restar YaguaMillas</p>
                     </div>
 
                     <div>
@@ -396,7 +396,7 @@ export default function AdminClientesPage() {
                             Ajustando...
                           </>
                         ) : (
-                          'Ajustar puntos'
+                          'Ajustar YaguaMillas'
                         )}
                       </button>
                     </div>
