@@ -321,7 +321,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Baby size={20} />
+            <span className="text-xl">🐕</span>
             Perro
           </button>
           <button
@@ -334,7 +334,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Heart size={20} />
+            <span className="text-xl">🐱</span>
             Gato
           </button>
         </div>
@@ -346,7 +346,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
           <div key={phaseIdx} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <div className={`${phase.headerColor} text-white px-4 py-3 flex items-center justify-between`}>
               <div className="flex items-center gap-2">
-                {phase.icon}
                 <span className="font-bold text-base">{phase.name}</span>
               </div>
               <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
@@ -420,7 +419,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                   <td colSpan={4} className="px-5 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        {phase.icon}
                         <span className="font-bold text-lg">{phase.name}</span>
                       </div>
                       <span className="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full">
