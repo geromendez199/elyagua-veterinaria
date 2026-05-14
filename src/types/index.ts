@@ -12,6 +12,7 @@ export interface Product {
   activo: boolean
   presentacion?: string
   laboratorio?: string
+  puntos?: number
   created_at?: string
   updated_at?: string
 }
@@ -39,8 +40,21 @@ export interface Cliente {
   nombre: string
   telefono: string | null
   notas: string | null
+  puntos_acumulados?: number
   created_at: string
   updated_at: string
+}
+
+// Loyalty Points System
+export type PuntosHistorialTipo = 'compra' | 'ajuste_admin' | 'canje'
+
+export interface PuntosHistorial {
+  id: string
+  cliente_id: string
+  tipo: PuntosHistorialTipo
+  cantidad_puntos: number
+  referencia: string | null
+  created_at: string
 }
 
 export type ArticuloCategoria = 'Nutrición' | 'Salud' | 'Prevención' | 'Cuidados' | 'General'
