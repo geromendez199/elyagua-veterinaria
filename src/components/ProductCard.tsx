@@ -9,6 +9,7 @@ import { useWishlist } from '@/context/WishlistContext'
 import { useState } from 'react'
 import { formatPrice } from '@/lib/formatPrice'
 import { LOW_STOCK_THRESHOLD, SITE_URL } from '@/lib/constants'
+import PointsBadge from './PointsBadge'
 
 interface ProductCardProps {
   product: Product
@@ -102,6 +103,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-bold text-sm md:text-base text-gray-800 mt-1 leading-tight line-clamp-2">
               {product.nombre}
             </h3>
+            {product.puntos ? (
+              <PointsBadge puntos={product.puntos} size="sm" variant="light" className="mt-1.5" />
+            ) : null}
           </div>
           <p className="text-gray-500 text-xs mb-3 line-clamp-2 flex-1 hidden md:block">
             {product.descripcion}
