@@ -345,7 +345,6 @@ export default function AdminConsejos() {
           </div>
         )}
         </>
-      )}
       </div>
 
       {/* Modal */}
