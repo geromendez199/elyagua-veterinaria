@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect }
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Cliente, Product } from '@/types'
 import { Search, Star, TrendingUp, Calendar, Loader2, ShoppingCart, ArrowRight } from 'lucide-react'
