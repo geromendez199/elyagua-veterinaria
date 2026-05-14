@@ -1,0 +1,459 @@
+'use client'
+
+import { Fragment, useState } from 'react'
+
+type PetType = 'perro' | 'gato'
+
+interface VaccineRow {
+  name: string
+  when: string
+  frequency: string
+  notes: string
+  required?: boolean
+}
+
+interface VaccinationPhase {
+  name: string
+  ageRange: string
+  emoji: string
+  headerColor: string
+  bodyColor: string
+  altRowColor: string
+  textColor: string
+  vaccines: VaccineRow[]
+}
+
+const PERRO_PHASES: VaccinationPhase[] = [
+  {
+    name: 'Cachorro',
+    ageRange: '6 – 16 semanas',
+    emoji: '🐶',
+    headerColor: 'bg-rose-500',
+    bodyColor: 'bg-rose-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-rose-600',
+    vaccines: [
+      {
+        name: 'Polivalente (V5/V6)',
+        when: 'Sem. 6, 9, 12, 15',
+        frequency: 'Serie inicial — 4 dosis',
+        notes: 'Parvovirosis, distemper, hepatitis, leptospirosis',
+        required: true,
+      },
+      {
+        name: 'Rabia',
+        when: 'Sem. 16 (4 meses)',
+        frequency: '1ª dosis',
+        notes: 'Obligatoria por ley',
+        required: true,
+      },
+      {
+        name: 'Bordetella',
+        when: 'Semana 8',
+        frequency: 'Condicional',
+        notes: 'Si frecuenta perreras, guarderías o parques caninos',
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'Adolescente',
+    ageRange: '6 – 12 meses',
+    emoji: '🐕',
+    headerColor: 'bg-amber-500',
+    bodyColor: 'bg-amber-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-amber-600',
+    vaccines: [
+      {
+        name: 'Refuerzo Polivalente',
+        when: 'Mes 12',
+        frequency: 'Refuerzo único',
+        notes: 'Consolida la inmunidad de la serie inicial',
+        required: true,
+      },
+      {
+        name: 'Refuerzo Rabia',
+        when: 'Mes 12',
+        frequency: 'Refuerzo anual',
+        notes: 'Requerido por normativa local',
+        required: true,
+      },
+    ],
+  },
+  {
+    name: 'Adulto',
+    ageRange: '1 – 7 años',
+    emoji: '🐕‍🦺',
+    headerColor: 'bg-primary',
+    bodyColor: 'bg-primary/5',
+    altRowColor: 'bg-white',
+    textColor: 'text-primary',
+    vaccines: [
+      {
+        name: 'Polivalente',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Mantiene la inmunidad frente a enfermedades graves',
+        required: true,
+      },
+      {
+        name: 'Rabia',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Obligatoria según normativa vigente',
+        required: true,
+      },
+      {
+        name: 'Leptospirosis',
+        when: 'Según evaluación',
+        frequency: 'Cada 3 años',
+        notes: 'Según exposición y criterio veterinario',
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'Senior',
+    ageRange: '7+ años',
+    emoji: '🦴',
+    headerColor: 'bg-purple-600',
+    bodyColor: 'bg-purple-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-purple-600',
+    vaccines: [
+      {
+        name: 'Revisión Veterinaria',
+        when: 'Cada año',
+        frequency: 'Anual obligatorio',
+        notes: 'Control integral de salud y bienestar',
+        required: true,
+      },
+      {
+        name: 'Polivalente',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Evaluar según estado de salud actual',
+        required: false,
+      },
+      {
+        name: 'Rabia',
+        when: 'Cada año',
+        frequency: 'Condicional',
+        notes: 'Si continúa activo o en contacto con el exterior',
+        required: false,
+      },
+    ],
+  },
+]
+
+const GATO_PHASES: VaccinationPhase[] = [
+  {
+    name: 'Cachorro',
+    ageRange: '8 – 16 semanas',
+    emoji: '🐱',
+    headerColor: 'bg-rose-500',
+    bodyColor: 'bg-rose-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-rose-600',
+    vaccines: [
+      {
+        name: 'Trivalente Felina (FVRC)',
+        when: 'Sem. 8, 12, 16',
+        frequency: 'Serie inicial — 3 dosis',
+        notes: 'Calicivirus, rinotraqueítis viral, panleucopenia',
+        required: true,
+      },
+      {
+        name: 'Rabia',
+        when: 'Sem. 12 – 16',
+        frequency: '1ª dosis',
+        notes: 'Primera dosis obligatoria',
+        required: true,
+      },
+      {
+        name: 'Leucemia Felina (FeLV)',
+        when: 'Sem. 12 + refuerzo',
+        frequency: 'Condicional',
+        notes: 'Para gatos con acceso al exterior o en convivencia con otros felinos',
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'Adolescente',
+    ageRange: '6 – 12 meses',
+    emoji: '🐈',
+    headerColor: 'bg-amber-500',
+    bodyColor: 'bg-amber-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-amber-600',
+    vaccines: [
+      {
+        name: 'Refuerzo Trivalente',
+        when: 'Mes 12',
+        frequency: 'Refuerzo único',
+        notes: 'Consolida la protección adquirida en la serie inicial',
+        required: true,
+      },
+      {
+        name: 'Refuerzo Rabia',
+        when: 'Mes 12',
+        frequency: 'Refuerzo anual',
+        notes: 'Refuerzo obligatorio por normativa',
+        required: true,
+      },
+    ],
+  },
+  {
+    name: 'Adulto',
+    ageRange: '1 – 10 años',
+    emoji: '🐈‍⬛',
+    headerColor: 'bg-primary',
+    bodyColor: 'bg-primary/5',
+    altRowColor: 'bg-white',
+    textColor: 'text-primary',
+    vaccines: [
+      {
+        name: 'Trivalente Felina',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Mantiene la inmunidad activa en la etapa adulta',
+        required: true,
+      },
+      {
+        name: 'Rabia',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Obligatoria según normativa vigente',
+        required: true,
+      },
+      {
+        name: 'Leucemia Felina',
+        when: 'Cada 2 años',
+        frequency: 'Cada 2 años',
+        notes: 'Para gatos con acceso al exterior',
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'Senior',
+    ageRange: '10+ años',
+    emoji: '😸',
+    headerColor: 'bg-purple-600',
+    bodyColor: 'bg-purple-50',
+    altRowColor: 'bg-white',
+    textColor: 'text-purple-600',
+    vaccines: [
+      {
+        name: 'Revisión Veterinaria',
+        when: 'Cada año',
+        frequency: 'Anual obligatorio',
+        notes: 'Control completo de salud, análisis y bienestar',
+        required: true,
+      },
+      {
+        name: 'Trivalente Felina',
+        when: 'Cada año',
+        frequency: 'Anual',
+        notes: 'Si continúa en buen estado de salud',
+        required: false,
+      },
+      {
+        name: 'Rabia',
+        when: 'Según situación',
+        frequency: 'Condicional',
+        notes: 'Evaluar con el veterinario según estilo de vida',
+        required: false,
+      },
+    ],
+  },
+]
+
+interface VaccinationTableProps {
+  showTitle?: boolean
+  darkBg?: boolean
+}
+
+export default function VaccinationTable({ showTitle = true, darkBg = true }: VaccinationTableProps) {
+  const [petType, setPetType] = useState<PetType>('perro')
+  const phases = petType === 'perro' ? PERRO_PHASES : GATO_PHASES
+
+  return (
+    <div className="w-full">
+      {showTitle && (
+        <div className="text-center mb-8">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${darkBg ? 'text-white' : 'text-gray-900'}`}>
+            Tabla de Vacunación
+          </h2>
+          <p className={`text-base md:text-lg max-w-2xl mx-auto ${darkBg ? 'text-white/80' : 'text-gray-600'}`}>
+            Calendario completo de vacunas para mantener a tu mascota protegida en cada etapa de su vida
+          </p>
+        </div>
+      )}
+
+      {/* Pet Type Toggle */}
+      <div className="flex justify-center mb-8">
+        <div className={`rounded-2xl p-1.5 flex gap-1 ${darkBg ? 'bg-white/10 backdrop-blur-sm' : 'bg-gray-100'}`}>
+          <button
+            onClick={() => setPetType('perro')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all ${
+              petType === 'perro'
+                ? 'bg-white text-primary shadow-md'
+                : darkBg
+                ? 'text-white hover:bg-white/10'
+                : 'text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <span className="text-xl">🐕</span>
+            Perro
+          </button>
+          <button
+            onClick={() => setPetType('gato')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all ${
+              petType === 'gato'
+                ? 'bg-white text-primary shadow-md'
+                : darkBg
+                ? 'text-white hover:bg-white/10'
+                : 'text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <span className="text-xl">🐱</span>
+            Gato
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile: Card layout */}
+      <div className="md:hidden space-y-4">
+        {phases.map((phase, phaseIdx) => (
+          <div key={phaseIdx} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+            <div className={`${phase.headerColor} text-white px-4 py-3 flex items-center justify-between`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{phase.emoji}</span>
+                <span className="font-bold text-base">{phase.name}</span>
+              </div>
+              <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
+                {phase.ageRange}
+              </span>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {phase.vaccines.map((vaccine, vIdx) => (
+                <div
+                  key={vIdx}
+                  className={`p-4 ${vIdx % 2 === 0 ? phase.bodyColor : phase.altRowColor}`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className="font-bold text-gray-900 text-sm">{vaccine.name}</p>
+                    {vaccine.required ? (
+                      <span className="flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-white">
+                        Obligatoria
+                      </span>
+                    ) : (
+                      <span className="flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
+                        Condicional
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-0.5 text-sm">
+                    <p className="text-gray-700">
+                      <span className={`font-semibold ${phase.textColor}`}>Cuándo: </span>
+                      {vaccine.when}
+                    </p>
+                    <p className="text-gray-700">
+                      <span className={`font-semibold ${phase.textColor}`}>Frecuencia: </span>
+                      {vaccine.frequency}
+                    </p>
+                    <p className="text-xs text-gray-500 italic pt-1">{vaccine.notes}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="bg-white/10 rounded-xl px-4 py-3">
+          <p className={`text-xs ${darkBg ? 'text-white/70' : 'text-gray-500'}`}>
+            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Consultá siempre con tu veterinario para un plan personalizado según el estado de salud, zona y estilo de vida de tu mascota.
+          </p>
+        </div>
+      </div>
+
+      {/* Desktop: Table layout */}
+      <div className="hidden md:block bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 border-b-2 border-gray-200">
+              <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[28%]">
+                Vacuna
+              </th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[20%]">
+                Cuándo
+              </th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[20%]">
+                Frecuencia
+              </th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[32%]">
+                Notas
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {phases.map((phase, phaseIdx) => (
+              <Fragment key={phaseIdx}>
+                <tr className={`${phase.headerColor} text-white`}>
+                  <td colSpan={4} className="px-5 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">{phase.emoji}</span>
+                        <span className="font-bold text-lg">{phase.name}</span>
+                      </div>
+                      <span className="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full">
+                        {phase.ageRange}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+                {phase.vaccines.map((vaccine, vIdx) => (
+                  <tr
+                    key={vIdx}
+                    className={`border-b border-gray-100 last:border-b-0 ${
+                      vIdx % 2 === 0 ? phase.bodyColor : phase.altRowColor
+                    }`}
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex flex-wrap items-start gap-2">
+                        <span className="font-semibold text-gray-900 text-sm leading-snug">
+                          {vaccine.name}
+                        </span>
+                        {vaccine.required ? (
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-white">
+                            Obligatoria
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
+                            Condicional
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-700 align-top">{vaccine.when}</td>
+                    <td className={`px-5 py-4 text-sm font-semibold align-top ${phase.textColor}`}>
+                      {vaccine.frequency}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-500 italic align-top">{vaccine.notes}</td>
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+        <div className="bg-gray-50 border-t-2 border-gray-200 px-5 py-4">
+          <p className="text-sm text-gray-600">
+            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con tu veterinario de confianza para un plan de vacunación personalizado según el estado de salud, zona geográfica y estilo de vida de tu mascota.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Loader2, X, Check } from 'lucide-react'
+import { ArrowLeft, Loader2, X, Check, Syringe, BookOpen } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Consejo, ConsejoCategoria, ConsejoTipoMascota, CONSEJO_CATEGORIES } from '@/types'
 import AdminAgeRangeSlider from '@/components/AdminAgeRangeSlider'
+import VaccinationTable from '@/components/VaccinationTable'
+
+type AdminTab = 'vacunacion' | 'consejos'
 
 interface FormData {
   titulo: string
@@ -40,6 +43,7 @@ export default function AdminConsejos() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<AdminTab>('vacunacion')
   const [consejos, setConsejos] = useState<Consejo[]>([])
   const [form, setForm] = useState(emptyForm)
   const [showModal, setShowModal] = useState(false)
@@ -232,46 +236,82 @@ export default function AdminConsejos() {
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-6">
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Buscar por título o categoría..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={`flex-1 ${inputCls}`}
-          />
+        {/* Tabs */}
+        <div className="flex gap-1 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200 mb-6">
           <button
-            onClick={() => setShowModal(true)}
-            className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-dark transition"
+            onClick={() => setActiveTab('vacunacion')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'vacunacion'
+                ? 'bg-primary text-white shadow'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
           >
-            + Nuevo Consejo
+            <Syringe size={16} />
+            Tabla de Vacunación
+          </button>
+          <button
+            onClick={() => setActiveTab('consejos')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'consejos'
+                ? 'bg-primary text-white shadow'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <BookOpen size={16} />
+            Gestión de Consejos
           </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border-l-4 border-primary">
-            <p className="text-gray-600 text-sm">Total</p>
-            <p className="text-2xl font-bold text-primary">{consejos.length}</p>
+        {/* Tab: Vaccination Table */}
+        {activeTab === 'vacunacion' && (
+          <div className="bg-primary/5 rounded-2xl p-4 md:p-6">
+            <VaccinationTable showTitle darkBg={false} />
           </div>
-          <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
-            <p className="text-gray-600 text-sm">Activos</p>
-            <p className="text-2xl font-bold text-green-600">{consejos.filter((c) => c.activo).length}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-            <p className="text-gray-600 text-sm">Perros</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {consejos.filter((c) => c.tipo_mascota === 'perro' || c.tipo_mascota === 'ambos').length}
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
-            <p className="text-gray-600 text-sm">Gatos</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {consejos.filter((c) => c.tipo_mascota === 'gato' || c.tipo_mascota === 'ambos').length}
-            </p>
-          </div>
-        </div>
+        )}
+
+        {/* Tab: Consejos Management */}
+        {activeTab === 'consejos' && (
+          <>
+            {/* Toolbar */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <input
+                type="text"
+                placeholder="Buscar por título o categoría..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`flex-1 ${inputCls}`}
+              />
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-dark transition"
+              >
+                + Nuevo Consejo
+              </button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-primary">
+                <p className="text-gray-600 text-sm">Total</p>
+                <p className="text-2xl font-bold text-primary">{consejos.length}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <p className="text-gray-600 text-sm">Activos</p>
+                <p className="text-2xl font-bold text-green-600">{consejos.filter((c) => c.activo).length}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <p className="text-gray-600 text-sm">Perros</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {consejos.filter((c) => c.tipo_mascota === 'perro' || c.tipo_mascota === 'ambos').length}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                <p className="text-gray-600 text-sm">Gatos</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {consejos.filter((c) => c.tipo_mascota === 'gato' || c.tipo_mascota === 'ambos').length}
+                </p>
+              </div>
+            </div>
 
         {/* Table/Cards View */}
         {filteredConsejos.length === 0 ? (
@@ -338,6 +378,8 @@ export default function AdminConsejos() {
               </div>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
 
