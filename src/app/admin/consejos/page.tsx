@@ -4,13 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Loader2, X, Check, Syringe, BookOpen } from 'lucide-react'
+import { ArrowLeft, Loader2, X, Check, BookOpen } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Consejo, ConsejoCategoria, ConsejoTipoMascota, CONSEJO_CATEGORIES } from '@/types'
 import AdminAgeRangeSlider from '@/components/AdminAgeRangeSlider'
-import VaccinationTable from '@/components/VaccinationTable'
 
-type AdminTab = 'vacunacion' | 'consejos'
+type AdminTab = 'consejos'
 
 interface FormData {
   titulo: string
@@ -43,7 +42,7 @@ export default function AdminConsejos() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<AdminTab>('vacunacion')
+  const [activeTab, setActiveTab] = useState<AdminTab>('consejos')
   const [consejos, setConsejos] = useState<Consejo[]>([])
   const [form, setForm] = useState(emptyForm)
   const [showModal, setShowModal] = useState(false)
@@ -236,41 +235,7 @@ export default function AdminConsejos() {
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-6">
-        {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200 mb-6">
-          <button
-            onClick={() => setActiveTab('vacunacion')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'vacunacion'
-                ? 'bg-primary text-white shadow'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <Syringe size={16} />
-            Tabla de Vacunación
-          </button>
-          <button
-            onClick={() => setActiveTab('consejos')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'consejos'
-                ? 'bg-primary text-white shadow'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <BookOpen size={16} />
-            Gestión de Consejos
-          </button>
-        </div>
-
-        {/* Tab: Vaccination Table */}
-        {activeTab === 'vacunacion' && (
-          <div className="bg-primary/5 rounded-2xl p-4 md:p-6">
-            <VaccinationTable showTitle darkBg={false} />
-          </div>
-        )}
-
-        {/* Tab: Consejos Management */}
-        {activeTab === 'consejos' && (
+        {/* Consejos Management */}
           <>
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -378,8 +343,6 @@ export default function AdminConsejos() {
               </div>
             ))}
           </div>
-        )}
-          </>
         )}
       </div>
 
