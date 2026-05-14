@@ -58,6 +58,14 @@ export default function ProductCard({ product }: ProductCardProps) {
               </div>
             </div>
           )}
+
+          {/* Badge Presentación (abajo derecha) */}
+          {product.presentacion && (
+            <div className="absolute bottom-2 right-2 bg-primary text-white px-2.5 py-1 rounded-full text-xs font-semibold shadow-md">
+              {product.presentacion}
+            </div>
+          )}
+
           {/* Botones compartir y wishlist */}
           <div className="absolute top-2 right-2 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition">
             <button
@@ -94,9 +102,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-bold text-sm md:text-base text-gray-800 mt-1 leading-tight line-clamp-2">
               {product.nombre}
             </h3>
-            {product.presentacion && (
-              <p className="text-xs text-gray-500 mt-0.5">{product.presentacion}</p>
-            )}
           </div>
           <p className="text-gray-500 text-xs mb-3 line-clamp-2 flex-1 hidden md:block">
             {product.descripcion}
