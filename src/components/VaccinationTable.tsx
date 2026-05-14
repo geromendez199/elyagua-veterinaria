@@ -388,7 +388,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         ))}
         <div className="bg-white/10 rounded-xl px-4 py-3">
           <p className={`text-xs ${darkBg ? 'text-white/70' : 'text-gray-500'}`}>
-            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Consultá siempre con tu veterinario para un plan personalizado según el estado de salud, zona y estilo de vida de tu mascota.
+            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con un veterinario de El Yagua para un plan de vacunación mas personalizado.
           </p>
         </div>
       </div>
@@ -464,7 +464,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         </table>
         <div className="bg-gray-50 border-t-2 border-gray-200 px-5 py-4">
           <p className="text-sm text-gray-600">
-            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con tu veterinario de confianza para un plan de vacunación personalizado según el estado de salud, zona geográfica y estilo de vida de tu mascota.
+            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con un veterinario de El Yagua para un plan de vacunación mas personalizado.
           </p>
         </div>
       </div>
