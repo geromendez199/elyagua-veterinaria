@@ -62,6 +62,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [checkingStock, setCheckingStock] = useState(false)
   const [stockErrors, setStockErrors] = useState<string[]>([])
 
+  // ── Confirmación de YaguaMillas ────────────────────────────────
+  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
+  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
+
   const handleContinuar = async () => {
     if (items.length === 0) return
     setCheckingStock(true)
@@ -290,6 +294,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
     const whatsappUrl = `${WA_URL}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
+
+    // Mostrar confirmación de YaguaMillas
+    const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
+    if (totalYaguaMillas > 0 && formData.dni) {
+      setYaguamillasConfirmData({
+        cantidad: totalYaguaMillas,
+        nombre: formData.nombre,
+        dni: formData.dni,
+      })
+      setShowYaguamillasConfirm(true)
+    }
 
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
@@ -877,6 +892,74 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
         </div>
       </div>
+
+      {/* Modal Confirmación YaguaMillas */}
+      {showYaguamillasConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-amber-400 to-yellow-400 px-6 py-8 text-center">
+              <div className="text-5xl mb-3">⭐</div>
+              <h3 className="text-2xl font-bold text-amber-900">¡Felicidades!</h3>
+              <p className="text-amber-800 mt-2">Acabás de acumular YaguaMillas</p>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-8 space-y-6">
+              {/* Millas Count */}
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-amber-700 font-semibold uppercase tracking-wide mb-2">
+                  YaguaMillas acumulados
+                </p>
+                <p className="text-5xl font-bold text-amber-600">
+                  +{yaguamillasConfirmData.cantidad}
+                </p>
+              </div>
+
+              {/* Info */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-gray-600">Cliente:</span>
+                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.nombre}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-gray-600">DNI:</span>
+                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.dni}</span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-800 text-xs">
+                  ℹ️ Estos YaguaMillas se acumularán cuando confirmes tu compra por WhatsApp
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="space-y-2">
+                <a
+                  href="/mis-yaguamillas"
+                  className="block w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition text-center text-sm"
+                >
+                  Ver mis YaguaMillas
+                </a>
+                <button
+                  onClick={() => {
+                    setShowYaguamillasConfirm(false)
+                    clearCart()
+                    onClose()
+                    setStep('cart')
+                    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
+                    setErrors({})
+                    setTouched({ nombre: false, telefono: false, direccion: false })
+                    setDniLookup('idle')
+                    setClienteActual(undefined)
+                  }}
+                  className="w-full border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-50 transition text-sm"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
