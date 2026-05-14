@@ -92,12 +92,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   // ── DNI: auto-reconocimiento de cliente ──────────────────────
   const [dniLookup, setDniLookup] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
-  const [clienteActual, setClienteActual] = useState<Cliente | null>(null)
+  const [clienteActual, setClienteActual] = useState<Cliente | undefined>()
 
   const handleDniChange = async (value: string) => {
     const sanitized = value.replace(/\D/g, '').slice(0, 8)
     setFormData(prev => ({ ...prev, dni: sanitized }))
-    if (sanitized.length < 8) { setDniLookup('idle'); setClienteActual(null); return }
+    if (sanitized.length < 8) { setDniLookup('idle'); setClienteActual(undefined); return }
     setDniLookup('loading')
     try {
       const { data } = await supabase.from('clientes').select('*').eq('dni', sanitized).limit(1)
@@ -112,11 +112,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         }))
       } else {
         setDniLookup('notfound')
-        setClienteActual(null)
+        setClienteActual(undefined)
       }
     } catch {
       setDniLookup('idle')
-      setClienteActual(null)
+      setClienteActual(undefined)
     }
   }
 
@@ -340,6 +340,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     setErrors({})
     setTouched({ nombre: false, telefono: false, direccion: false })
     setDniLookup('idle')
+    setClienteActual(undefined)
   }
 
   if (!isOpen) return null
