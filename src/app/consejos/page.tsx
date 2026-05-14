@@ -51,9 +51,9 @@ export default function ConsejoPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* SECTION 1: Consejos Veterinarios (Articles) */}
-      <section className="bg-primary text-white py-12 md:py-20">
+      <section className="bg-primary text-white py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Consejos Veterinarios</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-2">Consejos Veterinarios</h1>
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
             Tips, tablas y artículos escritos por nuestro equipo para el bienestar de tu mascota
           </p>
@@ -61,7 +61,7 @@ export default function ConsejoPage() {
       </section>
 
       {/* Articles Grid */}
-      <section className="py-12 md:py-20 bg-primary text-white">
+      <section className="py-8 md:py-12 bg-primary text-white">
         <div className="max-w-7xl mx-auto px-4">
           {loadingArticles ? (
             <div className="text-center py-20">
@@ -76,7 +76,7 @@ export default function ConsejoPage() {
               <p className="text-gray-400 text-lg">Próximamente publicaremos consejos y artículos veterinarios.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {articulos.map((art) => (
                 <Link
                   key={art.id}
@@ -127,7 +127,7 @@ export default function ConsejoPage() {
       </section>
 
       {/* SECTION 2: Tabla de Vacunación */}
-      <section className="bg-gradient-to-b from-primary to-primary-dark py-12 md:py-20">
+      <section className="bg-gradient-to-b from-primary to-primary-dark py-8 md:py-12">
         <div className="max-w-5xl mx-auto px-4">
           <VaccinationTable showTitle darkBg />
         </div>
