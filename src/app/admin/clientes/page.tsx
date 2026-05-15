@@ -88,22 +88,27 @@ export default function AdminClientesPage() {
   }
 
   const savePuntosAdjustment = async (clienteId: string) => {
+    alert('1. Iniciando savePuntosAdjustment')
+
+    const cantidad = parseInt(puntosForm.cantidad)
+    const motivo = puntosForm.motivo
+
+    alert('2. Valores: cantidad=' + cantidad + ', motivo=' + motivo)
+
+    if (!puntosForm.cantidad || !motivo) {
+      alert('Debe llenar cantidad y motivo')
+      return
+    }
+
+    if (isNaN(cantidad)) {
+      alert('Cantidad debe ser un número')
+      return
+    }
+
+    alert('3. Validaciones OK, enviando a API...')
+    setSavingPuntos(true)
+
     try {
-      const cantidad = parseInt(puntosForm.cantidad)
-      const motivo = puntosForm.motivo
-
-      if (!puntosForm.cantidad || !motivo) {
-        alert('Debe llenar cantidad y motivo')
-        return
-      }
-
-      if (isNaN(cantidad)) {
-        alert('Cantidad debe ser un número')
-        return
-      }
-
-      setSavingPuntos(true)
-
       const response = await fetch('/api/admin/clientes/puntos', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -114,20 +119,24 @@ export default function AdminClientesPage() {
         }),
       })
 
+      alert('4. Respuesta recibida, status=' + response.status)
+
       const data = await response.json()
+      alert('5. Data: ' + JSON.stringify(data))
 
       if (!response.ok || !data.success) {
-        alert('Error: ' + (data.error || 'No se pudo ajustar'))
+        alert('Error en respuesta: ' + (data.error || 'No se pudo ajustar'))
+        setSavingPuntos(false)
         return
       }
 
-      alert('✓ Guardado correctamente')
+      alert('6. ✓ Éxito!')
       await fetchData()
       setAdjustingPuntosId(null)
       setPuntosForm({ cantidad: '', motivo: '' })
+      setSavingPuntos(false)
     } catch (error) {
-      alert('Error: ' + String(error))
-    } finally {
+      alert('Error catch: ' + String(error))
       setSavingPuntos(false)
     }
   }
