@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -181,6 +181,16 @@ export default function AdminDashboardPage() {
       stat: cuponesActivos,
       statLabel: 'disponibles',
       color: 'from-rose-400 to-rose-600',
+      badge: null,
+    },
+    {
+      href: '/admin/yaguamillas',
+      icon: Star,
+      titulo: 'YaguaMillas',
+      descripcion: 'Gestionar puntos de clientes',
+      stat: stats.total_clientes,
+      statLabel: 'clientes',
+      color: 'from-amber-400 to-yellow-500',
       badge: null,
     },
     {
