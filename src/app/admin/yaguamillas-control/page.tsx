@@ -184,6 +184,8 @@ export default function YaguamillasControlPage() {
         setEditingMilestone(null)
         setMilestoneForm({ millas: '', descuento: '', activo: true })
         await fetchMilestones()
+      } else {
+        alert('Error: ' + (data.error || 'Error desconocido'))
       }
     } catch (error) {
       alert('Error: ' + String(error))
