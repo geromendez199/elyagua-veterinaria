@@ -17,6 +17,12 @@ interface PuntosHistorial {
   created_at: string
 }
 
+interface Cupon {
+  id: string
+  porcentaje_descuento: number
+  usado: boolean
+}
+
 export default function MisYaguamillasPage() {
   const { addItem } = useCart()
   const [dni, setDni] = useState('')
@@ -27,6 +33,7 @@ export default function MisYaguamillasPage() {
   const [searched, setSearched] = useState(false)
   const [productosTop, setProductosTop] = useState<Product[]>([])
   const [loadingProductos, setLoadingProductos] = useState(true)
+  const [cupones, setCupones] = useState<Cupon[]>([])
 
   useEffect(() => {
     const fetchTopProductos = async () => {
@@ -81,15 +88,21 @@ export default function MisYaguamillasPage() {
 
       setCliente(clienteData)
 
-      const { data: historialData, error: historialError } = await supabase
-        .from('historial_puntos')
-        .select('*')
-        .eq('cliente_id', clienteData.id)
-        .order('created_at', { ascending: false })
+      const [{ data: historialData }, { data: cuponesData }] = await Promise.all([
+        supabase
+          .from('historial_puntos')
+          .select('*')
+          .eq('cliente_id', clienteData.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('cupones')
+          .select('*')
+          .eq('cliente_id', clienteData.id)
+          .eq('usado', false),
+      ])
 
-      if (!historialError) {
-        setHistorial(historialData || [])
-      }
+      setHistorial(historialData || [])
+      setCupones(cuponesData || [])
     } catch (err) {
       setError('Error al buscar. Intenta de nuevo.')
       console.error(err)
@@ -186,22 +199,81 @@ export default function MisYaguamillasPage() {
             {/* Card de YaguaMillas Actuales */}
             <div className="bg-gradient-to-br from-amber-100 to-amber-50 rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-amber-200">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="flex-1">
                   <p className="text-gray-700 text-sm font-semibold uppercase tracking-wide mb-2">
                     YaguaMillas Acumulados
                   </p>
                   <h2 className="text-5xl sm:text-6xl font-bold text-amber-600 mb-2">
                     {cliente.puntos_acumulados || 0}
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 mb-4">
                     ¡Seguí comprando para acumular más YaguaMillas! 🐾
                   </p>
+
+                  {/* Cupones Info */}
+                  <div className="bg-white/70 rounded-lg p-3 mt-4">
+                    <p className="text-xs text-amber-700 font-semibold mb-2">🎁 CUPONES DISPONIBLES</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-green-600">{cupones.length}</span>
+                      <div className="text-xs text-gray-700">
+                        <p>Cupones de <strong>10% OFF</strong></p>
+                        <p className="text-gray-600">(100 millas = 1 cupón)</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-amber-400">
                   <Star size={64} className="fill-current" />
                 </div>
               </div>
             </div>
+
+            {/* Cupones Section */}
+            {cupones.length > 0 && (
+              <div className="bg-white rounded-2xl shadow p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Star size={24} className="fill-green-500 text-green-500" />
+                  <h3 className="text-xl font-bold text-gray-900">Tus Cupones de Descuento</h3>
+                </div>
+
+                <div className="space-y-3">
+                  {cupones.map((cupon, index) => (
+                    <div
+                      key={cupon.id}
+                      className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-4 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-green-500 text-white rounded-lg px-4 py-2">
+                          <p className="text-lg font-bold">{cupon.porcentaje_descuento}%</p>
+                          <p className="text-xs">DESCUENTO</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">Cupón #{index + 1}</p>
+                          <p className="text-sm text-gray-600">Usable en tu próxima compra</p>
+                        </div>
+                      </div>
+                      <div className="text-green-600 text-sm font-semibold">✓ Disponible</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>¿Cómo funcionan?</strong> Tus cupones son válidos en cualquier compra. Cada 100 YaguaMillas que acumules genera un cupón de 10% de descuento.
+                    Si tienes {(cliente.puntos_acumulados || 0) - ((cupones.length) * 100)} YaguaMillas disponibles, podrás generar {Math.floor(((cliente.puntos_acumulados || 0) - ((cupones.length) * 100)) / 100)} cupón más cuando acumules 100 más.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {cupones.length === 0 && (cliente.puntos_acumulados || 0) >= 100 && (
+              <div className="bg-blue-50 rounded-2xl shadow p-6 border-2 border-blue-200">
+                <p className="text-center">
+                  <span className="text-lg font-bold text-blue-900">¡Felicitaciones! 🎉</span>
+                  <p className="text-blue-700 mt-2">Ya acumulaste suficientes YaguaMillas para generar cupones. El admin puede generarlos desde el panel de administración.</p>
+                </p>
+              </div>
+            )}
 
             {/* Info del Cliente */}
             <div className="bg-white rounded-2xl shadow p-6">
