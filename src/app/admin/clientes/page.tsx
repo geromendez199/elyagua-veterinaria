@@ -100,14 +100,29 @@ export default function AdminClientesPage() {
           motivo: puntosForm.motivo,
         }),
       })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('API error:', error)
+        alert('Error: ' + (error.error || 'No se pudo guardar el ajuste'))
+        return
+      }
+
       const result = await response.json()
+      console.log('Ajuste guardado:', result)
+
       if (result.success) {
         await fetchData()
         setAdjustingPuntosId(null)
         setPuntosForm({ cantidad: '', motivo: '' })
+        alert('YaguaMillas ajustados correctamente')
+      } else {
+        console.error('Error en respuesta:', result.error)
+        alert('Error: ' + (result.error || 'No se pudo guardar el ajuste'))
       }
     } catch (err) {
       console.error('Error adjusting points:', err)
+      alert('Error al ajustar YaguaMillas: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setSavingPuntos(false)
     }

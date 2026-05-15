@@ -44,7 +44,15 @@ export async function PATCH(request: Request) {
       )
     }
 
-    return Response.json(data)
+    if (!data) {
+      console.error('RPC returned no data')
+      return Response.json(
+        { success: false, error: 'No se pudo procesar el ajuste' },
+        { status: 500 }
+      )
+    }
+
+    return Response.json({ success: true, ...data })
   } catch (error) {
     console.error('Error adjusting client points:', error)
     return Response.json(
