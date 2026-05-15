@@ -79,26 +79,52 @@ export default function AdminYaguamillasPage() {
   }
 
   const savePuntosAdjustment = async (clienteId: string) => {
-    if (!puntosForm.cantidad || !puntosForm.motivo.trim()) return
+    alert('1. Iniciando...')
+
+    const cantidad = parseInt(puntosForm.cantidad)
+    const motivo = puntosForm.motivo
+
+    alert('2. Valores: ' + cantidad + ', ' + motivo)
+
+    if (!puntosForm.cantidad || !motivo) {
+      alert('Debe llenar cantidad y motivo')
+      return
+    }
+
+    if (isNaN(cantidad)) {
+      alert('Cantidad debe ser un número')
+      return
+    }
+
+    alert('3. Validaciones OK')
     setSavingPuntos(true)
+
     try {
       const response = await fetch('/api/admin/clientes/puntos', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cliente_id: clienteId,
-          cantidad: parseInt(puntosForm.cantidad),
-          motivo: puntosForm.motivo,
+          cantidad: cantidad,
+          motivo: motivo,
         }),
       })
+
+      alert('4. Status: ' + response.status)
+
       const result = await response.json()
+      alert('5. Resultado: ' + JSON.stringify(result))
+
       if (result.success) {
+        alert('✓ Guardado!')
         await fetchData()
         setAdjustingPuntosId(null)
         setPuntosForm({ cantidad: '', motivo: '' })
+      } else {
+        alert('Error: ' + (result.error || 'No guardado'))
       }
     } catch (err) {
-      console.error('Error adjusting points:', err)
+      alert('Error: ' + String(err))
     } finally {
       setSavingPuntos(false)
     }
@@ -360,7 +386,7 @@ export default function AdminYaguamillasPage() {
                       </button>
                       <button
                         onClick={() => savePuntosAdjustment(adjustingPuntosId)}
-                        disabled={savingPuntos || !puntosForm.cantidad || !puntosForm.motivo.trim()}
+                        disabled={savingPuntos}
                         className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {savingPuntos ? (
