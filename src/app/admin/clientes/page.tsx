@@ -3,10 +3,21 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag, Zap, Loader2 } from 'lucide-react'
+import { Users, ArrowLeft, Phone, Trash2, FileText, Check, X, ShoppingBag, Zap, Loader2, PawPrint } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { Cliente } from '@/types'
+
+interface Mascota {
+  id: string
+  nombre: string
+  especie: string
+  raza?: string
+  edad?: string
+  color?: string
+  peso?: string
+  observaciones?: string
+}
 
 interface ClienteConStats extends Cliente {
   pedidos_count: number
@@ -14,6 +25,7 @@ interface ClienteConStats extends Cliente {
   ultimo_pedido: string | null
   top_producto: string | null
   productos_resumen: { nombre: string; cantidad: number }[]
+  mascotas: Mascota[]
 }
 
 export default function AdminClientesPage() {
@@ -27,11 +39,15 @@ export default function AdminClientesPage() {
   const [adjustingPuntosId, setAdjustingPuntosId] = useState<string | null>(null)
   const [puntosForm, setPuntosForm] = useState({ cantidad: '', motivo: '' })
   const [savingPuntos, setSavingPuntos] = useState(false)
+  const [addingMascotaClienteId, setAddingMascotaClienteId] = useState<string | null>(null)
+  const [mascotaForm, setMascotaForm] = useState({ nombre: '', especie: 'perro', raza: '', edad: '', color: '', peso: '', observaciones: '' })
+  const [savingMascota, setSavingMascota] = useState(false)
 
   const fetchData = async () => {
-    const [{ data: clientesData }, { data: pedidosData }] = await Promise.all([
+    const [{ data: clientesData }, { data: pedidosData }, { data: mascotasData }] = await Promise.all([
       supabase.from('clientes').select('*').order('created_at', { ascending: false }),
       supabase.from('pedidos').select('cliente_dni, total, created_at, productos').not('cliente_dni', 'is', null),
+      supabase.from('mascotas').select('*'),
     ])
 
     const stats: Record<string, { count: number; total: number; ultimo: string }> = {}
@@ -52,6 +68,7 @@ export default function AdminClientesPage() {
 
     setClientes((clientesData || []).map(c => {
       const prods = Object.values(prodsMap[c.dni] || {}).sort((a, b) => b.cantidad - a.cantidad)
+      const clienteMascotas = (mascotasData || []).filter(m => m.cliente_id === c.id)
       return {
         ...c,
         pedidos_count: stats[c.dni]?.count || 0,
@@ -59,6 +76,7 @@ export default function AdminClientesPage() {
         ultimo_pedido: stats[c.dni]?.ultimo || null,
         top_producto: prods[0]?.nombre || null,
         productos_resumen: prods,
+        mascotas: clienteMascotas,
       }
     }))
     setLoading(false)
@@ -85,6 +103,39 @@ export default function AdminClientesPage() {
     setClientes(prev => prev.map(c => c.id === id ? { ...c, notas: notaValue } : c))
     setEditingId(null)
     setSavingNota(false)
+  }
+
+  const addMascota = async (clienteId: string) => {
+    if (!mascotaForm.nombre || !mascotaForm.especie) {
+      alert('Nombre y especie son requeridos')
+      return
+    }
+
+    setSavingMascota(true)
+    try {
+      const response = await fetch('/api/admin/mascotas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_id: clienteId,
+          ...mascotaForm,
+        }),
+      })
+
+      const result = await response.json()
+      if (result.success) {
+        alert('✓ Mascota agregada')
+        await fetchData()
+        setAddingMascotaClienteId(null)
+        setMascotaForm({ nombre: '', especie: 'perro', raza: '', edad: '', color: '', peso: '', observaciones: '' })
+      } else {
+        alert('Error: ' + (result.error || 'No guardado'))
+      }
+    } catch (err) {
+      alert('Error: ' + String(err))
+    } finally {
+      setSavingMascota(false)
+    }
   }
 
   const savePuntosAdjustment = async (clienteId: string) => {
@@ -310,6 +361,38 @@ export default function AdminClientesPage() {
                       </div>
                     )}
 
+                    {/* Mascotas */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-gray-400 flex items-center gap-1">
+                          <PawPrint size={12} /> Mascotas ({cliente.mascotas?.length || 0})
+                        </p>
+                        <button
+                          onClick={() => {
+                            setAddingMascotaClienteId(cliente.id)
+                            setMascotaForm({ nombre: '', especie: 'perro', raza: '', edad: '', color: '', peso: '', observaciones: '' })
+                          }}
+                          className="text-xs bg-primary/10 text-primary hover:bg-primary hover:text-white px-2 py-1 rounded transition font-semibold"
+                        >
+                          + Agregar
+                        </button>
+                      </div>
+                      {(cliente.mascotas || []).length > 0 ? (
+                        <div className="space-y-1">
+                          {cliente.mascotas?.map((mascota) => (
+                            <div key={mascota.id} className="text-xs bg-blue-50 p-2 rounded flex items-center justify-between">
+                              <span>
+                                <strong>{mascota.nombre}</strong> ({mascota.especie}
+                                {mascota.raza ? ` - ${mascota.raza}` : ''})
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">Sin mascotas registradas</p>
+                      )}
+                    </div>
+
                     {/* Nota editable */}
                     <div className="mt-3">
                       {editingId === cliente.id ? (
@@ -427,6 +510,128 @@ export default function AdminClientesPage() {
                     ) : (
                       'Guardar'
                     )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Modal Agregar Mascota */}
+      {addingMascotaClienteId && clientes.find(c => c.id === addingMascotaClienteId) && (() => {
+        const cli = clientes.find(c => c.id === addingMascotaClienteId)!
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm max-h-screen overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <PawPrint size={20} /> Nueva Mascota
+                </h3>
+                <button onClick={() => setAddingMascotaClienteId(null)} className="text-gray-400">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-xs text-blue-600 font-bold uppercase">Cliente</p>
+                  <p className="font-bold text-blue-900">{cli.nombre}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Nombre *</label>
+                  <input
+                    type="text"
+                    value={mascotaForm.nombre}
+                    onChange={(e) => setMascotaForm({ ...mascotaForm, nombre: e.target.value })}
+                    placeholder="Ej: Max"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Especie *</label>
+                  <select
+                    value={mascotaForm.especie}
+                    onChange={(e) => setMascotaForm({ ...mascotaForm, especie: e.target.value })}
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  >
+                    <option value="perro">Perro</option>
+                    <option value="gato">Gato</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Raza</label>
+                  <input
+                    type="text"
+                    value={mascotaForm.raza}
+                    onChange={(e) => setMascotaForm({ ...mascotaForm, raza: e.target.value })}
+                    placeholder="Ej: Labrador"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-1 block">Edad</label>
+                    <input
+                      type="text"
+                      value={mascotaForm.edad}
+                      onChange={(e) => setMascotaForm({ ...mascotaForm, edad: e.target.value })}
+                      placeholder="Ej: 3 años"
+                      className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-1 block">Peso</label>
+                    <input
+                      type="text"
+                      value={mascotaForm.peso}
+                      onChange={(e) => setMascotaForm({ ...mascotaForm, peso: e.target.value })}
+                      placeholder="Ej: 30 kg"
+                      className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Color</label>
+                  <input
+                    type="text"
+                    value={mascotaForm.color}
+                    onChange={(e) => setMascotaForm({ ...mascotaForm, color: e.target.value })}
+                    placeholder="Ej: Negro y blanco"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Observaciones</label>
+                  <textarea
+                    value={mascotaForm.observaciones}
+                    onChange={(e) => setMascotaForm({ ...mascotaForm, observaciones: e.target.value })}
+                    placeholder="Alergias, condiciones especiales, etc."
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
+                    rows={2}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setAddingMascotaClienteId(null)}
+                    className="flex-1 border-2 border-gray-300 text-gray-700 font-bold py-2 rounded-lg"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => addMascota(addingMascotaClienteId)}
+                    disabled={savingMascota}
+                    className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                  >
+                    {savingMascota ? 'Guardando...' : 'Guardar'}
                   </button>
                 </div>
               </div>
