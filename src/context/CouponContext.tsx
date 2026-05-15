@@ -3,13 +3,13 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
 interface AppliedCoupon {
-  codigo: string
+  id: string
   descuento_porcentaje: number
 }
 
 interface CouponContextType {
   appliedCoupon: AppliedCoupon | null
-  applyCoupon: (codigo: string, descuento_porcentaje: number) => void
+  applyCoupon: (id: string, descuento_porcentaje: number) => void
   removeCoupon: () => void
   discountPercentage: number
 }
@@ -19,8 +19,8 @@ const CouponContext = createContext<CouponContextType | undefined>(undefined)
 export function CouponProvider({ children }: { children: ReactNode }) {
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
 
-  const applyCoupon = (codigo: string, descuento_porcentaje: number) => {
-    setAppliedCoupon({ codigo, descuento_porcentaje })
+  const applyCoupon = (id: string, descuento_porcentaje: number) => {
+    setAppliedCoupon({ id, descuento_porcentaje })
   }
 
   const removeCoupon = () => setAppliedCoupon(null)
