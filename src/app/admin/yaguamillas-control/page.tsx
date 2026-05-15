@@ -189,6 +189,8 @@ export default function YaguamillasControlPage() {
         if (errorMsg.includes('row-level security')) {
           alert('Error de RLS. Ve a /admin/fix-rls para arreglarlo.')
           window.location.href = '/admin/fix-rls'
+        } else if (errorMsg.includes('duplicate key') || errorMsg.includes('unique constraint')) {
+          alert('Este hito de YaguaMillas ya existe. Intenta con otro número de millas.')
         } else {
           alert('Error: ' + errorMsg)
         }
