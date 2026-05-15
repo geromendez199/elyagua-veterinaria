@@ -9,8 +9,9 @@ Solo tocar:
 - Errores de compilación/TypeScript que rompen la build
 
 ## Ramas de desarrollo
-- Trabajar SIEMPRE en: `claude/check-vaccination-plan-dqvaz`
-- NO hacer cambios en `main`
+- Trabajar en: `main`
+- Hacer merge de cambios completados a `main`
+- Mantener `main` como rama actual (current)
 
 ## Commits
 - Usar commits claros y descriptivos
