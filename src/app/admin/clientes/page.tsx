@@ -88,63 +88,45 @@ export default function AdminClientesPage() {
   }
 
   const savePuntosAdjustment = async (clienteId: string) => {
-    console.log('savePuntosAdjustment called with:', { clienteId, puntosForm })
-
-    const cantidadTrimmed = puntosForm.cantidad.trim()
-    const motivoTrimmed = puntosForm.motivo.trim()
-
-    console.log('Validación:', { cantidadTrimmed, motivoTrimmed })
-
-    if (!cantidadTrimmed || !motivoTrimmed) {
-      alert('Por favor completa cantidad y motivo')
-      return
-    }
-
-    setSavingPuntos(true)
     try {
-      const cantidadInt = parseInt(cantidadTrimmed)
-      if (isNaN(cantidadInt)) {
-        alert('La cantidad debe ser un número válido')
-        setSavingPuntos(false)
+      const cantidad = parseInt(puntosForm.cantidad)
+      const motivo = puntosForm.motivo
+
+      if (!puntosForm.cantidad || !motivo) {
+        alert('Debe llenar cantidad y motivo')
         return
       }
 
-      console.log('Enviando al API:', { clienteId, cantidad: cantidadInt, motivo: motivoTrimmed })
+      if (isNaN(cantidad)) {
+        alert('Cantidad debe ser un número')
+        return
+      }
+
+      setSavingPuntos(true)
 
       const response = await fetch('/api/admin/clientes/puntos', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cliente_id: clienteId,
-          cantidad: cantidadInt,
-          motivo: motivoTrimmed,
+          cantidad: cantidad,
+          motivo: motivo,
         }),
       })
 
-      console.log('Response status:', response.status)
+      const data = await response.json()
 
-      if (!response.ok) {
-        const error = await response.json()
-        console.error('API error:', error)
-        alert('Error API: ' + (error.error || 'No se pudo guardar el ajuste'))
+      if (!response.ok || !data.success) {
+        alert('Error: ' + (data.error || 'No se pudo ajustar'))
         return
       }
 
-      const result = await response.json()
-      console.log('Ajuste guardado:', result)
-
-      if (result.success) {
-        alert('✓ YaguaMillas ajustados correctamente')
-        await fetchData()
-        setAdjustingPuntosId(null)
-        setPuntosForm({ cantidad: '', motivo: '' })
-      } else {
-        console.error('Error en respuesta:', result.error)
-        alert('Error: ' + (result.error || 'No se pudo guardar el ajuste'))
-      }
-    } catch (err) {
-      console.error('Error adjusting points:', err)
-      alert('Error: ' + (err instanceof Error ? err.message : String(err)))
+      alert('✓ Guardado correctamente')
+      await fetchData()
+      setAdjustingPuntosId(null)
+      setPuntosForm({ cantidad: '', motivo: '' })
+    } catch (error) {
+      alert('Error: ' + String(error))
     } finally {
       setSavingPuntos(false)
     }
@@ -368,82 +350,80 @@ export default function AdminClientesPage() {
       </div>
 
       {/* Modal Ajustar YaguaMillas */}
-      {adjustingPuntosId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-bold text-gray-800">Ajustar YaguaMillas</h3>
-              <button
-                onClick={() => setAdjustingPuntosId(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={24} />
-              </button>
-            </div>
+      {adjustingPuntosId && (() => {
+        const cliente = clientes.find(c => c.id === adjustingPuntosId)
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+              <div className="flex items-center justify-between p-6 border-b">
+                <h3 className="text-lg font-bold text-gray-800">Ajustar YaguaMillas</h3>
+                <button
+                  onClick={() => setAdjustingPuntosId(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
 
-            <div className="p-6 space-y-4">
-              {(() => {
-                const cliente = clientes.find(c => c.id === adjustingPuntosId)
-                return (
-                  <>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">Cliente</p>
-                      <p className="text-sm font-bold text-gray-900 mt-0.5">{cliente?.nombre}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">YaguaMillas actuales: <span className="font-bold text-amber-600">{cliente?.puntos_acumulados || 0}</span></p>
-                    </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500 font-semibold uppercase">Cliente</p>
+                  <p className="text-sm font-bold text-gray-900 mt-0.5">{cliente?.nombre}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">YaguaMillas: <span className="font-bold text-amber-600">{cliente?.puntos_acumulados || 0}</span></p>
+                </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Cantidad a ajustar *</label>
-                      <input
-                        type="number"
-                        value={puntosForm.cantidad}
-                        onChange={(e) => setPuntosForm({ ...puntosForm, cantidad: e.target.value })}
-                        placeholder="Ej: 10 (suma), -5 (resta)"
-                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Usa números negativos para restar YaguaMillas</p>
-                    </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Cantidad</label>
+                  <input
+                    type="number"
+                    value={puntosForm.cantidad}
+                    onChange={(e) => setPuntosForm({ ...puntosForm, cantidad: e.target.value })}
+                    placeholder="Ej: 10"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  />
+                </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Motivo del ajuste *</label>
-                      <textarea
-                        value={puntosForm.motivo}
-                        onChange={(e) => setPuntosForm({ ...puntosForm, motivo: e.target.value })}
-                        placeholder="Ej: Ajuste por devolución, promoción especial, etc."
-                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
-                        rows={2}
-                      />
-                    </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Motivo</label>
+                  <textarea
+                    value={puntosForm.motivo}
+                    onChange={(e) => setPuntosForm({ ...puntosForm, motivo: e.target.value })}
+                    placeholder="Ej: Ajuste por devolución"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
+                    rows={2}
+                  />
+                </div>
 
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => setAdjustingPuntosId(null)}
-                        className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-50 transition"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={() => savePuntosAdjustment(adjustingPuntosId!)}
-                        disabled={savingPuntos}
-                        className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {savingPuntos ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" />
-                            Ajustando...
-                          </>
-                        ) : (
-                          'Ajustar YaguaMillas'
-                        )}
-                      </button>
-                    </div>
-                  </>
-                )
-              })()}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setAdjustingPuntosId(null)}
+                    className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-50 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Guardando...')
+                      savePuntosAdjustment(adjustingPuntosId)
+                    }}
+                    disabled={savingPuntos}
+                    className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {savingPuntos ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      'Guardar'
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
