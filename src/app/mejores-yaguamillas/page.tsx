@@ -70,7 +70,7 @@ export default function MejoresYaguamillasPage() {
                 key={producto.id}
                 className="bg-white rounded-2xl shadow hover:shadow-lg transition p-4 sm:p-6 border-l-4 border-amber-400"
               >
-                <div className="flex gap-4 items-start">
+                <div className="flex gap-4 items-center">
                   {/* Ranking */}
                   <div className="text-center">
                     <div className="text-3xl sm:text-4xl font-bold text-amber-600">#{index + 1}</div>
