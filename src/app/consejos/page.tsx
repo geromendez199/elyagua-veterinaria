@@ -87,13 +87,12 @@ export default function ConsejoPage() {
                 <button
                   key={key}
                   onClick={() => setSelectedCategory(key)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition flex items-center gap-1 ${
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
                     selectedCategory === key
                       ? 'bg-primary text-white'
                       : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-primary'
                   }`}
                 >
-                  <span>{value.icon}</span>
                   {value.label}
                 </button>
               ))}
@@ -137,9 +136,6 @@ export default function ConsejoPage() {
                           <BookOpen size={40} className="text-primary/30" />
                         </div>
                       )}
-                      <span className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-bold">
-                        {categoryInfo.icon}
-                      </span>
                     </div>
 
                     {/* Content */}
