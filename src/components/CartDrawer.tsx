@@ -54,6 +54,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const [clienteCupones, setClienteCupones] = useState<any[]>([])
   const [loadingCupones, setLoadingCupones] = useState(false)
+  const [milestones, setMilestones] = useState<any[]>([])
   const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
   const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
 
@@ -118,14 +119,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           telefono: prev.telefono || (found.telefono ? found.telefono.replace(/^\+549/, '') : ''),
         }))
 
-        // Cargar cupones disponibles
+        // Cargar cupones disponibles y milestones
         setLoadingCupones(true)
-        const { data: cuponesData } = await supabase
-          .from('cupones')
-          .select('*')
-          .eq('cliente_id', found.id)
-          .eq('usado', false)
-        setClienteCupones(cuponesData || [])
+        const [cuponesRes, milestonesRes] = await Promise.all([
+          supabase
+            .from('cupones')
+            .select('*')
+            .eq('cliente_id', found.id)
+            .eq('usado', false),
+          supabase
+            .from('milestones')
+            .select('*')
+            .eq('activo', true)
+            .order('millas_requeridas', { ascending: true }),
+        ])
+        setClienteCupones(cuponesRes.data || [])
+        setMilestones(milestonesRes.data || [])
         setLoadingCupones(false)
       } else {
         setDniLookup('notfound')
@@ -522,48 +531,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   )}
 
-                  {/* Cupones */}
-                  {clienteCupones.length > 0 && (
-                    <div className="mt-5 p-4 bg-green-50 border-2 border-green-300 rounded-xl">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Tag size={16} className="text-green-600" />
-                        <p className="text-sm font-semibold text-gray-800">Cupones disponibles: {clienteCupones.length}</p>
-                      </div>
-                      <div className="space-y-2">
-                        {clienteCupones.map((cupon) => (
-                          <button
-                            key={cupon.id}
-                            onClick={() => {
-                              applyCoupon(cupon.id, cupon.porcentaje_descuento)
-                            }}
-                            disabled={!!appliedCoupon}
-                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
-                              appliedCoupon?.id === cupon.id
-                                ? 'bg-green-600 text-white border-2 border-green-700'
-                                : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
-                            }`}
-                          >
-                            <span>{cupon.porcentaje_descuento}% Descuento</span>
-                            {appliedCoupon?.id === cupon.id && <Check size={16} />}
-                          </button>
-                        ))}
-                      </div>
-                      {appliedCoupon && (
-                        <div className="mt-3 p-3 bg-white border-2 border-green-300 rounded-lg flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-semibold text-green-700">✓ Cupón aplicado</p>
-                            <p className="text-xs text-green-600">{appliedCoupon.descuento_porcentaje}% descuento en tu compra</p>
-                          </div>
-                          <button
-                            onClick={removeCoupon}
-                            className="text-green-600 hover:text-green-800 transition"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* Info de envío */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -783,8 +750,104 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 )}
               </div>
 
-              {/* ── Puntos ── */}
-              {items.length > 0 && (
+              {/* ── YaguaMillas y Cupones ── */}
+              {clienteActual && dniLookup === 'found' && (
+                <div className="space-y-4">
+                  {/* Millas actuales */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">⭐</span>
+                      <p className="text-sm font-semibold text-amber-900">Mis YaguaMillas</p>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-600">{clienteActual.puntos_acumulados || 0}</p>
+                    <p className="text-xs text-amber-700 mt-1">YaguaMillas acumuladas</p>
+                  </div>
+
+                  {/* Cupones disponibles */}
+                  {clienteCupones.length > 0 && (
+                    <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Tag size={18} className="text-green-600" />
+                        <p className="text-sm font-semibold text-green-900">Cupones disponibles</p>
+                      </div>
+                      <div className="space-y-2">
+                        {clienteCupones.map((cupon) => (
+                          <button
+                            key={cupon.id}
+                            onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje)}
+                            disabled={!!appliedCoupon && appliedCoupon.id !== cupon.id}
+                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+                              appliedCoupon?.id === cupon.id
+                                ? 'bg-green-600 text-white border-2 border-green-700'
+                                : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
+                            }`}
+                          >
+                            <span>🎟️ {cupon.descuento_porcentaje}% Descuento</span>
+                            {appliedCoupon?.id === cupon.id && <Check size={16} />}
+                          </button>
+                        ))}
+                      </div>
+                      {appliedCoupon && (
+                        <div className="mt-3 p-2 bg-white border-2 border-green-300 rounded-lg flex items-center justify-between text-xs">
+                          <p className="text-green-700 font-semibold">✓ Ahorrarás {formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</p>
+                          <button
+                            onClick={removeCoupon}
+                            className="text-green-600 hover:text-green-800 transition"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Próximos hitos */}
+                  {milestones.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3">Próximos hitos</p>
+                      <div className="space-y-2">
+                        {milestones.map((milestone) => {
+                          const hasReached = (clienteActual.puntos_acumulados || 0) >= milestone.millas_requeridas
+                          const hasCoupon = clienteCupones.some(c => c.milestone_id === milestone.id)
+                          return (
+                            <div
+                              key={milestone.id}
+                              className={`p-3 rounded-lg text-sm transition ${
+                                hasReached
+                                  ? 'bg-blue-100 border border-blue-300'
+                                  : 'bg-white border border-blue-200'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <p className={`font-semibold ${hasReached ? 'text-blue-900' : 'text-blue-700'}`}>
+                                    {milestone.millas_requeridas} millas
+                                  </p>
+                                  <p className={`text-xs ${hasReached ? 'text-blue-700' : 'text-blue-600'}`}>
+                                    {milestone.descuento_porcentaje}% descuento
+                                  </p>
+                                </div>
+                                <span className={`text-xs font-bold px-2 py-1 rounded ${
+                                  hasReached && hasCoupon
+                                    ? 'bg-green-200 text-green-800'
+                                    : hasReached
+                                    ? 'bg-blue-200 text-blue-800'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {hasReached && hasCoupon ? '✓ Obtenido' : hasReached ? 'Desbloqueado' : `Falta ${milestone.millas_requeridas - (clienteActual.puntos_acumulados || 0)}`}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Puntos de esta compra ── */}
+              {items.length > 0 && !clienteActual && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                   <PuntosInfo items={items} clienteActual={clienteActual} />
                 </div>
