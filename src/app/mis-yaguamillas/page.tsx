@@ -126,7 +126,7 @@ export default function MisYaguamillasPage() {
             <Star size={32} className="fill-amber-300 text-amber-300" />
             <h1 className="text-3xl sm:text-4xl font-bold">Mis YaguaMillas</h1>
           </div>
-          <p className="text-primary-light text-lg">Consultá tus YaguaMillas acumulados y tu historial de compras</p>
+          <p className="text-white text-lg">Consultá tus YaguaMillas acumulados y tu historial de compras</p>
         </div>
       </div>
 
