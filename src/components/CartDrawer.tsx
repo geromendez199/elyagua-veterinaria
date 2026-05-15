@@ -52,9 +52,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     direccion: false,
   })
 
-  const [couponCode, setCouponCode] = useState('')
-  const [couponError, setCouponError] = useState('')
-  const [couponLoading, setCouponLoading] = useState(false)
+  const [clienteCupones, setClienteCupones] = useState<any[]>([])
+  const [loadingCupones, setLoadingCupones] = useState(false)
+  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
+  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
 
   const currentStep = step === 'cart' ? 0 : 1
 
@@ -97,7 +98,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const handleDniChange = async (value: string) => {
     const sanitized = value.replace(/\D/g, '').slice(0, 8)
     setFormData(prev => ({ ...prev, dni: sanitized }))
-    if (sanitized.length < 8) { setDniLookup('idle'); setClienteActual(undefined); return }
+    if (sanitized.length < 8) {
+      setDniLookup('idle')
+      setClienteActual(undefined)
+      setClienteCupones([])
+      removeCoupon()
+      return
+    }
     setDniLookup('loading')
     try {
       const { data } = await supabase.from('clientes').select('*').eq('dni', sanitized).limit(1)
@@ -110,13 +117,27 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           nombre: prev.nombre || found.nombre,
           telefono: prev.telefono || (found.telefono ? found.telefono.replace(/^\+549/, '') : ''),
         }))
+
+        // Cargar cupones disponibles
+        setLoadingCupones(true)
+        const { data: cuponesData } = await supabase
+          .from('cupones')
+          .select('*')
+          .eq('cliente_id', found.id)
+          .eq('usado', false)
+        setClienteCupones(cuponesData || [])
+        setLoadingCupones(false)
       } else {
         setDniLookup('notfound')
         setClienteActual(undefined)
+        setClienteCupones([])
+        removeCoupon()
       }
     } catch {
       setDniLookup('idle')
       setClienteActual(undefined)
+      setClienteCupones([])
+      removeCoupon()
     }
   }
 
@@ -185,38 +206,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const value =
       field === 'direccion' ? formData.direccion || '' : (formData as unknown as Record<string, string>)[field]
     setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
-  }
-
-  // ── Validación de cupones ──
-  const validateCoupon = async () => {
-    if (!couponCode.trim()) {
-      setCouponError('')
-      return
-    }
-
-    setCouponLoading(true)
-    setCouponError('')
-
-    try {
-      const { data } = await supabase
-        .from('cupones')
-        .select('*')
-        .eq('codigo', couponCode.toUpperCase())
-        .eq('activo', true)
-        .single()
-
-      if (!data) {
-        setCouponError('Cupón inválido o inactivo')
-        return
-      }
-
-      applyCoupon(data.codigo, data.descuento_porcentaje)
-      setCouponCode('')
-    } catch {
-      setCouponError('Cupón no encontrado')
-    } finally {
-      setCouponLoading(false)
-    }
   }
 
   const handleChange = (field: keyof OrderFormData, value: string) => {
@@ -288,6 +277,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const whatsappUrl = `${WA_URL}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
 
+    // Mostrar confirmación de YaguaMillas
+    if (totalYaguaMillas > 0 && formData.dni) {
+      setYaguamillasConfirmData({
+        cantidad: totalYaguaMillas,
+        nombre: formData.nombre,
+        dni: formData.dni,
+      })
+      setShowYaguamillasConfirm(true)
+    }
+
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
@@ -299,7 +298,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           direccion: formData.direccion || null,
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total: finalTotal,
-          cupón_codigo: appliedCoupon?.codigo || null,
+          cupón_id: appliedCoupon?.id || null,
           cliente_dni: formData.dni || null,
           metodo_pago: formData.metodoPago || 'efectivo',
         }]).select()
@@ -317,6 +316,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   pedido_id: data[0].id,
                   cliente_dni: formData.dni,
                   productos: items.map((i) => ({ id: i.product.id, cantidad: i.quantity, puntos: i.product.puntos || 0 })),
+                }),
+              })
+            } catch {}
+          }
+
+          // Marcar cupón como usado
+          if (appliedCoupon?.id) {
+            try {
+              await fetch('/api/admin/cupones/usar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  cupon_id: appliedCoupon.id,
+                  pedido_id: data[0].id,
                 }),
               })
             } catch {}
@@ -492,45 +505,62 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     ))}
                   </div>
 
-                  {/* Cupones */}
-                  <div className="mt-5 p-4 bg-primary/5 border border-primary/20 rounded-xl">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Tag size={16} className="text-primary" />
-                      <p className="text-sm font-semibold text-gray-800">Aplicar cupón</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        placeholder="Código de cupón"
-                        className="flex-1 px-3 py-2 border border-primary/30 rounded-lg text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
-                        disabled={couponLoading || !!appliedCoupon}
-                      />
-                      <button
-                        onClick={validateCoupon}
-                        disabled={!couponCode.trim() || couponLoading || !!appliedCoupon}
-                        className="px-3 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
-                      >
-                        {couponLoading ? <Loader2 size={14} className="animate-spin" /> : 'Aplicar'}
-                      </button>
-                    </div>
-                    {couponError && <p className="text-xs text-red-500 mt-2">{couponError}</p>}
-                    {appliedCoupon && (
-                      <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-primary">✓ Cupón aplicado</p>
-                          <p className="text-xs text-primary/70">{appliedCoupon.codigo} ({appliedCoupon.descuento_porcentaje}% descuento)</p>
-                        </div>
-                        <button
-                          onClick={removeCoupon}
-                          className="text-primary hover:text-primary-dark transition"
-                        >
-                          <X size={16} />
-                        </button>
+                  {/* YaguaMillas Info */}
+                  {items.some(item => item.product.puntos) && (
+                    <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">⭐</span>
+                        <p className="text-sm font-semibold text-amber-900">YaguaMillas</p>
                       </div>
-                    )}
-                  </div>
+                      <p className="text-xs text-amber-700 mb-3">
+                        Acumularás <span className="font-bold text-amber-600">{items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)} YaguaMillas</span> con esta compra
+                      </p>
+                      <p className="text-xs text-amber-600 font-semibold">⚠️ Necesitás ingresar tu DNI en el paso 2 para que se acumulen</p>
+                    </div>
+                  )}
+
+                  {/* Cupones */}
+                  {clienteCupones.length > 0 && (
+                    <div className="mt-5 p-4 bg-green-50 border-2 border-green-300 rounded-xl">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Tag size={16} className="text-green-600" />
+                        <p className="text-sm font-semibold text-gray-800">Cupones disponibles: {clienteCupones.length}</p>
+                      </div>
+                      <div className="space-y-2">
+                        {clienteCupones.map((cupon) => (
+                          <button
+                            key={cupon.id}
+                            onClick={() => {
+                              applyCoupon(cupon.id, cupon.porcentaje_descuento)
+                            }}
+                            disabled={!!appliedCoupon}
+                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+                              appliedCoupon?.id === cupon.id
+                                ? 'bg-green-600 text-white border-2 border-green-700'
+                                : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
+                            }`}
+                          >
+                            <span>{cupon.porcentaje_descuento}% Descuento</span>
+                            {appliedCoupon?.id === cupon.id && <Check size={16} />}
+                          </button>
+                        ))}
+                      </div>
+                      {appliedCoupon && (
+                        <div className="mt-3 p-3 bg-white border-2 border-green-300 rounded-lg flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-green-700">✓ Cupón aplicado</p>
+                            <p className="text-xs text-green-600">{appliedCoupon.descuento_porcentaje}% descuento en tu compra</p>
+                          </div>
+                          <button
+                            onClick={removeCoupon}
+                            className="text-green-600 hover:text-green-800 transition"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Info de envío */}
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -774,7 +804,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <span>{formatPrice(total)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-rose-600 font-semibold">
-                        <span>Descuento ({appliedCoupon.codigo} · {appliedCoupon.descuento_porcentaje}%)</span>
+                        <span>Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
                         <span>-{formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</span>
                       </div>
                     </>
@@ -860,6 +890,74 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
         </div>
       </div>
+
+      {/* Modal Confirmación YaguaMillas */}
+      {showYaguamillasConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-amber-400 to-yellow-400 px-6 py-8 text-center">
+              <div className="text-5xl mb-3">⭐</div>
+              <h3 className="text-2xl font-bold text-amber-900">¡Felicidades!</h3>
+              <p className="text-amber-800 mt-2">Acabás de acumular YaguaMillas</p>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-8 space-y-6">
+              {/* Millas Count */}
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-amber-700 font-semibold uppercase tracking-wide mb-2">
+                  YaguaMillas acumulados
+                </p>
+                <p className="text-5xl font-bold text-amber-600">
+                  +{yaguamillasConfirmData.cantidad}
+                </p>
+              </div>
+
+              {/* Info */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-gray-600">Cliente:</span>
+                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.nombre}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-gray-600">DNI:</span>
+                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.dni}</span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-800 text-xs">
+                  ℹ️ Estos YaguaMillas se acumularán cuando confirmes tu compra por WhatsApp
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="space-y-2">
+                <a
+                  href="/mis-yaguamillas"
+                  className="block w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition text-center text-sm"
+                >
+                  Ver mis YaguaMillas
+                </a>
+                <button
+                  onClick={() => {
+                    setShowYaguamillasConfirm(false)
+                    clearCart()
+                    onClose()
+                    setStep('cart')
+                    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
+                    setErrors({})
+                    setTouched({ nombre: false, telefono: false, direccion: false })
+                    setDniLookup('idle')
+                    setClienteActual(undefined)
+                  }}
+                  className="w-full border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-50 transition text-sm"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
