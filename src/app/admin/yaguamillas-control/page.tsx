@@ -455,12 +455,12 @@ export default function YaguamillasControlPage() {
                     className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3 mt-6">
                   <button
                     onClick={handleCreateCupon}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg font-bold text-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl flex-1"
                   >
-                    <Check size={18} />
+                    <Check size={20} />
                     Crear
                   </button>
                   <button
@@ -468,7 +468,7 @@ export default function YaguamillasControlPage() {
                       setShowCuponForm(false)
                       setCuponForm({ cliente_id: '', descuento: '', codigo: '' })
                     }}
-                    className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold transition"
+                    className="bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transition cursor-pointer shadow-md hover:shadow-lg flex-1"
                   >
                     Cancelar
                   </button>
@@ -615,12 +615,12 @@ export default function YaguamillasControlPage() {
                       />
                       <label>Activo</label>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 mt-6">
                       <button
                         onClick={handleSaveMilestone}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
+                        className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg font-bold text-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl flex-1"
                       >
-                        <Check size={18} />
+                        <Check size={20} />
                         Guardar
                       </button>
                       <button
@@ -629,7 +629,7 @@ export default function YaguamillasControlPage() {
                           setEditingMilestone(null)
                           setMilestoneForm({ millas: '', descuento: '', activo: true })
                         }}
-                        className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold transition"
+                        className="bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transition cursor-pointer shadow-md hover:shadow-lg flex-1"
                       >
                         Cancelar
                       </button>
