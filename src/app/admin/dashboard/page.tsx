@@ -184,10 +184,10 @@ export default function AdminDashboardPage() {
       badge: null,
     },
     {
-      href: '/admin/yaguamillas',
+      href: '/admin/yaguamillas-control',
       icon: Star,
       titulo: 'YaguaMillas',
-      descripcion: 'Gestionar puntos de clientes',
+      descripcion: 'Control total: clientes, cupones, hitos',
       stat: stats.total_clientes,
       statLabel: 'clientes',
       color: 'from-amber-400 to-yellow-500',
