@@ -338,7 +338,7 @@ export default function MisYaguamillasPage() {
                       </div>
                     )}
                     {/* Badge YaguaMillas */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl p-3 shadow-lg">
+                    <div className="absolute top-3 right-3 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl p-3 shadow-lg">
                       <div className="flex items-center justify-center gap-1 mb-1">
                         <Star size={16} className="fill-amber-600 text-amber-600" />
                       </div>
