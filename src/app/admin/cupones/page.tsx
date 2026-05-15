@@ -3,121 +3,126 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Plus, Trash2, Edit2, LogOut, Tag } from 'lucide-react'
+import { Cliente } from '@/types'
+import { ArrowLeft, Gift, Loader2, Search, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
-interface Coupon {
+interface Cupon {
   id: string
-  codigo: string
-  descuento_porcentaje: number
-  expires_at: string | null
-  activo: boolean
-  created_at: string
+  cliente_id: string
+  yaguamillas_requeridos: number
+  porcentaje_descuento: number
+  usado: boolean
+  used_at?: string
+}
+
+interface ClienteConCupones extends Cliente {
+  cupones_disponibles: number
+  cupones_posibles: number
 }
 
 export default function AdminCuponesPage() {
   const router = useRouter()
-  const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [clientes, setClientes] = useState<ClienteConCupones[]>([])
+  const [cupones, setCupones] = useState<Cupon[]>([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({ codigo: '', descuento_porcentaje: '', expires_at: '' })
-  const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null)
 
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(''), 3000)
-  }
-
-  const fetchCoupons = async () => {
+  const fetchData = async () => {
     try {
-      const { data } = await supabase.from('cupones').select('*').order('created_at', { ascending: false })
-      setCoupons(data || [])
-    } catch (err: unknown) {
-      showToast('Error cargando cupones: ' + (err instanceof Error ? err.message : String(err)))
+      const { data: clientesData } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('puntos_acumulados', { ascending: false })
+
+      const { data: cuponesData } = await supabase
+        .from('cupones')
+        .select('*')
+
+      if (clientesData) {
+        const clientesConCupones = clientesData.map((c) => {
+          const cuponesPosibles = Math.floor((c.puntos_acumulados || 0) / 100)
+          const cuponesDisponibles = (cuponesData || []).filter(
+            (cu) => cu.cliente_id === c.id && !cu.usado
+          ).length
+
+          return {
+            ...c,
+            cupones_disponibles: cuponesDisponibles,
+            cupones_posibles: cuponesPosibles,
+          }
+        })
+        setClientes(clientesConCupones)
+        setCupones(cuponesData || [])
+      }
+    } catch (err) {
+      console.error('Error:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/admin'); return }
-    await fetchCoupons()
-  }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
-  useEffect(() => { checkAuth() }, [])
-
-  const handleSave = async () => {
-    if (!formData.codigo || !formData.descuento_porcentaje) {
-      showToast('Falta completar campos')
-      return
-    }
-
-    setSaving(true)
-    try {
-      const descuento_porcentaje = parseFloat(formData.descuento_porcentaje)
-      if (isNaN(descuento_porcentaje) || descuento_porcentaje <= 0) throw new Error('Descuento inválido')
-
-      if (editingId) {
-        await supabase.from('cupones').update({
-          codigo: formData.codigo,
-          descuento_porcentaje,
-          expires_at: formData.expires_at || null,
-        }).eq('id', editingId)
-      } else {
-        await supabase.from('cupones').insert({
-          codigo: formData.codigo,
-          descuento_porcentaje,
-          expires_at: formData.expires_at || null,
-          activo: true,
-        })
+  useEffect(() => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        router.push('/admin')
+        return
       }
-      showToast(editingId ? 'Cupón actualizado' : 'Cupón creado')
-      setFormData({ codigo: '', descuento_porcentaje: '', expires_at: '' })
-      setEditingId(null)
-      setShowModal(false)
-      await fetchCoupons()
-    } catch (err: unknown) {
-      showToast('Error: ' + (err instanceof Error ? err.message : String(err)))
+      await fetchData()
+    }
+    init()
+  }, [router])
+
+  const generateCupons = async (clienteId: string, puntos: number) => {
+    setGeneratingFor(clienteId)
+    try {
+      const response = await fetch('/api/admin/cupones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_id: clienteId,
+          cliente_puntos: puntos,
+        }),
+      })
+
+      const result = await response.json()
+      if (result.success) {
+        alert(`✓ ${result.cupones_generados} cupón(es) generado(s)`)
+        await fetchData()
+      }
+    } catch (err) {
+      alert('Error: ' + String(err))
     } finally {
-      setSaving(false)
+      setGeneratingFor(null)
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const deleteCupon = async (cuponId: string) => {
     if (!confirm('¿Eliminar este cupón?')) return
     try {
-      await supabase.from('cupones').delete().eq('id', id)
-      showToast('Cupón eliminado')
-      await fetchCoupons()
-    } catch (err: unknown) {
-      showToast('Error: ' + (err instanceof Error ? err.message : String(err)))
+      await supabase.from('cupones').delete().eq('id', cuponId)
+      alert('✓ Cupón eliminado')
+      await fetchData()
+    } catch (err) {
+      alert('Error: ' + String(err))
     }
   }
 
-  const handleEdit = (coupon: Coupon) => {
-    setFormData({
-      codigo: coupon.codigo,
-      descuento_porcentaje: String(coupon.descuento_porcentaje),
-      expires_at: coupon.expires_at ? coupon.expires_at.split('T')[0] : '',
-    })
-    setEditingId(coupon.id)
-    setShowModal(true)
-  }
-
-  const isExpired = (expiresAt: string | null) => {
-    if (!expiresAt) return false
-    return new Date(expiresAt) < new Date()
-  }
-
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-gray-500">Cargando cupones...</p>
-    </div>
+  const clientesFiltrados = clientes.filter(
+    (c) =>
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.dni.includes(searchTerm)
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 size={40} className="text-primary animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -126,168 +131,97 @@ export default function AdminCuponesPage() {
           <Link href="/admin/dashboard" className="hover:bg-primary-dark p-1.5 rounded-lg transition">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Tag size={22} />
-            Cupones de Descuento
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Gift size={24} /> Cupones
           </h1>
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => { setEditingId(null); setFormData({ codigo: '', descuento_porcentaje: '', expires_at: '' }); setShowModal(true) }}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition text-sm font-semibold"
-            >
-              <Plus size={16} />
-              Nuevo Cupón
-            </button>
-            <button
-              onClick={() => router.push('/admin/dashboard')}
-              className="flex items-center gap-1.5 text-sm font-semibold hover:bg-white/10 px-3 py-1.5 rounded-lg transition"
-            >
-              <LogOut size={16} />
-              Salir
-            </button>
+        </div>
+      </div>
+
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar cliente..."
+              className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary"
+            />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold">
-            {toast}
-          </div>
-        )}
-
-        {coupons.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-            <Tag className="mx-auto mb-4 text-gray-300" size={48} />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Sin cupones creados</h2>
-            <p className="text-gray-500 mb-6">Crea tu primer cupón de descuento</p>
-            <button
-              onClick={() => { setEditingId(null); setFormData({ codigo: '', descuento_porcentaje: '', expires_at: '' }); setShowModal(true) }}
-              className="inline-block bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-dark transition"
-            >
-              Crear Cupón
-            </button>
+      <div className="max-w-7xl mx-auto p-4 py-8">
+        {clientesFiltrados.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg">
+            <Gift size={48} className="mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-500">No hay clientes</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900">Código</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900">Descuento</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900">Vencimiento</th>
-                    <th className="px-6 py-3 text-left text-sm font-bold text-gray-900">Estado</th>
-                    <th className="px-6 py-3 text-right text-sm font-bold text-gray-900">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {coupons.map((coupon) => (
-                    <tr key={coupon.id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-primary text-lg">{coupon.codigo}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-gray-900">{coupon.descuento_porcentaje}%</span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {coupon.expires_at
-                          ? new Date(coupon.expires_at).toLocaleDateString('es-AR')
-                          : 'Sin vencimiento'}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isExpired(coupon.expires_at) ? (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">Vencido</span>
-                        ) : coupon.activo ? (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">Activo</span>
-                        ) : (
-                          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-bold">Inactivo</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(coupon)}
-                            className="text-blue-500 hover:text-blue-700 transition"
-                            title="Editar"
+          <div className="space-y-4">
+            {clientesFiltrados.map((cliente) => (
+              <div key={cliente.id} className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 text-lg">{cliente.nombre}</h3>
+                    <p className="text-sm text-gray-500">DNI: {cliente.dni}</p>
+                    <div className="flex gap-4 mt-3 flex-wrap">
+                      <div className="bg-amber-50 px-4 py-2 rounded">
+                        <p className="text-xs text-amber-600 font-semibold">YaguaMillas</p>
+                        <p className="text-xl font-bold text-amber-700">{cliente.puntos_acumulados || 0}</p>
+                      </div>
+                      <div className="bg-blue-50 px-4 py-2 rounded">
+                        <p className="text-xs text-blue-600 font-semibold">Cupones Posibles</p>
+                        <p className="text-xl font-bold text-blue-700">{cliente.cupones_posibles}</p>
+                      </div>
+                      <div className="bg-green-50 px-4 py-2 rounded">
+                        <p className="text-xs text-green-600 font-semibold">Disponibles</p>
+                        <p className="text-xl font-bold text-green-700">{cliente.cupones_disponibles}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => generateCupons(cliente.id, cliente.puntos_acumulados || 0)}
+                    disabled={generatingFor === cliente.id}
+                    className="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
+                  >
+                    {generatingFor === cliente.id ? 'Generando...' : 'Generar'}
+                  </button>
+                </div>
+
+                {cliente.cupones_disponibles > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Cupones Disponibles:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {cupones
+                        .filter((c) => c.cliente_id === cliente.id && !c.usado)
+                        .slice(0, 5)
+                        .map((cupon) => (
+                          <div
+                            key={cupon.id}
+                            className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded text-sm"
                           >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(coupon.id)}
-                            className="text-red-500 hover:text-red-700 transition"
-                            title="Eliminar"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                            <span className="font-bold text-green-700">{cupon.porcentaje_descuento}% OFF</span>
+                            <button
+                              onClick={() => deleteCupon(cupon.id)}
+                              className="text-red-500 hover:text-red-700 p-0.5"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      {cliente.cupones_disponibles > 5 && (
+                        <span className="text-xs text-gray-500">+{cliente.cupones_disponibles - 5} más</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Código</label>
-                <input
-                  type="text"
-                  value={formData.codigo}
-                  onChange={(e) => setFormData({ ...formData, codigo: e.target.value.toUpperCase() })}
-                  placeholder="ej: DESCUENTO10"
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Descuento (%)</label>
-                <input
-                  type="number"
-                  value={formData.descuento_porcentaje}
-                  onChange={(e) => setFormData({ ...formData, descuento_porcentaje: e.target.value })}
-                  placeholder="ej: 10"
-                  step="1"
-                  max="100"
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Vencimiento (opcional)</label>
-                <input
-                  type="date"
-                  value={formData.expires_at}
-                  onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 border-2 border-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:border-gray-300 transition"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-2 rounded-lg transition disabled:opacity-50"
-              >
-                {saving ? 'Guardando...' : 'Guardar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
