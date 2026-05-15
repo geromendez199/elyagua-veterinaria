@@ -63,10 +63,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [checkingStock, setCheckingStock] = useState(false)
   const [stockErrors, setStockErrors] = useState<string[]>([])
 
-  // ── Confirmación de YaguaMillas ────────────────────────────────
-  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
-  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
-
   const handleContinuar = async () => {
     if (items.length === 0) return
     setCheckingStock(true)
