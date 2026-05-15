@@ -252,6 +252,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito / Transferencia', credito: 'Crédito (hasta 3 pagos, con recargo)', transferencia: 'Transferencia bancaria' }
     const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
+    const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
+    const yaguamillasLine = totalYaguaMillas > 0 ? [`⭐ *YaguaMillas:* ${totalYaguaMillas}`] : []
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
@@ -271,6 +273,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       `Subtotal: ${formatPrice(total)}`,
       ...discountLine,
       `💰 *TOTAL: ${formatPrice(finalTotal)}*`,
+      ...yaguamillasLine,
       `━━━━━━━━━━━━━━━`,
     ].join('\n')
 
