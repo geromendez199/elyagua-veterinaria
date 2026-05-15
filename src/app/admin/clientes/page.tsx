@@ -403,7 +403,8 @@ export default function AdminClientesPage() {
                   </button>
                   <button
                     onClick={() => {
-                      console.log('Guardando...')
+                      console.log('Click detectado en botón Guardar')
+                      alert('PRUEBA: Botón fue clickeado')
                       savePuntosAdjustment(adjustingPuntosId)
                     }}
                     disabled={savingPuntos}
