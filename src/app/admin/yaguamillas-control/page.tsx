@@ -185,7 +185,13 @@ export default function YaguamillasControlPage() {
         setMilestoneForm({ millas: '', descuento: '', activo: true })
         await fetchMilestones()
       } else {
-        alert('Error: ' + (data.error || 'Error desconocido'))
+        const errorMsg = data.error || 'Error desconocido'
+        if (errorMsg.includes('row-level security')) {
+          alert('Error de RLS. Ve a /admin/fix-rls para arreglarlo.')
+          window.location.href = '/admin/fix-rls'
+        } else {
+          alert('Error: ' + errorMsg)
+        }
       }
     } catch (error) {
       alert('Error: ' + String(error))
