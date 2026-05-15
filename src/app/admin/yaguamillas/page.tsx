@@ -79,53 +79,41 @@ export default function AdminYaguamillasPage() {
   }
 
   const savePuntosAdjustment = async (clienteId: string) => {
-    alert('1. Iniciando...')
-
-    const cantidad = parseInt(puntosForm.cantidad)
-    const motivo = puntosForm.motivo
-
-    alert('2. Valores: ' + cantidad + ', ' + motivo)
-
-    if (!puntosForm.cantidad || !motivo) {
-      alert('Debe llenar cantidad y motivo')
-      return
-    }
-
-    if (isNaN(cantidad)) {
-      alert('Cantidad debe ser un número')
-      return
-    }
-
-    alert('3. Validaciones OK')
-    setSavingPuntos(true)
-
     try {
-      const response = await fetch('/api/admin/clientes/puntos', {
+      const cant = puntosForm.cantidad.trim()
+      const mot = puntosForm.motivo.trim()
+
+      if (!cant || !mot) {
+        alert('Falta llenar cantidad o motivo')
+        return
+      }
+
+      setSavingPuntos(true)
+
+      const res = await fetch('/api/admin/clientes/puntos', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cliente_id: clienteId,
-          cantidad: cantidad,
-          motivo: motivo,
+          cantidad: parseInt(cant),
+          motivo: mot,
         }),
       })
 
-      alert('4. Status: ' + response.status)
+      const data = await res.json()
 
-      const result = await response.json()
-      alert('5. Resultado: ' + JSON.stringify(result))
-
-      if (result.success) {
-        alert('✓ Guardado!')
+      if (data.success) {
+        alert('✓ Guardado correctamente')
         await fetchData()
         setAdjustingPuntosId(null)
         setPuntosForm({ cantidad: '', motivo: '' })
       } else {
-        alert('Error: ' + (result.error || 'No guardado'))
+        alert('Error: ' + (data.error || 'Desconocido'))
       }
-    } catch (err) {
-      alert('Error: ' + String(err))
-    } finally {
+
+      setSavingPuntos(false)
+    } catch (e) {
+      alert('Error: ' + e)
       setSavingPuntos(false)
     }
   }
@@ -327,88 +315,69 @@ export default function AdminYaguamillasPage() {
         )}
       </div>
 
-      {/* Modal Ajustar YaguaMillas */}
-      {adjustingPuntosId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-bold text-gray-800">Ajustar YaguaMillas</h3>
-              <button
-                onClick={() => setAdjustingPuntosId(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={24} />
-              </button>
-            </div>
+      {/* Modal */}
+      {adjustingPuntosId && clientes.find(c => c.id === adjustingPuntosId) && (() => {
+        const cli = clientes.find(c => c.id === adjustingPuntosId)!
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+              <div className="flex items-center justify-between p-6 border-b">
+                <h3 className="font-bold text-gray-800">Ajustar</h3>
+                <button onClick={() => setAdjustingPuntosId(null)} className="text-gray-400">
+                  <X size={24} />
+                </button>
+              </div>
 
-            <div className="p-6 space-y-4">
-              {(() => {
-                const cliente = clientes.find((c) => c.id === adjustingPuntosId)
-                return (
-                  <>
-                    <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-                      <p className="text-xs text-amber-600 font-semibold uppercase">Cliente</p>
-                      <p className="text-lg font-bold text-amber-900 mt-1">{cliente?.nombre}</p>
-                      <p className="text-sm text-amber-700 mt-2">
-                        YaguaMillas actuales: <span className="font-bold">{cliente?.puntos_acumulados || 0}</span>
-                      </p>
-                    </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-amber-50 p-4 rounded-lg">
+                  <p className="text-xs text-amber-600 font-bold uppercase">Cliente</p>
+                  <p className="font-bold text-amber-900">{cli.nombre}</p>
+                  <p className="text-sm text-amber-700">Puntos: {cli.puntos_acumulados || 0}</p>
+                </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Cantidad a ajustar *</label>
-                      <input
-                        type="number"
-                        value={puntosForm.cantidad}
-                        onChange={(e) => setPuntosForm({ ...puntosForm, cantidad: e.target.value })}
-                        placeholder="Ej: 10 (suma), -5 (resta)"
-                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Usa números negativos para restar YaguaMillas</p>
-                    </div>
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Cantidad</label>
+                  <input
+                    type="number"
+                    value={puntosForm.cantidad}
+                    onChange={(e) => setPuntosForm({ ...puntosForm, cantidad: e.target.value })}
+                    placeholder="10"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900"
+                  />
+                </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Motivo del ajuste *</label>
-                      <textarea
-                        value={puntosForm.motivo}
-                        onChange={(e) => setPuntosForm({ ...puntosForm, motivo: e.target.value })}
-                        placeholder="Ej: Ajuste por devolución, promoción especial, etc."
-                        className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
-                        rows={3}
-                      />
-                    </div>
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1 block">Motivo</label>
+                  <textarea
+                    value={puntosForm.motivo}
+                    onChange={(e) => setPuntosForm({ ...puntosForm, motivo: e.target.value })}
+                    placeholder="Ajuste manual"
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-primary outline-none text-gray-900 resize-none"
+                    rows={2}
+                  />
+                </div>
 
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => setAdjustingPuntosId(null)}
-                        className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-50 transition"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={() => savePuntosAdjustment(adjustingPuntosId)}
-                        disabled={savingPuntos}
-                        className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        {savingPuntos ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" />
-                            Ajustando...
-                          </>
-                        ) : (
-                          <>
-                            <Check size={16} />
-                            Ajustar
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </>
-                )
-              })()}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setAdjustingPuntosId(null)}
+                    className="flex-1 border-2 border-gray-300 text-gray-700 font-bold py-2 rounded-lg"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      savePuntosAdjustment(adjustingPuntosId)
+                    }}
+                    className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
