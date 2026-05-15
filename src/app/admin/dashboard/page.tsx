@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen, Star, Zap } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, BookOpen, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -174,33 +174,13 @@ export default function AdminDashboardPage() {
       badge: null,
     },
     {
-      href: '/admin/cupones',
-      icon: Tag,
-      titulo: 'Cupones',
-      descripcion: 'Crear y gestionar descuentos',
-      stat: cuponesActivos,
-      statLabel: 'disponibles',
-      color: 'from-rose-400 to-rose-600',
-      badge: null,
-    },
-    {
       href: '/admin/yaguamillas-control',
       icon: Star,
       titulo: 'YaguaMillas',
-      descripcion: 'Control total: clientes, cupones, hitos',
-      stat: stats.total_clientes,
-      statLabel: 'clientes',
+      descripcion: 'Clientes, cupones, hitos y descuentos',
+      stat: cuponesActivos,
+      statLabel: 'cupones disponibles',
       color: 'from-amber-400 to-yellow-500',
-      badge: null,
-    },
-    {
-      href: '/admin/milestones',
-      icon: Zap,
-      titulo: 'Hitos de Millas',
-      descripcion: 'Configurar cupones automáticos',
-      stat: null,
-      statLabel: '',
-      color: 'from-blue-400 to-blue-600',
       badge: null,
     },
     {
