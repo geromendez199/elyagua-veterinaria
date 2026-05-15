@@ -11,9 +11,13 @@ export async function PATCH(request: Request) {
       )
     }
 
-    const { cliente_id, cantidad, motivo } = await request.json()
+    const body = await request.json()
+    const { cliente_id, cantidad, motivo } = body
+
+    console.log('Recibido:', { cliente_id, cantidad, motivo })
 
     if (!cliente_id || cantidad === undefined || !motivo) {
+      console.error('Datos incompletos:', { cliente_id, cantidad, motivo })
       return Response.json(
         { success: false, error: 'Datos incompletos' },
         { status: 400 }
@@ -23,11 +27,14 @@ export async function PATCH(request: Request) {
     // Validar que cantidad sea un número entero
     const cantidadInt = parseInt(cantidad)
     if (isNaN(cantidadInt)) {
+      console.error('Cantidad no es un número:', cantidad)
       return Response.json(
         { success: false, error: 'Cantidad debe ser un número' },
         { status: 400 }
       )
     }
+
+    console.log('Llamando RPC con:', { p_cliente_id: cliente_id, p_cantidad: cantidadInt, p_motivo: motivo })
 
     // Llamar función RPC para ajustar puntos
     const { data, error } = await supabase.rpc('adjust_puntos_manual', {
@@ -35,6 +42,8 @@ export async function PATCH(request: Request) {
       p_cantidad: cantidadInt,
       p_motivo: motivo,
     })
+
+    console.log('Respuesta RPC:', { data, error })
 
     if (error) {
       console.error('RPC error:', error)
@@ -52,6 +61,7 @@ export async function PATCH(request: Request) {
       )
     }
 
+    console.log('Retornando:', { success: true, ...data })
     return Response.json({ success: true, ...data })
   } catch (error) {
     console.error('Error adjusting client points:', error)
