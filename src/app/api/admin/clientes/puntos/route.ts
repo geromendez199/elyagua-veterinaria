@@ -2,15 +2,6 @@ import { supabase } from '@/lib/supabase'
 
 export async function PATCH(request: Request) {
   try {
-    // Verificar autenticación
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
     const { cliente_id, cantidad, motivo } = body
 
