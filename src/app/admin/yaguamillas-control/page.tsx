@@ -47,6 +47,8 @@ export default function YaguamillasControlPage() {
   const [adjustingCliente, setAdjustingCliente] = useState<string | null>(null)
   const [adjustAmount, setAdjustAmount] = useState('')
   const [adjustReason, setAdjustReason] = useState('')
+  const [showCuponForm, setShowCuponForm] = useState(false)
+  const [cuponForm, setCuponForm] = useState({ cliente_id: '', descuento: '', codigo: '' })
 
   useEffect(() => {
     const init = async () => {
@@ -212,6 +214,37 @@ export default function YaguamillasControlPage() {
     }
   }
 
+  const handleCreateCupon = async () => {
+    if (!cuponForm.cliente_id || !cuponForm.descuento || !cuponForm.codigo) {
+      alert('Completa todos los campos')
+      return
+    }
+
+    try {
+      const { error } = await supabase.from('cupones').insert([
+        {
+          cliente_id: cuponForm.cliente_id,
+          codigo: cuponForm.codigo,
+          descuento_porcentaje: parseInt(cuponForm.descuento),
+          activo: true,
+          usado: false,
+        },
+      ])
+
+      if (error) {
+        alert('Error: ' + error.message)
+        return
+      }
+
+      alert('✓ Cupón creado')
+      setCuponForm({ cliente_id: '', descuento: '', codigo: '' })
+      setShowCuponForm(false)
+      await fetchCupones()
+    } catch (error) {
+      alert('Error: ' + String(error))
+    }
+  }
+
   const filteredClientes = clientes.filter(
     (c) => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || c.dni.includes(searchTerm)
   )
@@ -251,9 +284,9 @@ export default function YaguamillasControlPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-0">
             {[
-              { id: 'clientes', label: 'Clientes & Millas', icon: Star },
+              { id: 'clientes', label: 'Clientes & YaguaMillas', icon: Star },
               { id: 'cupones', label: 'Cupones', icon: Gift },
-              { id: 'hitos', label: 'Hitos de Millas', icon: Zap },
+              { id: 'hitos', label: 'Hitos de YaguaMillas', icon: Zap },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -379,6 +412,68 @@ export default function YaguamillasControlPage() {
         {/* CUPONES TAB */}
         {tab === 'cupones' && (
           <div className="space-y-4">
+            {!showCuponForm ? (
+              <button
+                onClick={() => setShowCuponForm(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+              >
+                <Plus size={20} />
+                Crear Cupón Manual
+              </button>
+            ) : (
+              <div className="bg-white p-6 rounded-lg shadow border">
+                <h2 className="text-xl font-bold mb-4">Crear Cupón Manual</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <select
+                    value={cuponForm.cliente_id}
+                    onChange={(e) => setCuponForm({ ...cuponForm, cliente_id: e.target.value })}
+                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                  >
+                    <option value="">Seleccionar cliente</option>
+                    {clientes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nombre} ({c.dni})
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={cuponForm.codigo}
+                    onChange={(e) => setCuponForm({ ...cuponForm, codigo: e.target.value })}
+                    placeholder="Código del cupón (ej: PROMO10)"
+                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={cuponForm.descuento}
+                    onChange={(e) => setCuponForm({ ...cuponForm, descuento: e.target.value })}
+                    placeholder="Descuento %"
+                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCreateCupon}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
+                  >
+                    <Check size={18} />
+                    Crear
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCuponForm(false)
+                      setCuponForm({ cliente_id: '', descuento: '', codigo: '' })
+                    }}
+                    className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold transition"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="relative">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -496,7 +591,7 @@ export default function YaguamillasControlPage() {
                         min="1"
                         value={milestoneForm.millas}
                         onChange={(e) => setMilestoneForm({ ...milestoneForm, millas: e.target.value })}
-                        placeholder="Millas requeridas"
+                        placeholder="YaguaMillas requeridas"
                         className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
                       />
                       <input
@@ -545,7 +640,7 @@ export default function YaguamillasControlPage() {
                     <div key={milestone.id} className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="text-gray-500 text-sm">Millas Requeridas</p>
+                          <p className="text-gray-500 text-sm">YaguaMillas Requeridas</p>
                           <p className="text-3xl font-bold text-blue-600">{milestone.millas_requeridas}</p>
                           <p className="text-gray-600 text-sm mt-2">
                             {milestone.descuento_porcentaje}% descuento
