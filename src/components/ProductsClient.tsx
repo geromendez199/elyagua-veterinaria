@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Product, Category } from '@/types'
 import ProductCard from './ProductCard'
 import CategoryFilter from './CategoryFilter'
-import { ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUpDown, SlidersHorizontal, X, Star } from 'lucide-react'
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc'
 
@@ -31,9 +31,10 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
   const [showPriceFilter, setShowPriceFilter] = useState(false)
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'low-stock'>('all')
   const [selectedLab, setSelectedLab] = useState<string | null>(null)
+  const [showYaguamillas, setShowYaguamillas] = useState(false)
 
   const hasPriceFilter = minPrice !== '' || maxPrice !== ''
-  const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab
+  const hasActiveFilters = hasPriceFilter || selectedCategory || stockFilter !== 'all' || selectedLab || showYaguamillas
 
   const clearFilters = () => {
     setMinPrice('')
@@ -41,6 +42,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     setStockFilter('all')
     setSelectedCategory(null)
     setSelectedLab(null)
+    setShowYaguamillas(false)
   }
 
   const categoryCounts = useMemo(() => {
@@ -93,6 +95,8 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
 
     if (selectedLab) products = products.filter((p) => p.laboratorio === selectedLab)
 
+    if (showYaguamillas) products = products.filter((p) => (p.puntos || 0) > 0)
+
     switch (sortBy) {
       case 'price-asc':  products.sort((a, b) => a.precio - b.precio); break
       case 'price-desc': products.sort((a, b) => b.precio - a.precio); break
@@ -100,7 +104,7 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
     }
 
     return products
-  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab])
+  }, [initialProducts, selectedCategory, searchQuery, sortBy, minPrice, maxPrice, stockFilter, selectedLab, showYaguamillas])
 
   return (
     <div>
@@ -121,6 +125,19 @@ export default function ProductsClient({ initialProducts, searchQuery = '', init
             <SlidersHorizontal size={15} />
             <span className="hidden sm:inline">Precio</span>
             {hasPriceFilter && <span className="w-2 h-2 bg-primary rounded-full" />}
+          </button>
+
+          {/* YaguaMillas filter */}
+          <button
+            onClick={() => setShowYaguamillas(!showYaguamillas)}
+            className={`flex items-center gap-1.5 border-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              showYaguamillas
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
+            }`}
+          >
+            <Star size={15} className={showYaguamillas ? 'fill-primary' : ''} />
+            <span className="hidden sm:inline">YaguaMillas</span>
           </button>
 
           {/* Sort */}
