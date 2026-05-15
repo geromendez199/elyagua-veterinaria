@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen, Star } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, Tag, BookOpen, Star, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
@@ -191,6 +191,16 @@ export default function AdminDashboardPage() {
       stat: stats.total_clientes,
       statLabel: 'clientes',
       color: 'from-amber-400 to-yellow-500',
+      badge: null,
+    },
+    {
+      href: '/admin/milestones',
+      icon: Zap,
+      titulo: 'Hitos de Millas',
+      descripcion: 'Configurar cupones automáticos',
+      stat: null,
+      statLabel: '',
+      color: 'from-blue-400 to-blue-600',
       badge: null,
     },
     {
