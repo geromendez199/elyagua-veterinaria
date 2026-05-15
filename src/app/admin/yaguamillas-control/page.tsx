@@ -48,7 +48,7 @@ export default function YaguamillasControlPage() {
   const [adjustAmount, setAdjustAmount] = useState('')
   const [adjustReason, setAdjustReason] = useState('')
   const [showCuponForm, setShowCuponForm] = useState(false)
-  const [cuponForm, setCuponForm] = useState({ cliente_id: '', descuento: '', codigo: '' })
+  const [cuponForm, setCuponForm] = useState({ cliente_id: '', descuento: '', codigo: '', es_general: true })
 
   useEffect(() => {
     const init = async () => {
@@ -217,15 +217,20 @@ export default function YaguamillasControlPage() {
   }
 
   const handleCreateCupon = async () => {
-    if (!cuponForm.cliente_id || !cuponForm.descuento || !cuponForm.codigo) {
-      alert('Completa todos los campos')
+    if (!cuponForm.descuento || !cuponForm.codigo) {
+      alert('Completa código y descuento')
+      return
+    }
+
+    if (!cuponForm.es_general && !cuponForm.cliente_id) {
+      alert('Selecciona un cliente o marca como general')
       return
     }
 
     try {
       const { error } = await supabase.from('cupones').insert([
         {
-          cliente_id: cuponForm.cliente_id,
+          cliente_id: cuponForm.es_general ? null : cuponForm.cliente_id,
           codigo: cuponForm.codigo,
           descuento_porcentaje: parseInt(cuponForm.descuento),
           activo: true,
@@ -239,7 +244,7 @@ export default function YaguamillasControlPage() {
       }
 
       alert('✓ Cupón creado')
-      setCuponForm({ cliente_id: '', descuento: '', codigo: '' })
+      setCuponForm({ cliente_id: '', descuento: '', codigo: '', es_general: true })
       setShowCuponForm(false)
       await fetchCupones()
     } catch (error) {
@@ -425,24 +430,48 @@ export default function YaguamillasControlPage() {
             ) : (
               <div className="bg-white p-6 rounded-lg shadow border">
                 <h2 className="text-xl font-bold mb-4">Crear Cupón Manual</h2>
+
+                <div className="flex gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={cuponForm.es_general}
+                      onChange={() => setCuponForm({ ...cuponForm, es_general: true, cliente_id: '' })}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-semibold">Cupón General (para cualquier cliente)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={!cuponForm.es_general}
+                      onChange={() => setCuponForm({ ...cuponForm, es_general: false })}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-semibold">Cupón para Cliente Específico</span>
+                  </label>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <select
-                    value={cuponForm.cliente_id}
-                    onChange={(e) => setCuponForm({ ...cuponForm, cliente_id: e.target.value })}
-                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
-                  >
-                    <option value="">Seleccionar cliente</option>
-                    {clientes.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre} ({c.dni})
-                      </option>
-                    ))}
-                  </select>
+                  {!cuponForm.es_general && (
+                    <select
+                      value={cuponForm.cliente_id}
+                      onChange={(e) => setCuponForm({ ...cuponForm, cliente_id: e.target.value })}
+                      className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                    >
+                      <option value="">Seleccionar cliente</option>
+                      {clientes.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre} ({c.dni})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <input
                     type="text"
                     value={cuponForm.codigo}
                     onChange={(e) => setCuponForm({ ...cuponForm, codigo: e.target.value })}
-                    placeholder="Código del cupón (ej: PROMO10)"
+                    placeholder="Código del cupón (ej: YAGUA10)"
                     className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
                   />
                   <input
@@ -466,7 +495,7 @@ export default function YaguamillasControlPage() {
                   <button
                     onClick={() => {
                       setShowCuponForm(false)
-                      setCuponForm({ cliente_id: '', descuento: '', codigo: '' })
+                      setCuponForm({ cliente_id: '', descuento: '', codigo: '', es_general: true })
                     }}
                     className="bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transition cursor-pointer shadow-md hover:shadow-lg flex-1"
                   >
@@ -509,9 +538,16 @@ export default function YaguamillasControlPage() {
                   ) : (
                     filteredCupones.map((cupon) => {
                       const cliente = clientes.find((c) => c.id === cupon.cliente_id)
+                      const isGeneral = !cupon.cliente_id
                       return (
                         <tr key={cupon.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm">{cliente?.nombre || '—'}</td>
+                          <td className="px-6 py-4 text-sm">
+                            {isGeneral ? (
+                              <span className="font-bold text-blue-600">🌍 General</span>
+                            ) : (
+                              cliente?.nombre || '—'
+                            )}
+                          </td>
                           <td className="px-6 py-4 text-sm font-mono">{cupon.codigo}</td>
                           <td className="px-6 py-4 text-sm font-bold text-primary">
                             {cupon.descuento_porcentaje}%
