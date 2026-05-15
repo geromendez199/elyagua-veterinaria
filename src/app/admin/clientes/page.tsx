@@ -423,8 +423,8 @@ export default function AdminClientesPage() {
                         Cancelar
                       </button>
                       <button
-                        onClick={() => savePuntosAdjustment(adjustingPuntosId)}
-                        disabled={savingPuntos || !puntosForm.cantidad || !puntosForm.motivo.trim()}
+                        onClick={() => savePuntosAdjustment(adjustingPuntosId!)}
+                        disabled={savingPuntos}
                         className="flex-1 bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary-dark transition disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {savingPuntos ? (
