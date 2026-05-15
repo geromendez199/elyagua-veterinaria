@@ -83,6 +83,12 @@ export type ConsejoCategoria =
   | 'emergencias'
   | 'comportamiento'
   | 'higiene'
+  | 'nutricion_dieta'
+  | 'medicina_preventiva'
+  | 'comportamiento_educacion'
+  | 'actividad_fisica'
+  | 'primeros_auxilios'
+  | 'estetica_cuidado'
 
 export interface Consejo {
   id: string
@@ -101,11 +107,17 @@ export interface Consejo {
 
 // Category metadata for UI
 export const CONSEJO_CATEGORIES = {
-  vacunacion: { label: 'Calendario de Vacunación', icon: '💉', color: 'blue' },
-  castracion: { label: 'Castración', icon: '✂️', color: 'rose' },
-  alimentos_prohibidos: { label: 'Alimentos ❌', icon: '🚫', color: 'red' },
-  alimentos_permitidos: { label: 'Alimentos ✅', icon: '✅', color: 'green' },
-  emergencias: { label: 'Emergencias', icon: '🆘', color: 'orange' },
-  comportamiento: { label: 'Comportamiento', icon: '🐾', color: 'purple' },
-  higiene: { label: 'Higiene', icon: '🛁', color: 'cyan' },
+  vacunacion: { label: 'Calendario de Vacunación', icon: '', color: 'blue' },
+  castracion: { label: 'Castración', icon: '', color: 'rose' },
+  alimentos_prohibidos: { label: 'Alimentos Prohibidos', icon: '', color: 'red' },
+  alimentos_permitidos: { label: 'Alimentos Permitidos', icon: '', color: 'green' },
+  emergencias: { label: 'Emergencias', icon: '', color: 'orange' },
+  comportamiento: { label: 'Comportamiento', icon: '', color: 'purple' },
+  higiene: { label: 'Higiene', icon: '', color: 'cyan' },
+  nutricion_dieta: { label: 'Nutrición y Dieta', icon: '', color: 'green' },
+  medicina_preventiva: { label: 'Medicina Preventiva y Salud', icon: '', color: 'blue' },
+  comportamiento_educacion: { label: 'Comportamiento y Educación', icon: '', color: 'purple' },
+  actividad_fisica: { label: 'Actividad Física y Paseos', icon: '', color: 'orange' },
+  primeros_auxilios: { label: 'Primeros Auxilios y Emergencias', icon: '', color: 'red' },
+  estetica_cuidado: { label: 'Estética y Cuidado de la Capa', icon: '', color: 'pink' },
 } as const
