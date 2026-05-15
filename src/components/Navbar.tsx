@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, Menu, X, Search } from 'lucide-react'
+import { ShoppingCart, Menu, X, Search, Star } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
@@ -81,6 +81,10 @@ export default function Navbar() {
                 <>
                   <Link href="/" className="hover:text-primary-light transition font-medium">Inicio</Link>
                   <Link href="/productos" className="hover:text-primary-light transition font-medium">Productos</Link>
+                  <Link href="/mis-yaguamillas" className="hover:text-primary-light transition font-medium flex items-center gap-1.5">
+                    <Star size={16} className="text-amber-400" fill="currentColor" />
+                    Mis YaguaMillas
+                  </Link>
                   <Link href="/consejos" className="hover:text-primary-light transition font-medium">Consejos</Link>
                   <Link href="/quienes-somos" className="hover:text-primary-light transition font-medium">Quiénes Somos</Link>
                   <Link href="/contacto" className="hover:text-primary-light transition font-medium">Contacto</Link>
@@ -161,6 +165,10 @@ export default function Navbar() {
             <div className="md:hidden mt-3 pb-3 border-t border-white/20 flex flex-col gap-1 pt-3">
               <Link href="/" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Inicio</Link>
               <Link href="/productos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Productos</Link>
+              <Link href="/mis-yaguamillas" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition flex items-center gap-1.5">
+                <Star size={16} className="text-amber-400" fill="currentColor" />
+                Mis YaguaMillas
+              </Link>
               <Link href="/consejos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Consejos</Link>
               <Link href="/quienes-somos" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Quiénes Somos</Link>
               <Link href="/contacto" onClick={() => setMenuOpen(false)} className="py-2 px-2 rounded hover:bg-white/10 font-medium transition">Contacto</Link>
