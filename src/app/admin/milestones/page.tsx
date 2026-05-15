@@ -28,15 +28,21 @@ export default function MilestonesPage() {
     fetchMilestones()
   }, [])
 
+  const [setupRequired, setSetupRequired] = useState(false)
+
   const fetchMilestones = async () => {
     try {
       const res = await fetch('/api/admin/milestones')
       const data = await res.json()
       if (data.success) {
         setMilestones(data.data || [])
+        setSetupRequired(false)
+      } else if (data.error?.includes('table') || data.error?.includes('milestones')) {
+        setSetupRequired(true)
       }
     } catch (error) {
       console.error('Error fetching milestones:', error)
+      setSetupRequired(true)
     } finally {
       setLoading(false)
     }
@@ -119,6 +125,28 @@ export default function MilestonesPage() {
 
   if (loading) {
     return <div className="p-6">Cargando...</div>
+  }
+
+  if (setupRequired) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
+          <h2 className="text-2xl font-bold text-red-900 mb-3">⚠️ Configuración requerida</h2>
+          <p className="text-red-800 mb-4">
+            La tabla de hitos (milestones) aún no ha sido creada en la base de datos.
+          </p>
+          <p className="text-red-700 text-sm mb-6">
+            Necesitas ejecutar una migración SQL para activar el sistema de hitos automáticos.
+          </p>
+          <a
+            href="/admin/setup-db"
+            className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+          >
+            → Ver instrucciones de configuración
+          </a>
+        </div>
+      </div>
+    )
   }
 
   return (

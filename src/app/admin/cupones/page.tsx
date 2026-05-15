@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Cliente } from '@/types'
-import { ArrowLeft, Gift, Loader2, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Gift, Loader2, Search, Trash2, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 
 interface Cupon {
