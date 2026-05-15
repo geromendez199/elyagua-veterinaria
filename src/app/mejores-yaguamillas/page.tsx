@@ -119,7 +119,7 @@ export default function MejoresYaguamillasPage() {
                   </div>
 
                   {/* YaguaMillas Badge */}
-                  <div className="flex-shrink-0 text-right">
+                  <div className="flex-shrink-0 text-right flex items-center justify-center">
                     <div className="bg-gradient-to-br from-amber-400 to-yellow-400 rounded-2xl p-4 text-center shadow-lg">
                       <div className="flex items-center justify-center gap-1 mb-1">
                         <Star size={20} className="fill-amber-600 text-amber-600" />
