@@ -89,6 +89,8 @@ export type ConsejoCategoria =
   | 'actividad_fisica'
   | 'primeros_auxilios'
   | 'estetica_cuidado'
+  | 'Prevencion'
+  | 'Nutricion'
 
 export interface Consejo {
   id: string
@@ -120,4 +122,6 @@ export const CONSEJO_CATEGORIES = {
   actividad_fisica: { label: 'Actividad Física y Paseos', icon: '', color: 'orange' },
   primeros_auxilios: { label: 'Primeros Auxilios y Emergencias', icon: '', color: 'red' },
   estetica_cuidado: { label: 'Estética y Cuidado de la Capa', icon: '', color: 'pink' },
+  Prevencion: { label: 'Prevención', icon: '', color: 'blue' },
+  Nutricion: { label: 'Nutrición', icon: '', color: 'green' },
 } as const
