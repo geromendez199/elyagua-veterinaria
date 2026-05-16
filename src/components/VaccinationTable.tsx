@@ -1,7 +1,6 @@
 'use client'
 
 import { Fragment, useState } from 'react'
-import { Baby, Heart, ShieldCheck, AlertCircle, Dog, Cat } from 'lucide-react'
 
 type PetType = 'perro' | 'gato'
 
@@ -16,7 +15,7 @@ interface VaccineRow {
 interface VaccinationPhase {
   name: string
   ageRange: string
-  icon: React.ReactNode
+  emoji: string
   headerColor: string
   bodyColor: string
   altRowColor: string
@@ -28,31 +27,31 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '6 – 16 semanas',
-    icon: <Baby size={24} className="text-rose-500" />,
+    emoji: '🐶',
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
     textColor: 'text-rose-600',
     vaccines: [
       {
-        name: 'Polivalente (Séxtuple / Óctuple)',
-        when: 'Sem. 6, 8, 12 y 16',
+        name: 'Polivalente (V5/V6)',
+        when: 'Sem. 6, 9, 12, 15',
         frequency: 'Serie inicial — 4 dosis',
-        notes: 'Protege contra moquillo, parvovirus, hepatitis, parainfluenza, adenovirus y leptospirosis',
+        notes: 'Parvovirosis, distemper, hepatitis, leptospirosis',
         required: true,
       },
       {
-        name: 'Antirrábica',
-        when: 'Semana 16 (4 meses)',
+        name: 'Rabia',
+        when: 'Sem. 16 (4 meses)',
         frequency: '1ª dosis',
-        notes: 'Obligatoria por ley en Argentina (Ordenanza 41831/87)',
+        notes: 'Obligatoria por ley',
         required: true,
       },
       {
-        name: 'Bordetella (Tos de las perreras)',
-        when: 'Desde semana 8',
-        frequency: 'Dosis inicial + refuerzo anual',
-        notes: 'Recomendada si frecuenta guarderías, peluquerías o parques caninos',
+        name: 'Bordetella',
+        when: 'Semana 8',
+        frequency: 'Condicional',
+        notes: 'Si frecuenta perreras, guarderías o parques caninos',
         required: false,
       },
     ],
@@ -60,7 +59,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    icon: <Heart size={24} className="text-amber-500" />,
+    emoji: '🐕',
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
@@ -68,31 +67,24 @@ const PERRO_PHASES: VaccinationPhase[] = [
     vaccines: [
       {
         name: 'Refuerzo Polivalente',
-        when: 'A los 12 meses',
-        frequency: 'Refuerzo anual',
-        notes: 'Consolida la inmunidad obtenida en la serie inicial',
+        when: 'Mes 12',
+        frequency: 'Refuerzo único',
+        notes: 'Consolida la inmunidad de la serie inicial',
         required: true,
       },
       {
-        name: 'Refuerzo Antirrábica',
-        when: 'A los 12 meses',
+        name: 'Refuerzo Rabia',
+        when: 'Mes 12',
         frequency: 'Refuerzo anual',
-        notes: 'Obligatorio por normativa nacional',
+        notes: 'Requerido por normativa local',
         required: true,
-      },
-      {
-        name: 'Leishmaniasis',
-        when: 'Desde los 6 meses',
-        frequency: '3 dosis iniciales + anual',
-        notes: 'Recomendada en zonas endémicas (NEA, NOA, Litoral). Requiere test previo',
-        required: false,
       },
     ],
   },
   {
     name: 'Adulto',
     ageRange: '1 – 7 años',
-    icon: <ShieldCheck size={24} className="text-blue-600" />,
+    emoji: '🐕‍🦺',
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
@@ -102,21 +94,21 @@ const PERRO_PHASES: VaccinationPhase[] = [
         name: 'Polivalente',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Mantiene la inmunidad frente a moquillo, parvovirus, hepatitis y leptospirosis',
+        notes: 'Mantiene la inmunidad frente a enfermedades graves',
         required: true,
       },
       {
-        name: 'Antirrábica',
+        name: 'Rabia',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Obligatoria por ley durante toda la vida del animal',
+        notes: 'Obligatoria según normativa vigente',
         required: true,
       },
       {
-        name: 'Bordetella',
-        when: 'Cada año',
-        frequency: 'Anual',
-        notes: 'Recomendada si frecuenta espacios con otros perros',
+        name: 'Leptospirosis',
+        when: 'Según evaluación',
+        frequency: 'Cada 3 años',
+        notes: 'Según exposición y criterio veterinario',
         required: false,
       },
     ],
@@ -124,32 +116,32 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '7+ años',
-    icon: <AlertCircle size={24} className="text-purple-600" />,
+    emoji: '🦴',
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
     textColor: 'text-purple-600',
     vaccines: [
       {
-        name: 'Chequeo Veterinario Geriátrico',
-        when: 'Cada 6 a 12 meses',
-        frequency: 'Semestral / Anual',
-        notes: 'Control completo de salud: análisis, presión y evaluación general',
+        name: 'Revisión Veterinaria',
+        when: 'Cada año',
+        frequency: 'Anual obligatorio',
+        notes: 'Control integral de salud y bienestar',
         required: true,
       },
       {
         name: 'Polivalente',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Se mantiene salvo contraindicación veterinaria',
-        required: true,
+        notes: 'Evaluar según estado de salud actual',
+        required: false,
       },
       {
-        name: 'Antirrábica',
+        name: 'Rabia',
         when: 'Cada año',
-        frequency: 'Anual',
-        notes: 'Continúa siendo obligatoria por ley',
-        required: true,
+        frequency: 'Condicional',
+        notes: 'Si continúa activo o en contacto con el exterior',
+        required: false,
       },
     ],
   },
@@ -159,31 +151,31 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '8 – 16 semanas',
-    icon: <Baby size={24} className="text-rose-500" />,
+    emoji: '🐱',
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
     textColor: 'text-rose-600',
     vaccines: [
       {
-        name: 'Triple Felina (FVRCP)',
-        when: 'Sem. 8, 12 y 16',
+        name: 'Trivalente Felina (FVRC)',
+        when: 'Sem. 8, 12, 16',
         frequency: 'Serie inicial — 3 dosis',
-        notes: 'Protege contra rinotraqueítis viral, calicivirus y panleucopenia',
+        notes: 'Calicivirus, rinotraqueítis viral, panleucopenia',
         required: true,
       },
       {
-        name: 'Antirrábica',
-        when: 'Semana 12 – 16',
+        name: 'Rabia',
+        when: 'Sem. 12 – 16',
         frequency: '1ª dosis',
-        notes: 'Obligatoria por ley en Argentina (Ordenanza 41831/87)',
+        notes: 'Primera dosis obligatoria',
         required: true,
       },
       {
         name: 'Leucemia Felina (FeLV)',
-        when: 'Sem. 12 + refuerzo a las 4 sem',
-        frequency: '2 dosis iniciales',
-        notes: 'Requiere test previo. Recomendada para gatos con acceso al exterior',
+        when: 'Sem. 12 + refuerzo',
+        frequency: 'Condicional',
+        notes: 'Para gatos con acceso al exterior o en convivencia con otros felinos',
         required: false,
       },
     ],
@@ -191,63 +183,56 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    icon: <Heart size={24} className="text-amber-500" />,
+    emoji: '🐈',
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
     textColor: 'text-amber-600',
     vaccines: [
       {
-        name: 'Refuerzo Triple Felina',
-        when: 'A los 12 meses',
-        frequency: 'Refuerzo anual',
-        notes: 'Consolida la protección de la serie inicial',
+        name: 'Refuerzo Trivalente',
+        when: 'Mes 12',
+        frequency: 'Refuerzo único',
+        notes: 'Consolida la protección adquirida en la serie inicial',
         required: true,
       },
       {
-        name: 'Refuerzo Antirrábica',
-        when: 'A los 12 meses',
+        name: 'Refuerzo Rabia',
+        when: 'Mes 12',
         frequency: 'Refuerzo anual',
-        notes: 'Obligatorio por normativa nacional',
+        notes: 'Refuerzo obligatorio por normativa',
         required: true,
-      },
-      {
-        name: 'Refuerzo Leucemia Felina',
-        when: 'A los 12 meses',
-        frequency: 'Refuerzo anual',
-        notes: 'Para gatos con acceso al exterior o convivencia con otros felinos',
-        required: false,
       },
     ],
   },
   {
     name: 'Adulto',
     ageRange: '1 – 10 años',
-    icon: <ShieldCheck size={24} className="text-blue-600" />,
+    emoji: '🐈‍⬛',
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
     textColor: 'text-primary',
     vaccines: [
       {
-        name: 'Triple Felina',
+        name: 'Trivalente Felina',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Mantiene la inmunidad contra las tres enfermedades virales principales',
+        notes: 'Mantiene la inmunidad activa en la etapa adulta',
         required: true,
       },
       {
-        name: 'Antirrábica',
+        name: 'Rabia',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Obligatoria por ley durante toda la vida del animal',
+        notes: 'Obligatoria según normativa vigente',
         required: true,
       },
       {
         name: 'Leucemia Felina',
-        when: 'Cada año',
-        frequency: 'Anual',
-        notes: 'Para gatos con acceso al exterior o que conviven con otros felinos',
+        when: 'Cada 2 años',
+        frequency: 'Cada 2 años',
+        notes: 'Para gatos con acceso al exterior',
         required: false,
       },
     ],
@@ -255,32 +240,32 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '10+ años',
-    icon: <AlertCircle size={24} className="text-purple-600" />,
+    emoji: '😸',
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
     textColor: 'text-purple-600',
     vaccines: [
       {
-        name: 'Chequeo Veterinario Geriátrico',
-        when: 'Cada 6 a 12 meses',
-        frequency: 'Semestral / Anual',
-        notes: 'Control integral: análisis de sangre, riñón y tiroides',
+        name: 'Revisión Veterinaria',
+        when: 'Cada año',
+        frequency: 'Anual obligatorio',
+        notes: 'Control completo de salud, análisis y bienestar',
         required: true,
       },
       {
-        name: 'Triple Felina',
+        name: 'Trivalente Felina',
         when: 'Cada año',
         frequency: 'Anual',
-        notes: 'Se mantiene salvo contraindicación veterinaria',
-        required: true,
+        notes: 'Si continúa en buen estado de salud',
+        required: false,
       },
       {
-        name: 'Antirrábica',
-        when: 'Cada año',
-        frequency: 'Anual',
-        notes: 'Continúa siendo obligatoria por ley',
-        required: true,
+        name: 'Rabia',
+        when: 'Según situación',
+        frequency: 'Condicional',
+        notes: 'Evaluar con el veterinario según estilo de vida',
+        required: false,
       },
     ],
   },
@@ -321,7 +306,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Dog size={20} />
+            <span className="text-xl">🐕</span>
             Perro
           </button>
           <button
@@ -334,7 +319,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Cat size={20} />
+            <span className="text-xl">🐱</span>
             Gato
           </button>
         </div>
@@ -346,6 +331,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
           <div key={phaseIdx} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <div className={`${phase.headerColor} text-white px-4 py-3 flex items-center justify-between`}>
               <div className="flex items-center gap-2">
+                <span className="text-xl">{phase.emoji}</span>
                 <span className="font-bold text-base">{phase.name}</span>
               </div>
               <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
@@ -388,7 +374,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         ))}
         <div className="bg-white/10 rounded-xl px-4 py-3">
           <p className={`text-xs ${darkBg ? 'text-white/70' : 'text-gray-500'}`}>
-            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con un veterinario de El Yagua para un plan de vacunación mas personalizado.
+            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Consultá siempre con tu veterinario para un plan personalizado según el estado de salud, zona y estilo de vida de tu mascota.
           </p>
         </div>
       </div>
@@ -419,6 +405,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                   <td colSpan={4} className="px-5 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">{phase.emoji}</span>
                         <span className="font-bold text-lg">{phase.name}</span>
                       </div>
                       <span className="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full">
@@ -463,7 +450,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         </table>
         <div className="bg-gray-50 border-t-2 border-gray-200 px-5 py-4">
           <p className="text-sm text-gray-600">
-            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con un veterinario de El Yagua para un plan de vacunación mas personalizado.
+            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con tu veterinario de confianza para un plan de vacunación personalizado según el estado de salud, zona geográfica y estilo de vida de tu mascota.
           </p>
         </div>
       </div>
