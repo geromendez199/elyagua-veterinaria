@@ -170,7 +170,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           .eq('usado', false)
           .or(`cliente_id.eq.${found.id},cliente_id.is.null`)
 
-        setClienteCupones(cuponesActualizados || cuponesActuales)
+        // Mapear porcentaje_descuento a descuento_porcentaje para consistencia
+        const cuponesnormalizados = (cuponesActualizados || cuponesActuales).map((c: any) => ({
+          ...c,
+          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
+        }))
+
+        setClienteCupones(cuponesnormalizados)
         setMilestones(milestones)
         setLoadingCupones(false)
       } else {
@@ -805,7 +811,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Tag size={18} className="text-green-600" />
-                        <p className="text-sm font-semibold text-green-900">Cupones disponibles</p>
+                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({clienteCupones.length})</p>
                       </div>
                       <div className="space-y-2">
                         {clienteCupones.map((cupon) => (
@@ -813,7 +819,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             key={cupon.id}
                             onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje)}
                             disabled={!!appliedCoupon && appliedCoupon.id !== cupon.id}
-                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between cursor-pointer ${
                               appliedCoupon?.id === cupon.id
                                 ? 'bg-green-600 text-white border-2 border-green-700'
                                 : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
@@ -835,6 +841,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </button>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {dniLookup === 'found' && loadingCupones && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                      <p className="text-sm text-yellow-800">⏳ Generando cupones disponibles...</p>
                     </div>
                   )}
 
