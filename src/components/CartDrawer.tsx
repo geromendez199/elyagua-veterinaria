@@ -146,17 +146,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
             if (milestonesAlcanzado && !tieneCupon) {
               // Generar cupón automáticamente
-              await supabase.from('cupones').insert([
+              const { error: insertErr } = await supabase.from('cupones').insert([
                 {
                   cliente_id: found.id,
                   codigo: `AUTO-${milestone.millas_requeridas}-${found.id.substring(0, 8)}`,
-                  descuento_porcentaje: milestone.descuento_porcentaje,
+                  porcentaje_descuento: milestone.descuento_porcentaje,
                   activo: true,
                   usado: false,
                   milestone_id: milestone.id,
                   auto_generado: true,
                 }
               ])
+              if (insertErr) {
+                console.error('Error insertando cupón:', insertErr)
+              }
             }
           }
         } catch (e) {
