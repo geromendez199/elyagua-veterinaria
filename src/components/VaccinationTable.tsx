@@ -27,7 +27,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '6 – 16 semanas',
-    emoji: '🐶',
+    emoji: '',
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
@@ -59,7 +59,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    emoji: '🐕',
+    emoji: '',
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
@@ -84,7 +84,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adulto',
     ageRange: '1 – 7 años',
-    emoji: '🐕‍🦺',
+    emoji: '',
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
@@ -116,7 +116,7 @@ const PERRO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '7+ años',
-    emoji: '🦴',
+    emoji: '',
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
@@ -151,7 +151,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Cachorro',
     ageRange: '8 – 16 semanas',
-    emoji: '🐱',
+    emoji: '',
     headerColor: 'bg-rose-500',
     bodyColor: 'bg-rose-50',
     altRowColor: 'bg-white',
@@ -183,7 +183,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adolescente',
     ageRange: '6 – 12 meses',
-    emoji: '🐈',
+    emoji: '',
     headerColor: 'bg-amber-500',
     bodyColor: 'bg-amber-50',
     altRowColor: 'bg-white',
@@ -208,7 +208,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Adulto',
     ageRange: '1 – 10 años',
-    emoji: '🐈‍⬛',
+    emoji: '',
     headerColor: 'bg-primary',
     bodyColor: 'bg-primary/5',
     altRowColor: 'bg-white',
@@ -240,7 +240,7 @@ const GATO_PHASES: VaccinationPhase[] = [
   {
     name: 'Senior',
     ageRange: '10+ años',
-    emoji: '😸',
+    emoji: '',
     headerColor: 'bg-purple-600',
     bodyColor: 'bg-purple-50',
     altRowColor: 'bg-white',
@@ -306,7 +306,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐕</span>
             Perro
           </button>
           <button
@@ -319,7 +318,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <span className="text-xl">🐱</span>
             Gato
           </button>
         </div>
@@ -331,7 +329,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
           <div key={phaseIdx} className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <div className={`${phase.headerColor} text-white px-4 py-3 flex items-center justify-between`}>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{phase.emoji}</span>
                 <span className="font-bold text-base">{phase.name}</span>
               </div>
               <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
@@ -374,7 +371,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         ))}
         <div className="bg-white/10 rounded-xl px-4 py-3">
           <p className={`text-xs ${darkBg ? 'text-white/70' : 'text-gray-500'}`}>
-            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>⚠️ Importante:</strong> Este calendario es orientativo. Consultá siempre con tu veterinario para un plan personalizado según el estado de salud, zona y estilo de vida de tu mascota.
+            <strong className={darkBg ? 'text-white/90' : 'text-gray-700'}>Importante:</strong> Este calendario es orientativo. Consultá siempre con tu veterinario para un plan personalizado según el estado de salud, zona y estilo de vida de tu mascota.
           </p>
         </div>
       </div>
@@ -405,7 +402,6 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
                   <td colSpan={4} className="px-5 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{phase.emoji}</span>
                         <span className="font-bold text-lg">{phase.name}</span>
                       </div>
                       <span className="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full">
@@ -450,7 +446,7 @@ export default function VaccinationTable({ showTitle = true, darkBg = true }: Va
         </table>
         <div className="bg-gray-50 border-t-2 border-gray-200 px-5 py-4">
           <p className="text-sm text-gray-600">
-            <strong>⚠️ Importante:</strong> Este calendario es orientativo. Siempre consultá con tu veterinario de confianza para un plan de vacunación personalizado según el estado de salud, zona geográfica y estilo de vida de tu mascota.
+            <strong>Importante:</strong> Este calendario es orientativo. Siempre consultá con tu veterinario de confianza para un plan de vacunación personalizado según el estado de salud, zona geográfica y estilo de vida de tu mascota.
           </p>
         </div>
       </div>
