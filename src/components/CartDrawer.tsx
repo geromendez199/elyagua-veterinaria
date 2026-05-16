@@ -752,7 +752,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
 
               {/* ── YaguaMillas y Cupones ── */}
-              {clienteActual && dniLookup === 'found' && (
+              {dniLookup === 'found' && (
                 <div className="space-y-4">
                   {/* Millas actuales */}
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -760,7 +760,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <span className="text-xl">⭐</span>
                       <p className="text-sm font-semibold text-amber-900">Mis YaguaMillas</p>
                     </div>
-                    <p className="text-2xl font-bold text-amber-600">{clienteActual.puntos_acumulados || 0}</p>
+                    <p className="text-2xl font-bold text-amber-600">{(clienteActual?.puntos_acumulados) || 0}</p>
                     <p className="text-xs text-amber-700 mt-1">YaguaMillas acumuladas</p>
                   </div>
 
@@ -808,7 +808,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3">Próximos hitos</p>
                       <div className="space-y-2">
                         {milestones.map((milestone) => {
-                          const hasReached = (clienteActual.puntos_acumulados || 0) >= milestone.millas_requeridas
+                          const hasReached = (clienteActual?.puntos_acumulados || 0) >= milestone.millas_requeridas
                           const hasCoupon = clienteCupones.some(c => c.milestone_id === milestone.id)
                           return (
                             <div
@@ -835,7 +835,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     ? 'bg-blue-200 text-blue-800'
                                     : 'bg-gray-100 text-gray-600'
                                 }`}>
-                                  {hasReached && hasCoupon ? '✓ Obtenido' : hasReached ? 'Desbloqueado' : `Falta ${milestone.millas_requeridas - (clienteActual.puntos_acumulados || 0)}`}
+                                  {hasReached && hasCoupon ? '✓ Obtenido' : hasReached ? 'Desbloqueado' : `Falta ${milestone.millas_requeridas - (clienteActual?.puntos_acumulados || 0)}`}
                                 </span>
                               </div>
                             </div>
