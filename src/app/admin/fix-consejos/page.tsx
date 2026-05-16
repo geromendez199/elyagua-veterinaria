@@ -1,27 +1,56 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Check } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Loader2, Check, AlertCircle } from 'lucide-react'
 
 export default function FixConsejos() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [message, setMessage] = useState('')
+  const [updated, setUpdated] = useState<any[]>([])
   const [error, setError] = useState('')
 
   const handleFix = async () => {
     setLoading(true)
     setError('')
-    try {
-      const response = await fetch('/api/admin/fix-consejos')
-      const data = await response.json()
+    setMessage('')
+    setUpdated([])
 
-      if (!data.success) {
-        setError(data.error || 'Error desconocido')
-      } else {
-        setResult(data)
+    try {
+      const { data: consejos, error: fetchError } = await supabase
+        .from('consejos')
+        .select('id, titulo, categoria, activo')
+        .in('categoria', ['Prevencion', 'Nutricion'])
+
+      if (fetchError) throw fetchError
+
+      if (!consejos || consejos.length === 0) {
+        setMessage('No se encontraron consejos con esas categorías')
+        return
       }
+
+      const toUpdate = consejos.filter(c => !c.activo)
+
+      if (toUpdate.length === 0) {
+        setMessage('Todos los consejos ya están activos')
+        setUpdated(consejos)
+        return
+      }
+
+      for (const consejo of toUpdate) {
+        const { error: updateError } = await supabase
+          .from('consejos')
+          .update({ activo: true })
+          .eq('id', consejo.id)
+
+        if (updateError) throw updateError
+      }
+
+      setMessage(`✅ ${toUpdate.length} consejo(s) activado(s)`)
+      setUpdated(toUpdate)
     } catch (err: any) {
-      setError(err.message || 'Error al conectar')
+      console.error('Error:', err)
+      setError(err.message || 'Error desconocido')
     } finally {
       setLoading(false)
     }
@@ -31,15 +60,15 @@ export default function FixConsejos() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Arreglar Consejos</h1>
-          <p className="text-gray-600 mb-6">
-            Esta herramienta actualiza los consejos "Prevencion" y "Nutricion" para que sean visibles en la web.
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Activar Consejos</h1>
+          <p className="text-gray-600 mb-8">
+            Actualiza los consejos "Prevencion" y "Nutricion" para que sean visibles en la web.
           </p>
 
           <button
             onClick={handleFix}
             disabled={loading}
-            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-6 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-6 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 mb-6"
           >
             {loading ? (
               <>
@@ -49,26 +78,34 @@ export default function FixConsejos() {
             ) : (
               <>
                 <Check size={20} />
-                Activar Consejos
+                Activar Ahora
               </>
             )}
           </button>
 
           {error && (
-            <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700 font-semibold">Error:</p>
-              <p className="text-red-600">{error}</p>
+            <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
+              <div className="flex gap-3">
+                <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-700 font-bold">Error:</p>
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
-          {result && (
-            <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-700 font-semibold mb-2">✅ {result.message}</p>
-              {result.updated && (
-                <ul className="text-sm text-green-600 space-y-1">
-                  {result.updated.map((item: any) => (
-                    <li key={item.id}>
-                      • {item.titulo} ({item.categoria})
+          {message && (
+            <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded">
+              <p className="text-green-700 font-bold">{message}</p>
+              {updated.length > 0 && (
+                <ul className="mt-3 text-sm text-green-600 space-y-2">
+                  {updated.map((item) => (
+                    <li key={item.id} className="flex items-center gap-2">
+                      <Check size={16} />
+                      <span>
+                        <strong>{item.titulo}</strong> ({item.categoria})
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -76,10 +113,13 @@ export default function FixConsejos() {
             </div>
           )}
 
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800">
-              <strong>Qué hace:</strong> Busca todos los consejos con categoría "Prevencion" o "Nutricion" y los marca como activos (activo=true) para que aparezcan en la página de Consejos.
-            </p>
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-800">
+            <p className="font-bold mb-2">Información:</p>
+            <ul className="space-y-1 text-xs">
+              <li>• Busca consejos con categorías "Prevencion" y "Nutricion"</li>
+              <li>• Los marca como activos (activo=true)</li>
+              <li>• Aparecerán automáticamente en /consejos</li>
+            </ul>
           </div>
         </div>
       </div>
