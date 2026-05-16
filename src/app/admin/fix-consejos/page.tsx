@@ -1,14 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Check, AlertCircle } from 'lucide-react'
+import { Loader2, Check, AlertCircle, ArrowRight } from 'lucide-react'
 
 export default function FixConsejos() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [updated, setUpdated] = useState<any[]>([])
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   const handleFix = async () => {
     setLoading(true)
@@ -34,6 +38,8 @@ export default function FixConsejos() {
       if (toUpdate.length === 0) {
         setMessage('Todos los consejos ya están activos')
         setUpdated(consejos)
+        setSuccess(true)
+        setTimeout(() => router.push('/consejos'), 2000)
         return
       }
 
@@ -46,8 +52,10 @@ export default function FixConsejos() {
         if (updateError) throw updateError
       }
 
-      setMessage(`✅ ${toUpdate.length} consejo(s) activado(s)`)
+      setMessage(`✅ ${toUpdate.length} consejo(s) activado(s) correctamente`)
       setUpdated(toUpdate)
+      setSuccess(true)
+      setTimeout(() => router.push('/consejos'), 2000)
     } catch (err: any) {
       console.error('Error:', err)
       setError(err.message || 'Error desconocido')
@@ -109,6 +117,18 @@ export default function FixConsejos() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {success && (
+                <div className="mt-4 pt-4 border-t border-green-200">
+                  <p className="text-sm text-green-600 mb-3">Redirigiendo a /consejos en 2 segundos...</p>
+                  <Link
+                    href="/consejos"
+                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold transition"
+                  >
+                    Ir a Consejos Ahora
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
               )}
             </div>
           )}
