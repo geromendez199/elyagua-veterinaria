@@ -134,8 +134,44 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             .eq('activo', true)
             .order('millas_requeridas', { ascending: true }),
         ])
-        setClienteCupones(cuponesRes.data || [])
-        setMilestones(milestonesRes.data || [])
+
+        const cuponesActuales = cuponesRes.data || []
+        const milestones = milestonesRes.data || []
+
+        // Generar cupones automáticos para milestones alcanzados pero sin cupón
+        try {
+          for (const milestone of milestones) {
+            const milestonesAlcanzado = (found.puntos_acumulados || 0) >= milestone.millas_requeridas
+            const tieneCupon = cuponesActuales.some(c => c.milestone_id === milestone.id && !c.usado)
+
+            if (milestonesAlcanzado && !tieneCupon) {
+              // Generar cupón automáticamente
+              await supabase.from('cupones').insert([
+                {
+                  cliente_id: found.id,
+                  codigo: `AUTO-${milestone.millas_requeridas}-${found.id.substring(0, 8)}`,
+                  descuento_porcentaje: milestone.descuento_porcentaje,
+                  activo: true,
+                  usado: false,
+                  milestone_id: milestone.id,
+                  auto_generado: true,
+                }
+              ])
+            }
+          }
+        } catch (e) {
+          // Error al generar, continuar de todas formas
+        }
+
+        // Recargar cupones después de generar los que faltaban
+        const { data: cuponesActualizados } = await supabase
+          .from('cupones')
+          .select('*')
+          .eq('usado', false)
+          .or(`cliente_id.eq.${found.id},cliente_id.is.null`)
+
+        setClienteCupones(cuponesActualizados || cuponesActuales)
+        setMilestones(milestones)
         setLoadingCupones(false)
       } else {
         setDniLookup('notfound')
