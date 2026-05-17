@@ -33,14 +33,12 @@ export default function QuienesSomosPage() {
           </div>
 
           {/* Foto del Equipo */}
-          <div className="rounded-2xl overflow-hidden shadow-xl mb-12">
-            <LazyImage
+          <div className="rounded-2xl overflow-hidden shadow-xl mb-12" style={{ height: '420px' }}>
+            <img
               src="/team.jpg"
               alt="Equipo de El Yagua Veterinaria"
-              width={1200}
-              height={300}
-              className="w-full h-auto"
-              objectFit="cover"
+              className="w-full h-full"
+              style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
             />
           </div>
 
