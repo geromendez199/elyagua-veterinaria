@@ -54,6 +54,7 @@ export default function Navbar() {
                   width={180}
                   height={45}
                   className="h-full w-auto"
+                  priority={true}
                   showSkeleton={false}
                 />
               </div>
