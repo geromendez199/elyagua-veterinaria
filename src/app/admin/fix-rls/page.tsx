@@ -3,11 +3,55 @@
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
 
-const FIX_SQL = `-- Deshabilitar RLS en tabla milestones
-ALTER TABLE milestones DISABLE ROW LEVEL SECURITY;
+const FIX_SQL = `-- Políticas RLS para tabla consejos
+-- Permite que el público lea consejos activos
+-- Permite que usuarios autenticados hagan CRUD completo
 
--- Si necesitas volver a habilitarlo, ejecuta:
--- ALTER TABLE milestones ENABLE ROW LEVEL SECURITY;`
+-- Primero, deshabilita las policies existentes si las hay:
+DROP POLICY IF EXISTS "Allow public read active consejos" ON consejos;
+DROP POLICY IF EXISTS "Allow authenticated read all consejos" ON consejos;
+DROP POLICY IF EXISTS "Allow authenticated insert consejos" ON consejos;
+DROP POLICY IF EXISTS "Allow authenticated update consejos" ON consejos;
+DROP POLICY IF EXISTS "Allow authenticated delete consejos" ON consejos;
+
+-- Habilita RLS
+ALTER TABLE consejos ENABLE ROW LEVEL SECURITY;
+
+-- Policy 1: Allow public read of active consejos
+CREATE POLICY "Allow public read active consejos"
+ON consejos
+FOR SELECT
+TO public
+USING (activo = true);
+
+-- Policy 2: Allow authenticated users to read all consejos (for admin)
+CREATE POLICY "Allow authenticated read all consejos"
+ON consejos
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- Policy 3: Allow authenticated users to insert consejos
+CREATE POLICY "Allow authenticated insert consejos"
+ON consejos
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- Policy 4: Allow authenticated users to update consejos
+CREATE POLICY "Allow authenticated update consejos"
+ON consejos
+FOR UPDATE
+TO authenticated
+USING (true)
+WITH CHECK (true);
+
+-- Policy 5: Allow authenticated users to delete consejos
+CREATE POLICY "Allow authenticated delete consejos"
+ON consejos
+FOR DELETE
+TO authenticated
+USING (true);`
 
 export default function FixRLSPage() {
   const [copied, setCopied] = useState(false)
@@ -22,14 +66,14 @@ export default function FixRLSPage() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Arreglar Error de RLS</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Configurar RLS para Consejos</h1>
           <p className="text-gray-600 mb-6">
-            La tabla de milestones tiene Row Level Security (RLS) habilitado. Necesitas deshabilitar RLS para que funcione correctamente.
+            La tabla de consejos tiene Row Level Security (RLS) habilitado. Necesitas ejecutar estas políticas para que los consejos sean visibles en la web pública y editables en admin.
           </p>
 
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-            <p className="text-red-800">
-              <strong>Error:</strong> "new row violates row-level security policy for table 'milestones'"
+          <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
+            <p className="text-amber-800">
+              <strong>Problema:</strong> Los consejos no aparecen en /consejos pero sí en /admin. Las políticas RLS bloquean el acceso público.
             </p>
           </div>
 
@@ -57,19 +101,21 @@ export default function FixRLSPage() {
             <h3 className="font-bold text-blue-900 mb-2">Pasos:</h3>
             <ol className="text-blue-800 text-sm list-decimal ml-5">
               <li>Copia el SQL (botón azul arriba)</li>
-              <li>Ve a <strong>Supabase → SQL Editor</strong></li>
-              <li>Pega y ejecuta el SQL</li>
-              <li>Vuelve al Centro de Control YaguaMillas</li>
-              <li>Intenta guardar el hito de nuevo</li>
+              <li>Ve a <strong>Supabase Dashboard → SQL Editor</strong></li>
+              <li>Abre una nueva consulta</li>
+              <li>Pega el SQL</li>
+              <li>Haz clic en "Ejecutar" (botón azul)</li>
+              <li>Espera a que se complete</li>
+              <li>Vuelve a la página de Consejos y verifica que aparezcan</li>
             </ol>
           </div>
 
           <div>
             <a
-              href="/admin/yaguamillas-control"
-              className="inline-block bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+              href="/consejos"
+              className="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-semibold transition"
             >
-              ← Volver al Centro de Control
+              → Ver Consejos Públicos
             </a>
           </div>
         </div>
