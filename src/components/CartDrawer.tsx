@@ -122,12 +122,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         // Cargar cupones disponibles y milestones
         setLoadingCupones(true)
         const [cuponesRes, milestonesRes] = await Promise.all([
-          // Cargamos cupones específicos del cliente + cupones generales
+          // Cargamos cupones globales (sin asignación a cliente)
           supabase
             .from('cupones')
             .select('*')
-            .eq('usado', false)
-            .or(`cliente_id.eq.${found.id},cliente_id.is.null`),
+            .eq('activo', true),
           supabase
             .from('milestones')
             .select('*')

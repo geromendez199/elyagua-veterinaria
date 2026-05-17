@@ -16,14 +16,14 @@ export default function ConsejoPage() {
   useEffect(() => {
     const fetchConsejos = async () => {
       try {
-        const { data, error } = await supabase
-          .from('consejos')
-          .select('*')
-          .eq('activo', true)
-          .order('categoria')
-          .order('orden')
-        if (error) throw error
-        setConsejos(data || [])
+        const res = await fetch('/api/consejos?activo=true')
+        const result = await res.json()
+        if (result.success) {
+          setConsejos(result.data || [])
+        } else {
+          console.error('Error fetching consejos:', result.error)
+          setConsejos([])
+        }
       } catch (err) {
         console.error('Error fetching consejos:', err)
         setConsejos([])
