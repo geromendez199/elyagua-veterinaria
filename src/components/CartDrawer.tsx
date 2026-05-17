@@ -305,8 +305,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       .join('\n\n')
 
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito / Transferencia', credito: 'Crédito (hasta 3 pagos, con recargo)', transferencia: 'Transferencia bancaria' }
-    const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
-    const discountLine = appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total - finalTotal)}`] : []
+    const efectivoDiscount = formData.metodoPago === 'efectivo' ? 0.9 : 1
+    const baseTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
+    const finalTotal = baseTotal * efectivoDiscount
+    const discountLine = [
+      ...(appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}`] : []),
+      ...(formData.metodoPago === 'efectivo' ? [`💵 *Descuento efectivo (10%):* -${formatPrice(baseTotal * 0.1)}`] : []),
+    ]
     const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
     const yaguamillasLine = totalYaguaMillas > 0 ? [`⭐ *YaguaMillas:* ${totalYaguaMillas}`] : []
     const message = [
@@ -348,7 +353,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
-        const finalTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
+        const finalTotal = (appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (formData.metodoPago === 'efectivo' ? 0.9 : 1)
         const { data } = await supabase.from('pedidos').insert([{
           nombre: formData.nombre,
           telefono: `+549${formData.telefono}`,
@@ -915,24 +920,28 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                 ))}
                 <div className="border-t border-gray-200 pt-3 mt-1 space-y-1">
+                  {(appliedCoupon || formData.metodoPago === 'efectivo') && (
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Subtotal</span>
+                      <span>{formatPrice(total)}</span>
+                    </div>
+                  )}
                   {appliedCoupon && (
-                    <>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>Subtotal</span>
-                        <span>{formatPrice(total)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-rose-600 font-semibold">
-                        <span>Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
-                        <span>-{formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</span>
-                      </div>
-                    </>
+                    <div className="flex justify-between text-sm text-rose-600 font-semibold">
+                      <span>Descuento ({appliedCoupon.descuento_porcentaje}%)</span>
+                      <span>-{formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</span>
+                    </div>
+                  )}
+                  {formData.metodoPago === 'efectivo' && (
+                    <div className="flex justify-between text-sm text-rose-600 font-semibold">
+                      <span>Descuento efectivo (10%)</span>
+                      <span>-{formatPrice((appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * 0.1)}</span>
+                    </div>
                   )}
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-bold text-gray-900">Total</span>
                     <span className="text-primary font-bold text-xl">
-                      {appliedCoupon
-                        ? formatPrice(total * (1 - appliedCoupon.descuento_porcentaje / 100))
-                        : formatPrice(total)}
+                      {formatPrice((appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (formData.metodoPago === 'efectivo' ? 0.9 : 1))}
                     </span>
                   </div>
                 </div>
@@ -1058,7 +1067,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <button
                   onClick={() => {
                     setShowYaguamillasConfirm(false)
-                    clearCart()
                     onClose()
                     setStep('cart')
                     setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
