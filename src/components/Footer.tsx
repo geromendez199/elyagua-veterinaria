@@ -15,12 +15,11 @@ export default function Footer() {
         {/* Logo + tagline */}
         <div className="flex flex-col items-center text-center mb-10 md:mb-12">
           <Link href="/">
-            <LazyImage
+            <img
               src="/logo-blanco.png"
               alt="El Yagua Veterinaria"
-              width={180}
-              height={50}
-              className="h-12 w-auto mb-3 opacity-90 hover:opacity-100 transition"
+              className="h-12 w-auto mb-3 navbar-logo-img opacity-90 hover:opacity-100 transition"
+              loading="eager"
             />
           </Link>
           <p className="text-sm text-gray-400 max-w-sm leading-relaxed">
