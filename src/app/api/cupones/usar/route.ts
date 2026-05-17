@@ -1,15 +1,15 @@
 import { supabase } from '@/lib/supabase'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
-import { useCouponSchema } from '@/lib/validation/schemas'
+import { useCouponSchema, type UseCouponInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
-    const { data, error } = await validateRequest(request, useCouponSchema)
-    if (error) return error
+    const { data, error } = await validateRequest<UseCouponInput>(request, useCouponSchema)
+    if (error || !data) return error || errorResponse('Datos inválidos', 400)
 
-    const { cupon_id, cliente_dni, milestone_millas } = data as any
+    const { cupon_id, cliente_dni, milestone_millas } = data
 
     const { error: updateCuponError } = await supabase
       .from('cupones')

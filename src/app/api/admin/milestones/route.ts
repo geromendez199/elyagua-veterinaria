@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
-import { createMilestoneSchema, updateMilestoneSchema } from '@/lib/validation/schemas'
+import { createMilestoneSchema, updateMilestoneSchema, type CreateMilestoneInput, type UpdateMilestoneInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
 
 async function getHandler(request: Request) {
@@ -31,10 +31,10 @@ async function postHandler(request: Request) {
     const { user, error } = await requireAuth()
     if (error) return error
 
-    const { data, error: validationError } = await validateRequest(request, createMilestoneSchema)
-    if (validationError) return validationError
+    const { data, error: validationError } = await validateRequest<CreateMilestoneInput>(request, createMilestoneSchema)
+    if (validationError || !data) return validationError || errorResponse('Datos inválidos', 400)
 
-    const { millas_requeridas, descuento_porcentaje, activo } = data as any
+    const { millas_requeridas, descuento_porcentaje, activo } = data
 
     const { data: dbData, error: dbError } = await supabase
       .from('milestones')
@@ -63,10 +63,10 @@ async function putHandler(request: Request) {
     const { user, error } = await requireAuth()
     if (error) return error
 
-    const { data, error: validationError } = await validateRequest(request, updateMilestoneSchema)
-    if (validationError) return validationError
+    const { data, error: validationError } = await validateRequest<UpdateMilestoneInput>(request, updateMilestoneSchema)
+    if (validationError || !data) return validationError || errorResponse('Datos inválidos', 400)
 
-    const { id, millas_requeridas, descuento_porcentaje, activo } = data as any
+    const { id, millas_requeridas, descuento_porcentaje, activo } = data
 
     const { data: dbData, error: dbError } = await supabase
       .from('milestones')

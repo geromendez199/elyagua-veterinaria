@@ -1,15 +1,15 @@
 import { supabase } from '@/lib/supabase'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
-import { registerPointsSchema } from '@/lib/validation/schemas'
+import { registerPointsSchema, type RegisterPointsInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
-    const { data, error } = await validateRequest(request, registerPointsSchema)
-    if (error) return error
+    const { data, error } = await validateRequest<RegisterPointsInput>(request, registerPointsSchema)
+    if (error || !data) return error || errorResponse('Datos inválidos', 400)
 
-    const { pedido_id, cliente_dni, productos } = data as any
+    const { pedido_id, cliente_dni, productos } = data
 
     if (pedido_id) {
       const { data: pedido } = await supabase
