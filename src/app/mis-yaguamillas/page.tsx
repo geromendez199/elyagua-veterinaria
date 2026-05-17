@@ -61,7 +61,9 @@ export default function MisYaguamillasPage() {
 
   const handleBuscar = async (e: React.FormEvent) => {
     e.preventDefault()
-    const sanitized = dni.replace(/\D/g, '').slice(0, 8)
+    const sanitized = dni.trim().replace(/\D/g, '').slice(0, 8)
+
+    console.log('🔍 Buscando DNI:', sanitized, 'Valor actual:', dni)
 
     if (sanitized.length !== 8) {
       setError('Ingresá un DNI válido (8 dígitos)')
@@ -73,19 +75,34 @@ export default function MisYaguamillasPage() {
     setSearched(true)
 
     try {
-      const { data: clienteData, error: clienteError } = await supabase
+      // Primero intenta con .single()
+      let clienteData = null
+      let clienteError = null
+
+      const singleResult = await supabase
         .from('clientes')
         .select('*')
         .eq('dni', sanitized)
-        .single()
+
+      console.log('📊 Resultado de búsqueda:', singleResult)
+
+      if (singleResult.error) {
+        clienteError = singleResult.error
+      } else if (singleResult.data && singleResult.data.length > 0) {
+        clienteData = singleResult.data[0]
+      } else {
+        clienteError = { message: 'No encontrado' }
+      }
 
       if (clienteError || !clienteData) {
+        console.log('❌ Error o no encontrado:', clienteError)
         setError('No encontramos un cliente con ese DNI. ¡Hace tu primer pedido para unirte a YaguaMillas!')
         setCliente(null)
         setHistorial([])
         return
       }
 
+      console.log('✅ Cliente encontrado:', clienteData)
       setCliente(clienteData)
 
       const [{ data: historialData }, { data: cuponesData }] = await Promise.all([
@@ -104,8 +121,8 @@ export default function MisYaguamillasPage() {
       setHistorial(historialData || [])
       setCupones(cuponesData || [])
     } catch (err) {
+      console.error('🔴 Error al buscar:', err)
       setError('Error al buscar. Intenta de nuevo.')
-      console.error(err)
     } finally {
       setLoading(false)
     }
