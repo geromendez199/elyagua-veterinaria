@@ -5,9 +5,12 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Consejo, ConsejoCategoria, CONSEJO_CATEGORIES } from '@/types'
 import { BookOpen } from 'lucide-react'
+import VaccinationTable from '@/components/VaccinationTable'
+
+type ConsejoOrArticulo = Consejo | any
 
 export default function ConsejoPage() {
-  const [consejos, setConsejos] = useState<Consejo[]>([])
+  const [consejos, setConsejos] = useState<ConsejoOrArticulo[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<ConsejoCategoria | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -15,7 +18,7 @@ export default function ConsejoPage() {
   useEffect(() => {
     const fetchConsejos = async () => {
       try {
-        const res = await fetch('/api/consejos?activo=true')
+        const res = await fetch('/api/articulos?activo=true')
         const result = await res.json()
         if (result.success) {
           setConsejos(result.data || [])
@@ -41,7 +44,9 @@ export default function ConsejoPage() {
     return matchesCategory && matchesSearch
   })
 
-  const categories = Object.entries(CONSEJO_CATEGORIES) as [ConsejoCategoria, any][]
+  // Get unique categories from the data
+  const uniqueCategories = Array.from(new Set(consejos.map(c => c.categoria)))
+  const categories = uniqueCategories.map(cat => [cat, { label: cat }])
 
   return (
     <div className="min-h-screen bg-white">
@@ -115,7 +120,8 @@ export default function ConsejoPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredConsejos.map((consejo) => {
-                const categoryInfo = CONSEJO_CATEGORIES[consejo.categoria]
+                const categoryInfo = CONSEJO_CATEGORIES[consejo.categoria as ConsejoCategoria]
+                const categoryLabel = categoryInfo?.label || consejo.categoria
                 return (
                   <div
                     key={consejo.id}
@@ -141,7 +147,7 @@ export default function ConsejoPage() {
                     {/* Content */}
                     <div className="p-5">
                       <span className="text-xs font-bold text-primary uppercase tracking-wide">
-                        {categoryInfo.label}
+                        {categoryLabel}
                       </span>
                       <h3 className="text-lg font-bold text-gray-900 mt-2 mb-3 line-clamp-2">
                         {consejo.titulo}
@@ -151,11 +157,13 @@ export default function ConsejoPage() {
                       </p>
 
                       {/* Meta Info */}
-                      <div className="flex items-center text-xs text-gray-500 border-t pt-3">
-                        <span>
-                          {consejo.tipo_mascota === 'ambos' ? '🐕 🐱 Ambos' : consejo.tipo_mascota === 'perro' ? '🐕 Perro' : '🐱 Gato'}
-                        </span>
-                      </div>
+                      {consejo.tipo_mascota && (
+                        <div className="flex items-center text-xs text-gray-500 border-t pt-3">
+                          <span>
+                            {consejo.tipo_mascota === 'ambos' ? '🐕 🐱 Ambos' : consejo.tipo_mascota === 'perro' ? '🐕 Perro' : '🐱 Gato'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
@@ -165,6 +173,12 @@ export default function ConsejoPage() {
         </div>
       </section>
 
+      {/* Vaccination Table Section */}
+      <section className="bg-primary py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <VaccinationTable showTitle={true} darkBg={true} />
+        </div>
+      </section>
     </div>
   )
 }
