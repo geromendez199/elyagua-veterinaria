@@ -1,19 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef } from 'react'
 import NextImage from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
-import { OrderFormData, DeliveryType } from '@/types'
+import { DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
 import PuntosInfo from './PuntosInfo'
-import { useDniLookup } from '@/hooks/useDniLookup'
-import { useAddressAutocomplete } from '@/hooks/useAddressAutocomplete'
-import { useOrderValidation } from '@/hooks/useOrderValidation'
+import { useCartDrawerReducer } from '@/hooks/useCartDrawerReducer'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -26,33 +24,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
 
-  // Main state hooks (5 total vs 17+ before)
-  const [step, setStep] = useState<'cart' | 'checkout'>('cart')
-  const [checkingStock, setCheckingStock] = useState(false)
-  const [stockErrors, setStockErrors] = useState<string[]>([])
-  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
-  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
-
-  // Form data
-  const [formData, setFormData] = useState<OrderFormData>({
-    nombre: '',
-    telefono: '',
-    deliveryType: 'retiro',
-    dni: '',
-    metodoPago: 'debito',
-  })
-
-  // Custom hooks (extracted logic)
-  const validation = useOrderValidation()
-  const dniLookup = useDniLookup()
-  const addressAuto = useAddressAutocomplete()
-
-  const currentStep = step === 'cart' ? 0 : 1
+  // Single reducer for all state management
+  const { state, dispatch } = useCartDrawerReducer()
+  const currentStep = state.step === 'cart' ? 0 : 1
 
   const handleContinuar = async () => {
     if (items.length === 0) return
-    setCheckingStock(true)
-    setStockErrors([])
+    dispatch({ type: 'SET_CHECKING_STOCK', payload: true })
+    dispatch({ type: 'SET_STOCK_ERRORS', payload: [] })
     try {
       const ids = items.map((i) => i.product.id)
       const { data } = await supabase.from('productos').select('id, nombre, stock').in('id', ids)
@@ -68,54 +47,126 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )
         }
       }
-      if (errors.length > 0) { setStockErrors(errors); return }
-      setStep('checkout')
+      if (errors.length > 0) {
+        dispatch({ type: 'SET_STOCK_ERRORS', payload: errors })
+        return
+      }
+      dispatch({ type: 'SET_STEP', payload: 'checkout' })
     } catch {
-      setStep('checkout')
+      dispatch({ type: 'SET_STEP', payload: 'checkout' })
     } finally {
-      setCheckingStock(false)
+      dispatch({ type: 'SET_CHECKING_STOCK', payload: false })
     }
   }
 
   const handleDniChange = async (value: string) => {
     const sanitized = value.replace(/\D/g, '').slice(0, 8)
-    setFormData(prev => ({ ...prev, dni: sanitized }))
+    dispatch({ type: 'UPDATE_FORM', payload: { dni: sanitized } })
 
     if (sanitized.length < 8) {
-      dniLookup.clearDni()
+      dispatch({ type: 'CLEAR_DNI' })
       removeCoupon()
       return
     }
 
-    await dniLookup.handleDniChange(sanitized)
+    dispatch({ type: 'SET_DNI_STATE', payload: 'loading' })
+    dispatch({ type: 'SET_LOADING_CUPONES', payload: true })
 
-    // Auto-fill nombre and telefono if client found
-    if (dniLookup.dniState === 'found' && dniLookup.clienteActual) {
-      setFormData(prev => ({
-        ...prev,
-        nombre: prev.nombre || dniLookup.clienteActual!.nombre,
-        telefono: prev.telefono || (dniLookup.clienteActual!.telefono?.replace(/^\+549/, '') || ''),
-      }))
-    } else {
+    try {
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('dni', sanitized)
+        .limit(1)
+
+      const found = clienteData?.[0]
+
+      if (found) {
+        const [cuponesRes, milestonesRes] = await Promise.all([
+          supabase.from('cupones').select('*').eq('activo', true),
+          supabase.from('milestones').select('*').eq('activo', true).order('millas_requeridas', { ascending: true }),
+        ])
+
+        const cuponesActuales = (cuponesRes.data || []).map((c: any) => ({
+          ...c,
+          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
+        }))
+
+        dispatch({
+          type: 'SET_CLIENT',
+          payload: {
+            client: found,
+            cupones: cuponesActuales,
+            milestones: milestonesRes.data || [],
+          },
+        })
+
+        // Auto-fill nombre and telefono
+        dispatch({
+          type: 'UPDATE_FORM',
+          payload: {
+            nombre: state.formData.nombre || found.nombre,
+            telefono: state.formData.telefono || (found.telefono?.replace(/^\+549/, '') || ''),
+          },
+        })
+      } else {
+        dispatch({ type: 'SET_DNI_STATE', payload: 'notfound' })
+        dispatch({ type: 'SET_LOADING_CUPONES', payload: false })
+        removeCoupon()
+      }
+    } catch {
+      dispatch({ type: 'SET_DNI_STATE', payload: 'idle' })
+      dispatch({ type: 'SET_LOADING_CUPONES', payload: false })
       removeCoupon()
+    }
+  }
+
+  const addressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.trim().length < 3) {
+      dispatch({ type: 'SET_ADDRESS_SUGGESTIONS', payload: [] })
+      return
+    }
+
+    dispatch({ type: 'SET_LOADING_ADDRESS', payload: true })
+
+    try {
+      const res = await fetch(
+        `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
+      )
+      const data = await res.json()
+      const items = (data.direcciones || [])
+        .map((d: { nomenclatura?: string }) => d.nomenclatura as string)
+        .filter(Boolean)
+      dispatch({ type: 'SET_ADDRESS_SUGGESTIONS', payload: items })
+    } catch {
+      dispatch({ type: 'SET_ADDRESS_SUGGESTIONS', payload: [] })
+    } finally {
+      dispatch({ type: 'SET_LOADING_ADDRESS', payload: false })
     }
   }
 
   const handleAddressChange = (value: string) => {
     handleChange('direccion', value)
-    addressAuto.handleAddressChange(value)
+    dispatch({ type: 'SET_SHOW_ADDRESS_SUGGESTIONS', payload: true })
+    if (addressTimerRef.current) clearTimeout(addressTimerRef.current)
+    addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
   }
 
   const handleAddressSelect = (suggestion: string) => {
     handleChange('direccion', suggestion)
-    addressAuto.handleAddressSelect(suggestion)
+    dispatch({ type: 'SET_SHOW_ADDRESS_SUGGESTIONS', payload: false })
+    dispatch({ type: 'SET_ADDRESS_SUGGESTIONS', payload: [] })
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
-    setFormData({
-      ...formData,
-      deliveryType: type,
-      direccion: type === 'retiro' ? '' : formData.direccion,
+    dispatch({
+      type: 'UPDATE_FORM',
+      payload: {
+        deliveryType: type,
+        direccion: type === 'retiro' ? '' : state.formData.direccion,
+      },
     })
   }
 
@@ -127,34 +178,51 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }
 
-  const handleBlur = (field: keyof typeof validation.touched) => {
-    const value = field === 'direccion' ? formData.direccion || '' : (formData as unknown as Record<string, string>)[field]
-    validation.handleBlur(field, value)
+  const validateField = (field: string, value: string): string => {
+    if (field === 'nombre') return value.trim() ? '' : 'El nombre es requerido'
+    if (field === 'telefono') return value.length >= 10 ? '' : 'Ingresá los 10 dígitos sin 0 ni 15'
+    if (field === 'direccion') return value.trim() ? '' : 'Ingresá tu dirección'
+    return ''
   }
 
-  const handleChange = (field: keyof OrderFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Only validate fields that are part of the validation schema
-    if (['nombre', 'telefono', 'direccion'].includes(field) && validation.touched[field as keyof typeof validation.touched]) {
-      validation.handleChange(field as keyof typeof validation.errors, value)
+  const handleBlur = (field: keyof typeof state.formTouched) => {
+    dispatch({ type: 'SET_TOUCHED', payload: { [field]: true } })
+    const value =
+      field === 'direccion' ? state.formData.direccion || '' : (state.formData as unknown as Record<string, string>)[field]
+    dispatch({ type: 'SET_FORM_ERRORS', payload: { ...state.formErrors, [field]: validateField(field, value) } })
+  }
+
+  const handleChange = (field: keyof typeof state.formData, value: string) => {
+    dispatch({ type: 'UPDATE_FORM', payload: { [field]: value } })
+    // Validar en tiempo real si el campo ya fue tocado
+    if (['nombre', 'telefono', 'direccion'].includes(field) && state.formTouched[field as keyof typeof state.formTouched]) {
+      dispatch({
+        type: 'SET_FORM_ERRORS',
+        payload: { ...state.formErrors, [field]: validateField(field, value) },
+      })
     }
   }
 
   const handleCheckout = () => {
-    const isValid = validation.validateForm(
-      formData.nombre,
-      formData.telefono,
-      formData.direccion || '',
-      formData.deliveryType === 'envio'
-    )
-    if (isValid) sendWhatsApp()
+    const newErrors: typeof state.formErrors = {
+      nombre: validateField('nombre', state.formData.nombre),
+      telefono: validateField('telefono', state.formData.telefono),
+    }
+    if (state.formData.deliveryType === 'envio') {
+      newErrors.direccion = validateField('direccion', state.formData.direccion || '')
+    }
+    dispatch({ type: 'SET_FORM_ERRORS', payload: newErrors })
+    dispatch({ type: 'SET_TOUCHED', payload: { nombre: true, telefono: true, direccion: true } })
+
+    const hasErrors = Object.values(newErrors).some(Boolean)
+    if (!hasErrors) sendWhatsApp()
   }
 
   const sendWhatsApp = async () => {
     const deliveryInfo =
-      formData.deliveryType === 'retiro'
+      state.formData.deliveryType === 'retiro'
         ? '🏪 Retiro en tienda'
-        : `🚚 Envío a domicilio: ${formData.direccion}`
+        : `🚚 Envío a domicilio: ${state.formData.direccion}`
 
     const productLines = items
       .map(
@@ -164,23 +232,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       .join('\n\n')
 
     const metodoPagoLabel = { efectivo: 'Efectivo', debito: 'Débito / Transferencia', credito: 'Crédito (hasta 3 pagos, con recargo)', transferencia: 'Transferencia bancaria' }
-    const efectivoDiscount = formData.metodoPago === 'efectivo' ? 0.9 : 1
+    const efectivoDiscount = state.formData.metodoPago === 'efectivo' ? 0.9 : 1
     const baseTotal = appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total
     const finalTotal = baseTotal * efectivoDiscount
     const discountLine = [
       ...(appliedCoupon ? [`🎟️ *Descuento (${appliedCoupon.descuento_porcentaje}%):* -${formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}`] : []),
-      ...(formData.metodoPago === 'efectivo' ? [`💵 *Descuento efectivo (10%):* -${formatPrice(baseTotal * 0.1)}`] : []),
+      ...(state.formData.metodoPago === 'efectivo' ? [`💵 *Descuento efectivo (10%):* -${formatPrice(baseTotal * 0.1)}`] : []),
     ]
     const totalYaguaMillas = items.reduce((total, item) => total + ((item.product.puntos || 0) * item.quantity), 0)
     const yaguamillasLine = totalYaguaMillas > 0 ? [`⭐ *YaguaMillas:* ${totalYaguaMillas}`] : []
     const message = [
       `🐾 *EL YAGUA VETERINARIA — Nuevo pedido*`,
       ``,
-      `👤 *Cliente:* ${formData.nombre}`,
-      ...(formData.dni ? [`🪪 *DNI:* ${formData.dni}`] : []),
-      `📱 *Teléfono:* +549${formData.telefono}`,
+      `👤 *Cliente:* ${state.formData.nombre}`,
+      ...(state.formData.dni ? [`🪪 *DNI:* ${state.formData.dni}`] : []),
+      `📱 *Teléfono:* +549${state.formData.telefono}`,
       `📦 *Entrega:* ${deliveryInfo}`,
-      `💳 *Pago:* ${metodoPagoLabel[formData.metodoPago || 'efectivo']}`,
+      `💳 *Pago:* ${metodoPagoLabel[state.formData.metodoPago || 'efectivo']}`,
       ``,
       `━━━━━━━━━━━━━━━`,
       `🛒 *PRODUCTOS*`,
@@ -200,43 +268,45 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     window.open(whatsappUrl, '_blank')
 
     // Mostrar confirmación de YaguaMillas
-    if (totalYaguaMillas > 0 && formData.dni) {
-      setYaguamillasConfirmData({
-        cantidad: totalYaguaMillas,
-        nombre: formData.nombre,
-        dni: formData.dni,
+    if (totalYaguaMillas > 0 && state.formData.dni) {
+      dispatch({
+        type: 'SHOW_YAGUAMILLAS_CONFIRM',
+        payload: {
+          cantidad: totalYaguaMillas,
+          nombre: state.formData.nombre,
+          dni: state.formData.dni,
+        },
       })
-      setShowYaguamillasConfirm(true)
     }
 
     // Registrar pedido y cliente en Supabase en segundo plano
     ;(async () => {
       try {
-        const finalTotal = (appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (formData.metodoPago === 'efectivo' ? 0.9 : 1)
+        const finalTotal = (appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (state.formData.metodoPago === 'efectivo' ? 0.9 : 1)
         const { data } = await supabase.from('pedidos').insert([{
-          nombre: formData.nombre,
-          telefono: `+549${formData.telefono}`,
-          tipo_entrega: formData.deliveryType,
-          direccion: formData.direccion || null,
+          nombre: state.formData.nombre,
+          telefono: `+549${state.formData.telefono}`,
+          tipo_entrega: state.formData.deliveryType,
+          direccion: state.formData.direccion || null,
           productos: items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, cantidad: i.quantity, precio: i.product.precio })),
           total: finalTotal,
           cupón_id: appliedCoupon?.id || null,
-          cliente_dni: formData.dni || null,
-          metodo_pago: formData.metodoPago || 'efectivo',
+          cliente_dni: state.formData.dni || null,
+          metodo_pago: state.formData.metodoPago || 'efectivo',
         }]).select()
 
         if (data?.[0]?.id) {
           purchaseEvent(finalTotal, 'ARS', data[0].id)
 
           // Registrar puntos si hay DNI
-          if (formData.dni) {
+          if (state.formData.dni) {
             try {
               await fetch('/api/ordenes/registrar-puntos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   pedido_id: data[0].id,
-                  cliente_dni: formData.dni,
+                  cliente_dni: state.formData.dni,
                   productos: items.map((i) => ({ id: i.product.id, cantidad: i.quantity, puntos: i.product.puntos || 0 })),
                 }),
               })
@@ -244,14 +314,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           }
 
           // Marcar cupón como usado y descontar YaguaMillas
-          if (appliedCoupon?.id && formData.dni) {
+          if (appliedCoupon?.id && state.formData.dni) {
             try {
               await fetch('/api/cupones/usar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   cupon_id: appliedCoupon.id,
-                  cliente_dni: formData.dni,
+                  cliente_dni: state.formData.dni,
                   milestone_millas: (appliedCoupon as any).milestone_millas || 0,
                 }),
               })
@@ -259,11 +329,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           }
         }
 
-        if (formData.dni) {
+        if (state.formData.dni) {
           await supabase.from('clientes').upsert({
-            dni: formData.dni,
-            nombre: formData.nombre,
-            telefono: `+549${formData.telefono}`,
+            dni: state.formData.dni,
+            nombre: state.formData.nombre,
+            telefono: `+549${state.formData.telefono}`,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'dni' })
         }
@@ -271,11 +341,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     })()
     clearCart()
     onClose()
-    setStep('cart')
-    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
-    validation.clearErrors()
-    dniLookup.clearDni()
-    addressAuto.clearSuggestions()
+    dispatch({ type: 'RESET' })
   }
 
   if (!isOpen) return null
@@ -297,7 +363,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {/* Header */}
         <div className="sticky top-0 bg-primary text-white p-4 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold">
-            {step === 'cart' ? 'Mi Carrito' : 'Datos del pedido'}
+            {state.step === 'cart' ? 'Mi Carrito' : 'Datos del pedido'}
           </h2>
           <button onClick={onClose} className="hover:bg-primary-dark p-1 rounded" aria-label="Cerrar carrito">
             <X size={24} />
@@ -343,7 +409,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="flex-1 p-4 overflow-y-auto">
 
           {/* ── STEP 1: Carrito ── */}
-          {step === 'cart' && (
+          {state.step === 'cart' && (
             <>
               {items.length === 0 ? (
                 <div className="text-center py-12">
@@ -470,7 +536,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
 
           {/* ── STEP 2: Formulario ── */}
-          {step === 'checkout' && (
+          {state.step === 'checkout' && (
             <div className="space-y-5 pb-2">
 
               {/* ── Entrega ── */}
@@ -478,21 +544,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿Cómo recibís tu pedido?</p>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { value: 'retiro', label: 'Retiro en tienda',  sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
-                    { value: 'envio',  label: 'Envío a domicilio', sub: 'Gratis',                  icon: Truck  },
+                    { value: 'retiro' as const, label: 'Retiro en tienda',  sub: 'Bv Lehmann 609 · Gratis', icon: MapPin },
+                    { value: 'envio' as const,  label: 'Envío a domicilio', sub: 'Gratis',                  icon: Truck  },
                   ] as const).map(({ value, label, sub, icon: Icon }) => (
                     <label
                       key={value}
                       className={`flex flex-col items-center gap-2 py-4 px-2 border-2 rounded-2xl cursor-pointer transition text-center ${
-                        formData.deliveryType === value
+                        state.formData.deliveryType === value
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                      <input type="radio" className="sr-only" checked={formData.deliveryType === value} onChange={() => handleDeliveryChange(value)} />
-                      <Icon size={22} className={formData.deliveryType === value ? 'text-primary' : 'text-gray-300'} />
+                      <input type="radio" className="sr-only" checked={state.formData.deliveryType === value} onChange={() => handleDeliveryChange(value as DeliveryType)} />
+                      <Icon size={22} className={state.formData.deliveryType === value ? 'text-primary' : 'text-gray-300'} />
                       <div>
-                        <p className={`font-bold text-sm leading-tight ${formData.deliveryType === value ? 'text-primary' : 'text-gray-700'}`}>{label}</p>
+                        <p className={`font-bold text-sm leading-tight ${state.formData.deliveryType === value ? 'text-primary' : 'text-gray-700'}`}>{label}</p>
                         <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">{sub}</p>
                       </div>
                     </label>
@@ -501,7 +567,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
 
               {/* ── Dirección (solo si envío) ── */}
-              {formData.deliveryType === 'envio' && (
+              {state.formData.deliveryType === 'envio' && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
                     Dirección de entrega <span className="text-red-500">*</span>
@@ -509,22 +575,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="relative">
                     <input
                       type="text"
-                      value={formData.direccion || ''}
+                      value={state.formData.direccion || ''}
                       onChange={(e) => handleAddressChange(e.target.value)}
-                      onBlur={() => { handleBlur('direccion'); setTimeout(() => addressAuto.setShowAddressSuggestions(false), 150) }}
-                      onFocus={() => addressAuto.addressSuggestions.length > 0 && addressAuto.setShowAddressSuggestions(true)}
-                      className={`${inputCls(!!validation.errors.direccion && validation.touched.direccion)} pr-8`}
+                      onBlur={() => { handleBlur('direccion'); setTimeout(() => dispatch({ type: 'SET_SHOW_ADDRESS_SUGGESTIONS', payload: false }), 150) }}
+                      onFocus={() => state.addressSuggestions.length > 0 && dispatch({ type: 'SET_SHOW_ADDRESS_SUGGESTIONS', payload: true })}
+                      className={`${inputCls(!!state.formErrors.direccion && state.formTouched.direccion)} pr-8`}
                       placeholder="Calle y número..."
                       autoComplete="off"
                     />
-                    {addressAuto.loadingAddress && (
+                    {state.loadingAddress && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Loader2 size={15} className="text-gray-400 animate-spin" />
                       </div>
                     )}
-                    {addressAuto.showAddressSuggestions && addressAuto.addressSuggestions.length > 0 && (
+                    {state.showAddressSuggestions && state.addressSuggestions.length > 0 && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                        {addressAuto.addressSuggestions.map((s, i) => (
+                        {state.addressSuggestions.map((s, i) => (
                           <button
                             key={i}
                             onMouseDown={(e) => { e.preventDefault(); handleAddressSelect(s) }}
@@ -537,8 +603,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     )}
                   </div>
-                  {validation.errors.direccion && validation.touched.direccion && (
-                    <p className="text-red-500 text-xs mt-1">{validation.errors.direccion}</p>
+                  {state.formErrors.direccion && state.formTouched.direccion && (
+                    <p className="text-red-500 text-xs mt-1">{state.formErrors.direccion}</p>
                   )}
                 </div>
               )}
@@ -550,14 +616,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </label>
                 <input
                   type="text"
-                  value={formData.nombre}
+                  value={state.formData.nombre}
                   onChange={(e) => handleChange('nombre', e.target.value)}
                   onBlur={() => handleBlur('nombre')}
-                  className={inputCls(!!validation.errors.nombre && validation.touched.nombre)}
+                  className={inputCls(!!state.formErrors.nombre && state.formTouched.nombre)}
                   placeholder="Tu nombre y apellido"
                 />
-                {validation.errors.nombre && validation.touched.nombre && (
-                  <p className="text-red-500 text-xs mt-1">{validation.errors.nombre}</p>
+                {state.formErrors.nombre && state.formTouched.nombre && (
+                  <p className="text-red-500 text-xs mt-1">{state.formErrors.nombre}</p>
                 )}
               </div>
 
@@ -567,14 +633,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   WhatsApp <span className="text-red-500">*</span>
                 </label>
                 <div className={`flex border rounded-lg overflow-hidden transition focus-within:ring-2 ${
-                  validation.errors.telefono && validation.touched.telefono
+                  state.formErrors.telefono && state.formTouched.telefono
                     ? 'border-red-400 focus-within:ring-red-200'
                     : 'border-gray-300 focus-within:ring-primary/20 focus-within:border-primary'
                 }`}>
                   <span className="px-3 py-2 bg-gray-100 text-gray-500 font-medium border-r border-gray-300 shrink-0 select-none text-sm">+549</span>
                   <input
                     type="tel"
-                    value={formData.telefono}
+                    value={state.formData.telefono}
                     onChange={(e) => handleChange('telefono', e.target.value.replace(/\D/g, ''))}
                     onBlur={() => handleBlur('telefono')}
                     className="flex-1 px-3 py-2 outline-none text-gray-900 bg-white placeholder-gray-400 text-sm"
@@ -582,8 +648,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     maxLength={12}
                   />
                 </div>
-                {validation.errors.telefono && validation.touched.telefono ? (
-                  <p className="text-red-500 text-xs mt-1">{validation.errors.telefono}</p>
+                {state.formErrors.telefono && state.formTouched.telefono ? (
+                  <p className="text-red-500 text-xs mt-1">{state.formErrors.telefono}</p>
                 ) : (
                   <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15</p>
                 )}
@@ -592,33 +658,33 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               {/* ── Método de pago ── */}
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                  {formData.deliveryType === 'retiro' ? '¿Cómo pagás en tienda?' : '¿Cómo pagás el envío?'}
+                  {state.formData.deliveryType === 'retiro' ? '¿Cómo pagás en tienda?' : '¿Cómo pagás el envío?'}
                 </p>
                 <div className="space-y-2">
                   {([
-                    { value: 'debito',   label: 'Débito / Transferencia', desc: 'Precio de lista' },
-                    { value: 'efectivo', label: 'Efectivo',               desc: '-10% descuento' },
-                    { value: 'credito',  label: 'Tarjeta Crédito',        desc: 'Hasta 3 pagos (con recargo)' },
+                    { value: 'debito' as const,   label: 'Débito / Transferencia', desc: 'Precio de lista' },
+                    { value: 'efectivo' as const, label: 'Efectivo',               desc: '-10% descuento' },
+                    { value: 'credito' as const,  label: 'Tarjeta Crédito',        desc: 'Hasta 3 pagos (con recargo)' },
                   ]).map(opt => (
                     <label
                       key={opt.value}
                       className={`flex items-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer transition ${
-                        formData.metodoPago === opt.value
+                        state.formData.metodoPago === opt.value
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-100 hover:border-gray-300 bg-white'
                       }`}
                     >
                       <input
                         type="radio"
-                        checked={formData.metodoPago === opt.value}
-                        onChange={() => setFormData(prev => ({ ...prev, metodoPago: opt.value as typeof formData.metodoPago }))}
+                        checked={state.formData.metodoPago === opt.value}
+                        onChange={() => dispatch({ type: 'UPDATE_FORM', payload: { metodoPago: opt.value } })}
                         className="w-4 h-4 accent-primary shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
                         <p className="text-xs text-gray-400">{opt.desc}</p>
                       </div>
-                      {formData.metodoPago === opt.value && (
+                      {state.formData.metodoPago === opt.value && (
                         <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
                           <Check size={11} className="text-white" />
                         </div>
@@ -636,24 +702,24 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="relative">
                   <input
                     type="text"
-                    value={formData.dni || ''}
+                    value={state.formData.dni || ''}
                     onChange={(e) => handleDniChange(e.target.value)}
-                    className={`${inputCls(false)} pr-9 ${dniLookup.dniState === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
+                    className={`${inputCls(false)} pr-9 ${state.dniState === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
                     placeholder="12345678"
                     maxLength={8}
                   />
-                  {dniLookup.dniState === 'loading' && (
+                  {state.dniState === 'loading' && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       <Loader2 size={15} className="text-gray-400 animate-spin" />
                     </div>
                   )}
-                  {dniLookup.dniState === 'found' && (
+                  {state.dniState === 'found' && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       <Check size={15} className="text-green-500" />
                     </div>
                   )}
                 </div>
-                {dniLookup.dniState === 'found' ? (
+                {state.dniState === 'found' ? (
                   <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Datos cargados automáticamente.</p>
                 ) : (
                   <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
@@ -661,7 +727,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
 
               {/* ── YaguaMillas y Cupones ── */}
-              {dniLookup.dniState === 'found' && (
+              {state.dniState === 'found' && (
                 <div className="space-y-4">
                   {/* Millas actuales */}
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -669,19 +735,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <span className="text-xl">⭐</span>
                       <p className="text-sm font-semibold text-amber-900">Mis YaguaMillas</p>
                     </div>
-                    <p className="text-2xl font-bold text-amber-600">{(dniLookup.clienteActual?.puntos_acumulados) || 0}</p>
+                    <p className="text-2xl font-bold text-amber-600">{(state.clienteActual?.puntos_acumulados) || 0}</p>
                     <p className="text-xs text-amber-700 mt-1">YaguaMillas acumuladas</p>
                   </div>
 
                   {/* Cupones disponibles */}
-                  {dniLookup.cupones.length > 0 && (
+                  {state.cupones.length > 0 && (
                     <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Tag size={18} className="text-green-600" />
-                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({dniLookup.cupones.length})</p>
+                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({state.cupones.length})</p>
                       </div>
                       <div className="space-y-2">
-                        {dniLookup.cupones.map((cupon) => {
+                        {state.cupones.map((cupon) => {
                           const milestoneMap: { [key: number]: number } = { 10: 25, 20: 50, 30: 75 }
                           const milestone_millas = milestoneMap[cupon.descuento_porcentaje] || 0
                           return (
@@ -715,7 +781,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   )}
 
-                  {dniLookup.loadingCupones && (
+                  {state.loadingCupones && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
                       <p className="text-sm text-yellow-800">⏳ Generando cupones disponibles...</p>
                     </div>
@@ -725,9 +791,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               )}
 
               {/* ── Puntos de esta compra ── */}
-              {items.length > 0 && !dniLookup.clienteActual && (
+              {items.length > 0 && !state.clienteActual && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                  <PuntosInfo items={items} clienteActual={dniLookup.clienteActual} />
+                  <PuntosInfo items={items} clienteActual={state.clienteActual} />
                 </div>
               )}
 
@@ -741,7 +807,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                 ))}
                 <div className="border-t border-gray-200 pt-3 mt-1 space-y-1">
-                  {(appliedCoupon || formData.metodoPago === 'efectivo') && (
+                  {(appliedCoupon || state.formData.metodoPago === 'efectivo') && (
                     <div className="flex justify-between text-sm text-gray-500">
                       <span>Subtotal</span>
                       <span>{formatPrice(total)}</span>
@@ -753,7 +819,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <span>-{formatPrice(total * appliedCoupon.descuento_porcentaje / 100)}</span>
                     </div>
                   )}
-                  {formData.metodoPago === 'efectivo' && (
+                  {state.formData.metodoPago === 'efectivo' && (
                     <div className="flex justify-between text-sm text-rose-600 font-semibold">
                       <span>Descuento efectivo (10%)</span>
                       <span>-{formatPrice((appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * 0.1)}</span>
@@ -762,7 +828,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-bold text-gray-900">Total</span>
                     <span className="text-primary font-bold text-xl">
-                      {formatPrice((appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (formData.metodoPago === 'efectivo' ? 0.9 : 1))}
+                      {formatPrice((appliedCoupon ? total * (1 - appliedCoupon.descuento_porcentaje / 100) : total) * (state.formData.metodoPago === 'efectivo' ? 0.9 : 1))}
                     </span>
                   </div>
                 </div>
@@ -774,7 +840,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2 shrink-0">
-          {step === 'cart' && items.length > 0 && (
+          {state.step === 'cart' && items.length > 0 && (
             <>
               {appliedCoupon && (
                 <div className="space-y-2 text-sm">
@@ -797,29 +863,29 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   }
                 </span>
               </div>
-              {stockErrors.length > 0 && (
+              {state.stockErrors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-1">
-                  {stockErrors.map((e, i) => (
+                  {state.stockErrors.map((e, i) => (
                     <p key={i} className="text-xs text-red-600">{e}</p>
                   ))}
                 </div>
               )}
               <button
                 onClick={handleContinuar}
-                disabled={checkingStock}
+                disabled={state.checkingStock}
                 className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                {checkingStock ? (
+                {state.checkingStock ? (
                   <><Loader2 size={18} className="animate-spin" /> Verificando stock...</>
                 ) : 'Continuar →'}
               </button>
             </>
           )}
 
-          {step === 'checkout' && (
+          {state.step === 'checkout' && (
             <>
               <button
-                onClick={() => setStep('cart')}
+                onClick={() => dispatch({ type: 'SET_STEP', payload: 'cart' })}
                 className="w-full border-2 border-gray-200 text-gray-600 font-semibold py-2 rounded-xl hover:bg-gray-50 transition"
               >
                 ← Volver al carrito
@@ -840,7 +906,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       </div>
 
       {/* Modal Confirmación YaguaMillas */}
-      {showYaguamillasConfirm && (
+      {state.showYaguamillasConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
             {/* Header */}
@@ -858,7 +924,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   YaguaMillas acumulados
                 </p>
                 <p className="text-5xl font-bold text-amber-600">
-                  +{yaguamillasConfirmData.cantidad}
+                  +{state.yaguamillasConfirmData.cantidad}
                 </p>
               </div>
 
@@ -866,11 +932,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                   <span className="text-gray-600">Cliente:</span>
-                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.nombre}</span>
+                  <span className="font-semibold text-gray-900">{state.yaguamillasConfirmData.nombre}</span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                   <span className="text-gray-600">DNI:</span>
-                  <span className="font-semibold text-gray-900">{yaguamillasConfirmData.dni}</span>
+                  <span className="font-semibold text-gray-900">{state.yaguamillasConfirmData.dni}</span>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-800 text-xs">
                   ℹ️ Estos YaguaMillas se acumularán cuando confirmes tu compra por WhatsApp
@@ -887,12 +953,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </a>
                 <button
                   onClick={() => {
-                    setShowYaguamillasConfirm(false)
+                    dispatch({ type: 'HIDE_YAGUAMILLAS_CONFIRM' })
                     onClose()
-                    setStep('cart')
-                    setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
-                    validation.clearErrors()
-                    dniLookup.clearDni()
+                    dispatch({ type: 'RESET' })
                   }}
                   className="w-full border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-50 transition text-sm"
                 >
