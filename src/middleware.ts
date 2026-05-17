@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
-  // Proteger rutas sensibles de debug/setup
+export function middleware(request: NextRequest) {
+  // Proteger rutas sensibles de debug/setup - solo redirigir estas rutas específicas
   const { pathname } = request.nextUrl
-  const debugRoutes = ['/admin/setup-db', '/admin/debug-dni', '/admin/fix-rls', '/admin/fix-consejos']
 
-  if (debugRoutes.some(route => pathname.startsWith(route))) {
-    // Redirigir a login - estas rutas no deben ser accesibles desde el navegador
+  // Solo redirigir las rutas de debug/setup que no deben ser accesibles
+  if (pathname === '/admin/setup-db' ||
+      pathname === '/admin/debug-dni' ||
+      pathname === '/admin/fix-rls' ||
+      pathname === '/admin/fix-consejos') {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 
