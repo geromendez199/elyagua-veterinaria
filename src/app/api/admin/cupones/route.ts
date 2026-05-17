@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -98,3 +99,9 @@ export async function GET(request: Request) {
     return errorResponse('Error interno', 500)
   }
 }
+
+// 5 requests per 15 minutes for POST (creating cupones)
+export const POST = withRateLimit(postHandler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'admin-cupones-post')
+
+// 20 requests per 15 minutes for GET
+export const GET = withRateLimit(getHandler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'admin-cupones-get')

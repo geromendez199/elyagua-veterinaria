@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST(request: Request) {
+async function handler(request: Request) {
   try {
     const { pedido_id, cliente_dni, productos } = await request.json()
 
@@ -38,3 +39,6 @@ export async function POST(request: Request) {
     return errorResponse('Error interno del servidor', 500)
   }
 }
+
+// 20 requests per 15 minutes
+export const POST = withRateLimit(handler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'ordenes-registrar')

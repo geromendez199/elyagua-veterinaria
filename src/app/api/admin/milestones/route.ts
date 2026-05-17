@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function GET() {
+async function getHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -23,7 +24,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+async function putHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -89,7 +90,7 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+async function deleteHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
@@ -116,3 +117,9 @@ export async function DELETE(request: Request) {
     return errorResponse('Error interno del servidor', 500)
   }
 }
+
+// Rate limiting
+export const GET = withRateLimit(getHandler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'admin-milestones-get')
+export const POST = withRateLimit(postHandler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'admin-milestones-post')
+export const PUT = withRateLimit(putHandler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'admin-milestones-put')
+export const DELETE = withRateLimit(deleteHandler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'admin-milestones-delete')

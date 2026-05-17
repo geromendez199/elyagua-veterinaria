@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function GET(request: Request) {
+async function handler(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const dni = searchParams.get('dni')
@@ -35,3 +36,6 @@ export async function GET(request: Request) {
     return errorResponse('Error interno del servidor', 500)
   }
 }
+
+// 30 requests per 15 minutes (higher for GET)
+export const GET = withRateLimit(handler, { limit: 30, windowMs: 15 * 60 * 1000 }, 'clientes-puntos')
