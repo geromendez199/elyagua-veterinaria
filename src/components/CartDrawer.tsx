@@ -359,15 +359,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             } catch {}
           }
 
-          // Marcar cupón como usado
-          if (appliedCoupon?.id) {
+          // Marcar cupón como usado y descontar YaguaMillas
+          if (appliedCoupon?.id && formData.dni) {
             try {
-              await fetch('/api/admin/cupones/usar', {
+              await fetch('/api/cupones/usar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   cupon_id: appliedCoupon.id,
-                  pedido_id: data[0].id,
+                  cliente_dni: formData.dni,
+                  milestone_millas: (appliedCoupon as any).milestone_millas || 0,
                 }),
               })
             } catch {}
@@ -797,10 +798,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <p className="text-sm font-semibold text-green-900">Cupones disponibles ({clienteCupones.length})</p>
                       </div>
                       <div className="space-y-2">
-                        {clienteCupones.map((cupon) => (
+                        {clienteCupones.map((cupon) => {
+                          const milestoneMap: { [key: number]: number } = { 10: 25, 20: 50, 30: 75 }
+                          const milestone_millas = milestoneMap[cupon.descuento_porcentaje] || 0
+                          return (
                           <button
                             key={cupon.id}
-                            onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje)}
+                            onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje, milestone_millas)}
                             disabled={!!appliedCoupon && appliedCoupon.id !== cupon.id}
                             className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between cursor-pointer ${
                               appliedCoupon?.id === cupon.id
@@ -811,7 +815,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <span>🎟️ {cupon.descuento_porcentaje}% Descuento</span>
                             {appliedCoupon?.id === cupon.id && <Check size={16} />}
                           </button>
-                        ))}
+                          )
+                        })}
                       </div>
                       {appliedCoupon && (
                         <div className="mt-3 p-2 bg-white border-2 border-green-300 rounded-lg flex items-center justify-between text-xs">
@@ -833,48 +838,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   )}
 
-                  {/* Hitos de YaguaMillas */}
-                  {milestones.length > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3">Tus hitos YaguaMillas</p>
-                      <div className="space-y-2">
-                        {milestones.map((milestone) => {
-                          const hasReached = (clienteActual?.puntos_acumulados || 0) >= milestone.millas_requeridas
-                          const hasCoupon = clienteCupones.some(c => c.milestone_id === milestone.id)
-                          return (
-                            <div
-                              key={milestone.id}
-                              className={`p-3 rounded-lg text-sm transition ${
-                                hasReached
-                                  ? 'bg-blue-100 border border-blue-300'
-                                  : 'bg-white border border-blue-200'
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
-                                  <p className={`font-semibold ${hasReached ? 'text-blue-900' : 'text-blue-700'}`}>
-                                    {milestone.millas_requeridas} millas
-                                  </p>
-                                  <p className={`text-xs ${hasReached ? 'text-blue-700' : 'text-blue-600'}`}>
-                                    {milestone.descuento_porcentaje}% descuento
-                                  </p>
-                                </div>
-                                <span className={`text-xs font-bold px-2 py-1 rounded ${
-                                  hasReached && hasCoupon
-                                    ? 'bg-green-200 text-green-800'
-                                    : hasReached
-                                    ? 'bg-blue-200 text-blue-800'
-                                    : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {hasReached && hasCoupon ? '✓ Obtenido' : hasReached ? 'Desbloqueado' : `Falta ${milestone.millas_requeridas - (clienteActual?.puntos_acumulados || 0)}`}
-                                </span>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
