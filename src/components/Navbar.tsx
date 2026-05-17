@@ -47,13 +47,15 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
-              <LazyImage
-                src="/logo-blanco.png"
-                alt="El Yagua Veterinaria"
-                width={180}
-                height={45}
-                className="h-10 w-auto"
-              />
+              <div className="navbar-logo h-10 flex items-center">
+                <LazyImage
+                  src="/logo-blanco.png"
+                  alt="El Yagua Veterinaria"
+                  width={180}
+                  height={45}
+                  className="h-full w-auto"
+                />
+              </div>
             </Link>
 
             {/* Desktop links */}
