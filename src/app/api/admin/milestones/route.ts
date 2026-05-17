@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { createMilestoneSchema, updateMilestoneSchema } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function getHandler(request: Request) {
   try {
@@ -29,13 +31,12 @@ async function postHandler(request: Request) {
     const { user, error } = await requireAuth()
     if (error) return error
 
-    const { millas_requeridas, descuento_porcentaje, activo } = await request.json()
+    const { data, error: validationError } = await validateRequest(request, createMilestoneSchema)
+    if (validationError) return validationError
 
-    if (!millas_requeridas || !descuento_porcentaje) {
-      return errorResponse('Faltan datos requeridos')
-    }
+    const { millas_requeridas, descuento_porcentaje, activo } = data as any
 
-    const { data, error: dbError } = await supabase
+    const { data: dbData, error: dbError } = await supabase
       .from('milestones')
       .insert([
         {
@@ -50,7 +51,7 @@ async function postHandler(request: Request) {
       return errorResponse(dbError.message, 500)
     }
 
-    return successResponse(data?.[0])
+    return successResponse(dbData?.[0])
   } catch (error) {
     console.error('POST /api/admin/milestones error:', error)
     return errorResponse('Error interno del servidor', 500)
@@ -62,13 +63,12 @@ async function putHandler(request: Request) {
     const { user, error } = await requireAuth()
     if (error) return error
 
-    const { id, millas_requeridas, descuento_porcentaje, activo } = await request.json()
+    const { data, error: validationError } = await validateRequest(request, updateMilestoneSchema)
+    if (validationError) return validationError
 
-    if (!id) {
-      return errorResponse('ID requerido')
-    }
+    const { id, millas_requeridas, descuento_porcentaje, activo } = data as any
 
-    const { data, error: dbError } = await supabase
+    const { data: dbData, error: dbError } = await supabase
       .from('milestones')
       .update({
         millas_requeridas,
@@ -83,7 +83,7 @@ async function putHandler(request: Request) {
       return errorResponse(dbError.message, 500)
     }
 
-    return successResponse(data?.[0])
+    return successResponse(dbData?.[0])
   } catch (error) {
     console.error('PUT /api/admin/milestones error:', error)
     return errorResponse('Error interno del servidor', 500)

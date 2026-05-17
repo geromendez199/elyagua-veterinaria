@@ -2,17 +2,18 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { createCouponSchema } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function postHandler(request: Request) {
   try {
     const { user, error } = await requireAuth()
     if (error) return error
 
-    const { cliente_id, cliente_puntos } = await request.json()
+    const { data, error: validationError } = await validateRequest(request, createCouponSchema)
+    if (validationError) return validationError
 
-    if (!cliente_id || cliente_puntos === undefined) {
-      return errorResponse('Datos incompletos')
-    }
+    const { cliente_id, cliente_puntos } = data as any
 
     // Calcular cuántos cupones puede generar (100 YaguaMillas = 1 cupón de 10%)
     const cuponesPosibles = Math.floor(cliente_puntos / 100)

@@ -1,14 +1,15 @@
 import { supabase } from '@/lib/supabase'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { useCouponSchema } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
-    const { cupon_id, cliente_dni, milestone_millas } = await request.json()
+    const { data, error } = await validateRequest(request, useCouponSchema)
+    if (error) return error
 
-    if (!cupon_id || !cliente_dni) {
-      return errorResponse('Datos incompletos')
-    }
+    const { cupon_id, cliente_dni, milestone_millas } = data as any
 
     const { error: updateCuponError } = await supabase
       .from('cupones')
