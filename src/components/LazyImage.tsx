@@ -11,6 +11,7 @@ interface LazyImageProps {
   className?: string
   objectFit?: 'cover' | 'contain' | 'fill'
   priority?: boolean
+  showSkeleton?: boolean
 }
 
 export default function LazyImage({
@@ -21,11 +22,12 @@ export default function LazyImage({
   className = '',
   objectFit = 'cover',
   priority = false,
+  showSkeleton = true,
 }: LazyImageProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   return (
-    <div className={`relative overflow-hidden bg-gray-200 ${className}`}>
+    <div className={`relative overflow-hidden ${showSkeleton ? 'bg-gray-200' : ''} ${className}`}>
       <Image
         src={src}
         alt={alt}
@@ -41,7 +43,7 @@ export default function LazyImage({
         priority={priority}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
-      {isLoading && (
+      {isLoading && showSkeleton && (
         <div className="absolute inset-0 animate-pulse bg-gray-300" />
       )}
     </div>

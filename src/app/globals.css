@@ -28,15 +28,7 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Remove white background from navbar logo */
-.navbar-logo {
-  position: relative;
-}
-
-.navbar-logo > div {
-  background: transparent !important;
-}
-
+/* Navbar logo styling */
 .navbar-logo img {
-  mix-blend-mode: screen;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
