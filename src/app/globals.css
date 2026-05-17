@@ -28,7 +28,8 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Navbar logo styling */
-.navbar-logo img {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+/* Navbar logo styling - white logo on teal background */
+.navbar-logo-img {
+  mix-blend-mode: lighten;
+  filter: brightness(1.1) contrast(1.15);
 }

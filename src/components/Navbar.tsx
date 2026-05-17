@@ -47,9 +47,9 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
               <img
-                src="/logo-color.png"
+                src="/logo-blanco.png"
                 alt="El Yagua Veterinaria"
-                className="h-10 w-auto"
+                className="h-10 w-auto navbar-logo-img"
                 loading="eager"
               />
             </Link>
