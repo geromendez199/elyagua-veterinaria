@@ -138,39 +138,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         const milestones = milestonesRes.data || []
 
         // Generar cupones automáticos para milestones alcanzados pero sin cupón
-        try {
-          for (const milestone of milestones) {
-            const milestonesAlcanzado = (found.puntos_acumulados || 0) >= milestone.millas_requeridas
-            const tieneCupon = cuponesActuales.some(c => c.milestone_id === milestone.id && !c.usado)
+        // Los cupones de milestones se generan automáticamente en Supabase
+        // cuando el cliente alcanza un milestone (via RPC o trigger)
+        // Por ahora, filtramos los cupones disponibles sin cliente_id
 
-            if (milestonesAlcanzado && !tieneCupon) {
-              // Generar cupón automáticamente
-              const { error: insertErr } = await supabase.from('cupones').insert([
-                {
-                  cliente_id: found.id,
-                  codigo: `AUTO-${milestone.millas_requeridas}-${found.id.substring(0, 8)}`,
-                  porcentaje_descuento: milestone.descuento_porcentaje,
-                  activo: true,
-                  usado: false,
-                  milestone_id: milestone.id,
-                  auto_generado: true,
-                }
-              ])
-              if (insertErr) {
-                console.error('Error insertando cupón:', insertErr)
-              }
-            }
-          }
-        } catch (e) {
-          // Error al generar, continuar de todas formas
-        }
-
-        // Recargar cupones después de generar los que faltaban
+        // Recargar cupones disponibles (activos)
         const { data: cuponesActualizados } = await supabase
           .from('cupones')
           .select('*')
-          .eq('usado', false)
-          .or(`cliente_id.eq.${found.id},cliente_id.is.null`)
+          .eq('activo', true)
 
         // Mapear porcentaje_descuento a descuento_porcentaje para consistencia
         const cuponesnormalizados = (cuponesActualizados || cuponesActuales).map((c: any) => ({
