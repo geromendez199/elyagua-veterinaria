@@ -30,7 +30,7 @@ html, body {
 
 /* Navbar logo styling */
 .navbar-logo img {
-  mix-blend-mode: screen;
-  filter: brightness(1.05);
+  mix-blend-mode: lighten;
+  filter: contrast(1.1) brightness(1.2);
   display: block;
 }
