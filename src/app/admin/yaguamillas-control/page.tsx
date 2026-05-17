@@ -332,7 +332,7 @@ export default function YaguamillasControlPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por nombre o DNI..."
-                className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary"
+                className="w-full border-2 border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600"
               />
             </div>
 
@@ -388,14 +388,14 @@ export default function YaguamillasControlPage() {
                           value={adjustAmount}
                           onChange={(e) => setAdjustAmount(e.target.value)}
                           placeholder="Cantidad (+ o -)"
-                          className="border-2 border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+                          className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600"
                         />
                         <input
                           type="text"
                           value={adjustReason}
                           onChange={(e) => setAdjustReason(e.target.value)}
                           placeholder="Motivo"
-                          className="border-2 border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+                          className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600"
                         />
                         <div className="flex gap-2">
                           <button
@@ -465,7 +465,7 @@ export default function YaguamillasControlPage() {
                     <select
                       value={cuponForm.cliente_id}
                       onChange={(e) => setCuponForm({ ...cuponForm, cliente_id: e.target.value })}
-                      className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                      className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 text-gray-900"
                     >
                       <option value="">Seleccionar cliente</option>
                       {clientes.map((c) => (
@@ -480,7 +480,7 @@ export default function YaguamillasControlPage() {
                     value={cuponForm.codigo}
                     onChange={(e) => setCuponForm({ ...cuponForm, codigo: e.target.value })}
                     placeholder="Código del cupón (ej: YAGUA10)"
-                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                    className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
                   />
                   <input
                     type="number"
@@ -489,7 +489,7 @@ export default function YaguamillasControlPage() {
                     value={cuponForm.descuento}
                     onChange={(e) => setCuponForm({ ...cuponForm, descuento: e.target.value })}
                     placeholder="Descuento %"
-                    className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                    className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
                   />
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -520,7 +520,7 @@ export default function YaguamillasControlPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por cliente..."
-                className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary"
+                className="w-full border-2 border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600"
               />
             </div>
 
@@ -638,7 +638,7 @@ export default function YaguamillasControlPage() {
                         value={milestoneForm.millas}
                         onChange={(e) => setMilestoneForm({ ...milestoneForm, millas: e.target.value })}
                         placeholder="YaguaMillas requeridas"
-                        className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                        className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
                       />
                       <input
                         type="number"
@@ -647,7 +647,7 @@ export default function YaguamillasControlPage() {
                         value={milestoneForm.descuento}
                         onChange={(e) => setMilestoneForm({ ...milestoneForm, descuento: e.target.value })}
                         placeholder="Descuento %"
-                        className="border-2 border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary"
+                        className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
                       />
                     </div>
                     <div className="flex items-center gap-2 mb-4">
