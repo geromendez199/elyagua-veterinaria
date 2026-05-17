@@ -2,6 +2,14 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { cliente_id, nombre, especie, raza, edad, color, peso, observaciones } = body
 
@@ -44,6 +52,14 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const mascotaId = searchParams.get('id')
 

@@ -2,6 +2,14 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { cliente_id, cliente_puntos } = await request.json()
 
     if (!cliente_id || cliente_puntos === undefined) {
@@ -76,6 +84,14 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const cliente_id = searchParams.get('cliente_id')
 

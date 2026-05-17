@@ -11,6 +11,22 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate that pedido exists if provided
+    if (pedido_id) {
+      const { data: pedido } = await supabase
+        .from('pedidos')
+        .select('id')
+        .eq('id', pedido_id)
+        .single()
+
+      if (!pedido) {
+        return Response.json(
+          { success: false, error: 'Pedido no encontrado' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Llamar función RPC para registrar puntos
     const { data, error } = await supabase.rpc('add_puntos_from_order', {
       p_cliente_dni: cliente_dni,

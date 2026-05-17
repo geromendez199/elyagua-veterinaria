@@ -2,6 +2,14 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET() {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { data, error } = await supabase
       .from('milestones')
       .select('*')
@@ -25,6 +33,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { millas_requeridas, descuento_porcentaje, activo } = await request.json()
 
     if (!millas_requeridas || !descuento_porcentaje) {
@@ -63,6 +79,14 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { id, millas_requeridas, descuento_porcentaje, activo } = await request.json()
 
     if (!id) {
@@ -101,6 +125,14 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return Response.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
