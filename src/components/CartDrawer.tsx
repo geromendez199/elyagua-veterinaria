@@ -7,6 +7,7 @@ import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
 import { DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
+import { checkProductStock, fetchLoyaltyProgram } from '@/lib/supabase-queries'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
@@ -34,10 +35,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     dispatch({ type: 'SET_STOCK_ERRORS', payload: [] })
     try {
       const ids = items.map((i) => i.product.id)
-      const { data } = await supabase.from('productos').select('id, nombre, stock').in('id', ids)
+      const { data, error } = await checkProductStock(ids)
+
+      if (error) {
+        dispatch({ type: 'SET_STEP', payload: 'checkout' })
+        return
+      }
+
       const errors: string[] = []
       for (const item of items) {
-        const current = data?.find((p) => p.id === item.product.id)
+        const current = data.find((p) => p.id === item.product.id)
         const available = current?.stock ?? 0
         if (available < item.quantity) {
           errors.push(
@@ -47,6 +54,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )
         }
       }
+
       if (errors.length > 0) {
         dispatch({ type: 'SET_STOCK_ERRORS', payload: errors })
         return
@@ -73,31 +81,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     dispatch({ type: 'SET_LOADING_CUPONES', payload: true })
 
     try {
+      // Optimized: fetch cliente with specific fields
       const { data: clienteData } = await supabase
         .from('clientes')
-        .select('*')
+        .select('id, dni, nombre, telefono, notas, puntos_acumulados, created_at, updated_at')
         .eq('dni', sanitized)
-        .limit(1)
+        .single()
 
-      const found = clienteData?.[0]
-
-      if (found) {
-        const [cuponesRes, milestonesRes] = await Promise.all([
-          supabase.from('cupones').select('*').eq('activo', true),
-          supabase.from('milestones').select('*').eq('activo', true).order('millas_requeridas', { ascending: true }),
-        ])
-
-        const cuponesActuales = (cuponesRes.data || []).map((c: any) => ({
-          ...c,
-          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
-        }))
+      if (clienteData) {
+        // Fetch loyalty program data with optimized queries
+        const { cupones: cuponesData, milestones: milestonesData } = await fetchLoyaltyProgram()
 
         dispatch({
           type: 'SET_CLIENT',
           payload: {
-            client: found,
-            cupones: cuponesActuales,
-            milestones: milestonesRes.data || [],
+            client: clienteData,
+            cupones: cuponesData,
+            milestones: milestonesData,
           },
         })
 
@@ -105,8 +105,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         dispatch({
           type: 'UPDATE_FORM',
           payload: {
-            nombre: state.formData.nombre || found.nombre,
-            telefono: state.formData.telefono || (found.telefono?.replace(/^\+549/, '') || ''),
+            nombre: state.formData.nombre || clienteData.nombre,
+            telefono: state.formData.telefono || (clienteData.telefono?.replace(/^\+549/, '') || ''),
           },
         })
       } else {

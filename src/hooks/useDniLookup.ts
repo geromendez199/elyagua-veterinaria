@@ -1,20 +1,25 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { fetchLoyaltyProgram } from '@/lib/supabase-queries'
 import { Cliente } from '@/types'
 
 interface CouponData {
   id: string
-  descuento_porcentaje: number
+  porcentaje_descuento: number
   milestone_millas?: number
-  activo: boolean
-  [key: string]: any
+}
+
+interface Milestone {
+  id: string
+  millas_requeridas: number
+  descuento_porcentaje: number
 }
 
 export function useDniLookup() {
   const [dniState, setDniState] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
   const [clienteActual, setClienteActual] = useState<Cliente | undefined>()
   const [cupones, setCupones] = useState<CouponData[]>([])
-  const [milestones, setMilestones] = useState<any[]>([])
+  const [milestones, setMilestones] = useState<Milestone[]>([])
   const [loadingCupones, setLoadingCupones] = useState(false)
 
   const handleDniChange = async (value: string) => {
@@ -32,30 +37,21 @@ export function useDniLookup() {
     setLoadingCupones(true)
 
     try {
+      // Optimized: fetch cliente with specific fields
       const { data: clienteData } = await supabase
         .from('clientes')
-        .select('*')
+        .select('id, dni, nombre, telefono, notas, puntos_acumulados, created_at, updated_at')
         .eq('dni', sanitized)
-        .limit(1)
+        .single()
 
-      const found = clienteData?.[0] as Cliente | undefined
-
-      if (found) {
+      if (clienteData) {
         setDniState('found')
-        setClienteActual(found)
+        setClienteActual(clienteData as Cliente)
 
-        const [cuponesRes, milestonesRes] = await Promise.all([
-          supabase.from('cupones').select('*').eq('activo', true),
-          supabase.from('milestones').select('*').eq('activo', true).order('millas_requeridas', { ascending: true }),
-        ])
-
-        const cuponesActuales = (cuponesRes.data || []).map((c: any) => ({
-          ...c,
-          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
-        }))
-
-        setCupones(cuponesActuales)
-        setMilestones(milestonesRes.data || [])
+        // Fetch loyalty program data (optimized with utility function)
+        const { cupones: cuponesData, milestones: milestonesData } = await fetchLoyaltyProgram()
+        setCupones(cuponesData as CouponData[])
+        setMilestones(milestonesData as Milestone[])
       } else {
         setDniState('notfound')
         setClienteActual(undefined)
