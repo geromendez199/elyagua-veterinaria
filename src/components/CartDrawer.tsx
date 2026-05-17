@@ -750,20 +750,31 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         {state.cupones.map((cupon) => {
                           const milestoneMap: { [key: number]: number } = { 10: 25, 20: 50, 30: 75 }
                           const milestone_millas = milestoneMap[cupon.descuento_porcentaje] || 0
+                          const clientMillas = state.clienteActual?.puntos_acumulados || 0
+                          const hasEnoughMillas = clientMillas >= milestone_millas
+                          const isApplied = appliedCoupon?.id === cupon.id
+                          const isDisabled = !hasEnoughMillas || (!!appliedCoupon && !isApplied)
+
                           return (
-                          <button
-                            key={cupon.id}
-                            onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje, milestone_millas)}
-                            disabled={!!appliedCoupon && appliedCoupon.id !== cupon.id}
-                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between cursor-pointer ${
-                              appliedCoupon?.id === cupon.id
-                                ? 'bg-green-600 text-white border-2 border-green-700'
-                                : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
-                            }`}
-                          >
-                            <span>🎟️ {cupon.descuento_porcentaje}% Descuento</span>
-                            {appliedCoupon?.id === cupon.id && <Check size={16} />}
-                          </button>
+                          <div key={cupon.id}>
+                            <button
+                              onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje, milestone_millas)}
+                              disabled={isDisabled}
+                              className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+                                isApplied
+                                  ? 'bg-green-600 text-white border-2 border-green-700 cursor-pointer'
+                                  : hasEnoughMillas
+                                  ? 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 cursor-pointer disabled:opacity-50'
+                                  : 'bg-gray-100 border-2 border-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                            >
+                              <span>🎟️ {cupon.descuento_porcentaje}% Descuento</span>
+                              {isApplied && <Check size={16} />}
+                            </button>
+                            {!hasEnoughMillas && (
+                              <p className="text-xs text-gray-500 mt-1 pl-3">Te faltan {milestone_millas - clientMillas} YaguaMillas</p>
+                            )}
+                          </div>
                           )
                         })}
                       </div>
