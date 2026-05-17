@@ -1,42 +1,39 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import NextImage from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { useCoupon } from '@/context/CouponContext'
 import { X, Minus, Plus, Check, MapPin, Truck, Loader2, Tag } from 'lucide-react'
-import { OrderFormData, DeliveryType, Cliente } from '@/types'
+import { OrderFormData, DeliveryType } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
 import PuntosInfo from './PuntosInfo'
+import { useDniLookup } from '@/hooks/useDniLookup'
+import { useAddressAutocomplete } from '@/hooks/useAddressAutocomplete'
+import { useOrderValidation } from '@/hooks/useOrderValidation'
 
 interface CartDrawerProps {
   isOpen: boolean
   onClose: () => void
 }
 
-type FormErrors = {
-  nombre?: string
-  telefono?: string
-  direccion?: string
-}
-
-type FormTouched = {
-  nombre: boolean
-  telefono: boolean
-  direccion: boolean
-}
-
-// ── Pasos del checkout ─────────────────────────────────────────
 const STEPS = ['Carrito', 'Datos del pedido']
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
-  const [step, setStep] = useState<'cart' | 'checkout'>('cart')
 
+  // Main state hooks (5 total vs 17+ before)
+  const [step, setStep] = useState<'cart' | 'checkout'>('cart')
+  const [checkingStock, setCheckingStock] = useState(false)
+  const [stockErrors, setStockErrors] = useState<string[]>([])
+  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
+  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
+
+  // Form data
   const [formData, setFormData] = useState<OrderFormData>({
     nombre: '',
     telefono: '',
@@ -45,24 +42,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     metodoPago: 'debito',
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [touched, setTouched] = useState<FormTouched>({
-    nombre: false,
-    telefono: false,
-    direccion: false,
-  })
-
-  const [clienteCupones, setClienteCupones] = useState<any[]>([])
-  const [loadingCupones, setLoadingCupones] = useState(false)
-  const [milestones, setMilestones] = useState<any[]>([])
-  const [yaguamillasConfirmData, setYaguamillasConfirmData] = useState({ cantidad: 0, nombre: '', dni: '' })
-  const [showYaguamillasConfirm, setShowYaguamillasConfirm] = useState(false)
+  // Custom hooks (extracted logic)
+  const validation = useOrderValidation()
+  const dniLookup = useDniLookup()
+  const addressAuto = useAddressAutocomplete()
 
   const currentStep = step === 'cart' ? 0 : 1
-
-  // ── Validación de stock antes de pasar al checkout ─────────────
-  const [checkingStock, setCheckingStock] = useState(false)
-  const [stockErrors, setStockErrors] = useState<string[]>([])
 
   const handleContinuar = async () => {
     if (items.length === 0) return
@@ -92,119 +77,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }
 
-  // ── DNI: auto-reconocimiento de cliente ──────────────────────
-  const [dniLookup, setDniLookup] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
-  const [clienteActual, setClienteActual] = useState<Cliente | undefined>()
-
   const handleDniChange = async (value: string) => {
     const sanitized = value.replace(/\D/g, '').slice(0, 8)
     setFormData(prev => ({ ...prev, dni: sanitized }))
+
     if (sanitized.length < 8) {
-      setDniLookup('idle')
-      setClienteActual(undefined)
-      setClienteCupones([])
+      dniLookup.clearDni()
       removeCoupon()
       return
     }
-    setDniLookup('loading')
-    try {
-      const { data } = await supabase.from('clientes').select('*').eq('dni', sanitized).limit(1)
-      const found = data?.[0] as Cliente | undefined
-      if (found) {
-        setDniLookup('found')
-        setClienteActual(found)
-        setFormData(prev => ({
-          ...prev,
-          nombre: prev.nombre || found.nombre,
-          telefono: prev.telefono || (found.telefono ? found.telefono.replace(/^\+549/, '') : ''),
-        }))
 
-        // Cargar cupones disponibles y milestones
-        setLoadingCupones(true)
-        const [cuponesRes, milestonesRes] = await Promise.all([
-          // Cargamos cupones globales (sin asignación a cliente)
-          supabase
-            .from('cupones')
-            .select('*')
-            .eq('activo', true),
-          supabase
-            .from('milestones')
-            .select('*')
-            .eq('activo', true)
-            .order('millas_requeridas', { ascending: true }),
-        ])
+    await dniLookup.handleDniChange(sanitized)
 
-        const cuponesActuales = cuponesRes.data || []
-        const milestones = milestonesRes.data || []
-
-        // Generar cupones automáticos para milestones alcanzados pero sin cupón
-        // Los cupones de milestones se generan automáticamente en Supabase
-        // cuando el cliente alcanza un milestone (via RPC o trigger)
-        // Por ahora, filtramos los cupones disponibles sin cliente_id
-
-        // Recargar cupones disponibles (activos)
-        const { data: cuponesActualizados } = await supabase
-          .from('cupones')
-          .select('*')
-          .eq('activo', true)
-
-        // Mapear porcentaje_descuento a descuento_porcentaje para consistencia
-        const cuponesnormalizados = (cuponesActualizados || cuponesActuales).map((c: any) => ({
-          ...c,
-          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
-        }))
-
-        setClienteCupones(cuponesnormalizados)
-        setMilestones(milestones)
-        setLoadingCupones(false)
-      } else {
-        setDniLookup('notfound')
-        setClienteActual(undefined)
-        setClienteCupones([])
-        removeCoupon()
-      }
-    } catch {
-      setDniLookup('idle')
-      setClienteActual(undefined)
-      setClienteCupones([])
+    // Auto-fill nombre and telefono if client found
+    if (dniLookup.dniState === 'found' && dniLookup.clienteActual) {
+      setFormData(prev => ({
+        ...prev,
+        nombre: prev.nombre || dniLookup.clienteActual!.nombre,
+        telefono: prev.telefono || (dniLookup.clienteActual!.telefono?.replace(/^\+549/, '') || ''),
+      }))
+    } else {
       removeCoupon()
-    }
-  }
-
-  // ── Autocomplete de dirección (Georef Argentina) ───────────────
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([])
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
-  const [fetchingAddress, setFetchingAddress] = useState(false)
-  const addressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const fetchAddressSuggestions = async (query: string) => {
-    if (query.trim().length < 3) { setAddressSuggestions([]); return }
-    setFetchingAddress(true)
-    try {
-      const res = await fetch(
-        `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
-      )
-      const data = await res.json()
-      const items = (data.direcciones || []).map((d: { nomenclatura?: string }) => d.nomenclatura as string).filter(Boolean)
-      setAddressSuggestions(items)
-    } catch {
-      setAddressSuggestions([])
-    } finally {
-      setFetchingAddress(false)
     }
   }
 
   const handleAddressChange = (value: string) => {
     handleChange('direccion', value)
-    setShowAddressSuggestions(true)
-    if (addressTimerRef.current) clearTimeout(addressTimerRef.current)
-    addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
+    addressAuto.handleAddressChange(value)
   }
 
   const handleAddressSelect = (suggestion: string) => {
     handleChange('direccion', suggestion)
-    setShowAddressSuggestions(false)
-    setAddressSuggestions([])
+    addressAuto.handleAddressSelect(suggestion)
   }
 
   const handleDeliveryChange = (type: DeliveryType) => {
@@ -223,47 +127,27 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }
 
-  // ── Validación ────────────────────────────────────────────────
-  const validateField = (field: string, value: string): string => {
-    if (field === 'nombre') return value.trim() ? '' : 'El nombre es requerido'
-    if (field === 'telefono') return value.length >= 10 ? '' : 'Ingresá los 10 dígitos sin 0 ni 15'
-    if (field === 'direccion') return value.trim() ? '' : 'Ingresá tu dirección'
-    return ''
-  }
-
-  const handleBlur = (field: keyof FormTouched) => {
-    setTouched((prev) => ({ ...prev, [field]: true }))
-    const value =
-      field === 'direccion' ? formData.direccion || '' : (formData as unknown as Record<string, string>)[field]
-    setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+  const handleBlur = (field: keyof typeof validation.touched) => {
+    const value = field === 'direccion' ? formData.direccion || '' : (formData as unknown as Record<string, string>)[field]
+    validation.handleBlur(field, value)
   }
 
   const handleChange = (field: keyof OrderFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Validar en tiempo real si el campo ya fue tocado
-    if (touched[field as keyof FormTouched]) {
-      setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+    // Only validate fields that are part of the validation schema
+    if (['nombre', 'telefono', 'direccion'].includes(field) && validation.touched[field as keyof typeof validation.touched]) {
+      validation.handleChange(field as keyof typeof validation.errors, value)
     }
   }
 
-  // ── Checkout ──────────────────────────────────────────────────
   const handleCheckout = () => {
-    // Marcar todos como tocados y validar
-    const newErrors: FormErrors = {
-      nombre: validateField('nombre', formData.nombre),
-      telefono: validateField('telefono', formData.telefono),
-      direccion:
-        formData.deliveryType === 'envio'
-          ? validateField('direccion', formData.direccion || '')
-          : '',
-    }
-    setErrors(newErrors)
-    setTouched({ nombre: true, telefono: true, direccion: true })
-
-    const hasErrors = Object.values(newErrors).some(Boolean)
-    if (hasErrors) return
-
-    sendWhatsApp()
+    const isValid = validation.validateForm(
+      formData.nombre,
+      formData.telefono,
+      formData.direccion || '',
+      formData.deliveryType === 'envio'
+    )
+    if (isValid) sendWhatsApp()
   }
 
   const sendWhatsApp = async () => {
@@ -389,10 +273,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     onClose()
     setStep('cart')
     setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
-    setErrors({})
-    setTouched({ nombre: false, telefono: false, direccion: false })
-    setDniLookup('idle')
-    setClienteActual(undefined)
+    validation.clearErrors()
+    dniLookup.clearDni()
+    addressAuto.clearSuggestions()
   }
 
   if (!isOpen) return null
@@ -628,20 +511,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       type="text"
                       value={formData.direccion || ''}
                       onChange={(e) => handleAddressChange(e.target.value)}
-                      onBlur={() => { handleBlur('direccion'); setTimeout(() => setShowAddressSuggestions(false), 150) }}
-                      onFocus={() => addressSuggestions.length > 0 && setShowAddressSuggestions(true)}
-                      className={`${inputCls(!!errors.direccion && touched.direccion)} pr-8`}
+                      onBlur={() => { handleBlur('direccion'); setTimeout(() => addressAuto.setShowAddressSuggestions(false), 150) }}
+                      onFocus={() => addressAuto.addressSuggestions.length > 0 && addressAuto.setShowAddressSuggestions(true)}
+                      className={`${inputCls(!!validation.errors.direccion && validation.touched.direccion)} pr-8`}
                       placeholder="Calle y número..."
                       autoComplete="off"
                     />
-                    {fetchingAddress && (
+                    {addressAuto.loadingAddress && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Loader2 size={15} className="text-gray-400 animate-spin" />
                       </div>
                     )}
-                    {showAddressSuggestions && addressSuggestions.length > 0 && (
+                    {addressAuto.showAddressSuggestions && addressAuto.addressSuggestions.length > 0 && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                        {addressSuggestions.map((s, i) => (
+                        {addressAuto.addressSuggestions.map((s, i) => (
                           <button
                             key={i}
                             onMouseDown={(e) => { e.preventDefault(); handleAddressSelect(s) }}
@@ -654,8 +537,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     )}
                   </div>
-                  {errors.direccion && touched.direccion && (
-                    <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
+                  {validation.errors.direccion && validation.touched.direccion && (
+                    <p className="text-red-500 text-xs mt-1">{validation.errors.direccion}</p>
                   )}
                 </div>
               )}
@@ -670,11 +553,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   value={formData.nombre}
                   onChange={(e) => handleChange('nombre', e.target.value)}
                   onBlur={() => handleBlur('nombre')}
-                  className={inputCls(!!errors.nombre && touched.nombre)}
+                  className={inputCls(!!validation.errors.nombre && validation.touched.nombre)}
                   placeholder="Tu nombre y apellido"
                 />
-                {errors.nombre && touched.nombre && (
-                  <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
+                {validation.errors.nombre && validation.touched.nombre && (
+                  <p className="text-red-500 text-xs mt-1">{validation.errors.nombre}</p>
                 )}
               </div>
 
@@ -684,7 +567,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   WhatsApp <span className="text-red-500">*</span>
                 </label>
                 <div className={`flex border rounded-lg overflow-hidden transition focus-within:ring-2 ${
-                  errors.telefono && touched.telefono
+                  validation.errors.telefono && validation.touched.telefono
                     ? 'border-red-400 focus-within:ring-red-200'
                     : 'border-gray-300 focus-within:ring-primary/20 focus-within:border-primary'
                 }`}>
@@ -699,8 +582,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     maxLength={12}
                   />
                 </div>
-                {errors.telefono && touched.telefono ? (
-                  <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
+                {validation.errors.telefono && validation.touched.telefono ? (
+                  <p className="text-red-500 text-xs mt-1">{validation.errors.telefono}</p>
                 ) : (
                   <p className="text-gray-400 text-xs mt-1">10 dígitos, sin el 0 ni el 15</p>
                 )}
@@ -755,22 +638,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     type="text"
                     value={formData.dni || ''}
                     onChange={(e) => handleDniChange(e.target.value)}
-                    className={`${inputCls(false)} pr-9 ${dniLookup === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
+                    className={`${inputCls(false)} pr-9 ${dniLookup.dniState === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
                     placeholder="12345678"
                     maxLength={8}
                   />
-                  {dniLookup === 'loading' && (
+                  {dniLookup.dniState === 'loading' && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       <Loader2 size={15} className="text-gray-400 animate-spin" />
                     </div>
                   )}
-                  {dniLookup === 'found' && (
+                  {dniLookup.dniState === 'found' && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       <Check size={15} className="text-green-500" />
                     </div>
                   )}
                 </div>
-                {dniLookup === 'found' ? (
+                {dniLookup.dniState === 'found' ? (
                   <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Datos cargados automáticamente.</p>
                 ) : (
                   <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
@@ -778,7 +661,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
 
               {/* ── YaguaMillas y Cupones ── */}
-              {dniLookup === 'found' && (
+              {dniLookup.dniState === 'found' && (
                 <div className="space-y-4">
                   {/* Millas actuales */}
                   <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -786,19 +669,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <span className="text-xl">⭐</span>
                       <p className="text-sm font-semibold text-amber-900">Mis YaguaMillas</p>
                     </div>
-                    <p className="text-2xl font-bold text-amber-600">{(clienteActual?.puntos_acumulados) || 0}</p>
+                    <p className="text-2xl font-bold text-amber-600">{(dniLookup.clienteActual?.puntos_acumulados) || 0}</p>
                     <p className="text-xs text-amber-700 mt-1">YaguaMillas acumuladas</p>
                   </div>
 
                   {/* Cupones disponibles */}
-                  {clienteCupones.length > 0 && (
+                  {dniLookup.cupones.length > 0 && (
                     <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Tag size={18} className="text-green-600" />
-                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({clienteCupones.length})</p>
+                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({dniLookup.cupones.length})</p>
                       </div>
                       <div className="space-y-2">
-                        {clienteCupones.map((cupon) => {
+                        {dniLookup.cupones.map((cupon) => {
                           const milestoneMap: { [key: number]: number } = { 10: 25, 20: 50, 30: 75 }
                           const milestone_millas = milestoneMap[cupon.descuento_porcentaje] || 0
                           return (
@@ -832,7 +715,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   )}
 
-                  {dniLookup === 'found' && loadingCupones && (
+                  {dniLookup.loadingCupones && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
                       <p className="text-sm text-yellow-800">⏳ Generando cupones disponibles...</p>
                     </div>
@@ -842,9 +725,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               )}
 
               {/* ── Puntos de esta compra ── */}
-              {items.length > 0 && !clienteActual && (
+              {items.length > 0 && !dniLookup.clienteActual && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                  <PuntosInfo items={items} clienteActual={clienteActual} />
+                  <PuntosInfo items={items} clienteActual={dniLookup.clienteActual} />
                 </div>
               )}
 
@@ -1008,10 +891,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     onClose()
                     setStep('cart')
                     setFormData({ nombre: '', telefono: '', deliveryType: 'retiro', dni: '', metodoPago: 'debito' })
-                    setErrors({})
-                    setTouched({ nombre: false, telefono: false, direccion: false })
-                    setDniLookup('idle')
-                    setClienteActual(undefined)
+                    validation.clearErrors()
+                    dniLookup.clearDni()
                   }}
                   className="w-full border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-50 transition text-sm"
                 >

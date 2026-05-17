@@ -1,90 +1,91 @@
 import { useState } from 'react'
-
-interface ClientData {
-  id: string
-  nombre: string
-  puntos_acumulados: number
-  cliente_encontrado: boolean
-}
+import { supabase } from '@/lib/supabase'
+import { Cliente } from '@/types'
 
 interface CouponData {
   id: string
   descuento_porcentaje: number
   milestone_millas?: number
+  activo: boolean
+  [key: string]: any
 }
 
 export function useDniLookup() {
-  const [dniData, setDniData] = useState<ClientData | null>(null)
+  const [dniState, setDniState] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle')
+  const [clienteActual, setClienteActual] = useState<Cliente | undefined>()
   const [cupones, setCupones] = useState<CouponData[]>([])
-  const [loadingDni, setLoadingDni] = useState(false)
-  const [dniError, setDniError] = useState('')
+  const [milestones, setMilestones] = useState<any[]>([])
+  const [loadingCupones, setLoadingCupones] = useState(false)
 
-  const lookupDni = async (dni: string) => {
-    if (!dni || dni.length < 5) {
-      setDniError('DNI inválido')
-      setDniData(null)
+  const handleDniChange = async (value: string) => {
+    const sanitized = value.replace(/\D/g, '').slice(0, 8)
+
+    if (sanitized.length < 8) {
+      setDniState('idle')
+      setClienteActual(undefined)
       setCupones([])
+      setMilestones([])
       return
     }
 
-    setLoadingDni(true)
-    setDniError('')
+    setDniState('loading')
+    setLoadingCupones(true)
 
     try {
-      const pointsRes = await fetch(`/api/clientes/puntos?dni=${dni}`)
-      const pointsData = await pointsRes.json()
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('dni', sanitized)
+        .limit(1)
 
-      if (pointsData.success) {
-        setDniData({
-          id: pointsData.cliente_id || '',
-          nombre: pointsData.nombre || 'Cliente',
-          puntos_acumulados: pointsData.puntos_acumulados || 0,
-          cliente_encontrado: pointsData.cliente_encontrado,
-        })
+      const found = clienteData?.[0] as Cliente | undefined
 
-        // Fetch coupons for this client
-        if (pointsData.cliente_encontrado && pointsData.cliente_id) {
-          const couponRes = await fetch(`/api/admin/cupones?cliente_id=${pointsData.cliente_id}`)
-          const couponData = await couponRes.json()
+      if (found) {
+        setDniState('found')
+        setClienteActual(found)
 
-          if (couponData.success && couponData.cupones) {
-            setCupones(
-              couponData.cupones.map((c: any) => ({
-                id: c.id,
-                descuento_porcentaje: c.porcentaje_descuento || c.descuento_porcentaje,
-                milestone_millas: c.yaguamillas_requeridos,
-              }))
-            )
-          }
-        } else {
-          setCupones([])
-        }
+        const [cuponesRes, milestonesRes] = await Promise.all([
+          supabase.from('cupones').select('*').eq('activo', true),
+          supabase.from('milestones').select('*').eq('activo', true).order('millas_requeridas', { ascending: true }),
+        ])
+
+        const cuponesActuales = (cuponesRes.data || []).map((c: any) => ({
+          ...c,
+          descuento_porcentaje: c.descuento_porcentaje || c.porcentaje_descuento,
+        }))
+
+        setCupones(cuponesActuales)
+        setMilestones(milestonesRes.data || [])
       } else {
-        setDniError(pointsData.error || 'Error al buscar cliente')
-        setDniData(null)
+        setDniState('notfound')
+        setClienteActual(undefined)
         setCupones([])
+        setMilestones([])
       }
-    } catch (err) {
-      setDniError('Error buscando cliente')
-      setDniData(null)
+    } catch {
+      setDniState('idle')
+      setClienteActual(undefined)
       setCupones([])
+      setMilestones([])
     } finally {
-      setLoadingDni(false)
+      setLoadingCupones(false)
     }
   }
 
   const clearDni = () => {
-    setDniData(null)
+    setDniState('idle')
+    setClienteActual(undefined)
     setCupones([])
-    setDniError('')
+    setMilestones([])
   }
 
   return {
-    dniData,
+    dniState,
+    clienteActual,
     cupones,
-    loadingDni,
-    dniError,
-    lookupDni,
+    milestones,
+    loadingCupones,
+    handleDniChange,
     clearDni,
   }
 }

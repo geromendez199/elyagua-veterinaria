@@ -1,16 +1,13 @@
-import { useState, useCallback } from 'react'
-
-interface AddressSuggestion {
-  calle: string
-  numero: string
-}
+import { useState, useRef } from 'react'
 
 export function useAddressAutocomplete() {
-  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([])
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([])
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false)
   const [loadingAddress, setLoadingAddress] = useState(false)
+  const addressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const searchAddress = useCallback(async (query: string) => {
-    if (!query || query.length < 3) {
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.trim().length < 3) {
       setAddressSuggestions([])
       return
     }
@@ -18,35 +15,46 @@ export function useAddressAutocomplete() {
     setLoadingAddress(true)
 
     try {
-      const response = await fetch(
-        `https://apis.datos.gob.ar/georef/api/calles?nombre=${query}&provincia=santa%20fe&localidad=santa%20fe&max=10`
+      const res = await fetch(
+        `https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(query)}&provincia=santa+fe&max=6`
       )
-      const data = await response.json()
-
-      if (data.calles) {
-        setAddressSuggestions(
-          data.calles.slice(0, 8).map((calle: any) => ({
-            calle: calle.nombre,
-            numero: '',
-          }))
-        )
-      }
-    } catch (err) {
-      console.error('Address search error:', err)
+      const data = await res.json()
+      const items = (data.direcciones || [])
+        .map((d: { nomenclatura?: string }) => d.nomenclatura as string)
+        .filter(Boolean)
+      setAddressSuggestions(items)
+    } catch {
       setAddressSuggestions([])
     } finally {
       setLoadingAddress(false)
     }
-  }, [])
+  }
 
-  const clearSuggestions = useCallback(() => {
+  const handleAddressChange = (value: string) => {
+    setShowAddressSuggestions(true)
+    if (addressTimerRef.current) clearTimeout(addressTimerRef.current)
+    addressTimerRef.current = setTimeout(() => fetchAddressSuggestions(value), 350)
+  }
+
+  const handleAddressSelect = (suggestion: string) => {
+    setShowAddressSuggestions(false)
     setAddressSuggestions([])
-  }, [])
+    return suggestion
+  }
+
+  const clearSuggestions = () => {
+    setAddressSuggestions([])
+    setShowAddressSuggestions(false)
+    if (addressTimerRef.current) clearTimeout(addressTimerRef.current)
+  }
 
   return {
     addressSuggestions,
+    showAddressSuggestions,
     loadingAddress,
-    searchAddress,
+    handleAddressChange,
+    handleAddressSelect,
     clearSuggestions,
+    setShowAddressSuggestions,
   }
 }

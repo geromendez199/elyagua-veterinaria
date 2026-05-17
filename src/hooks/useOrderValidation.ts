@@ -1,77 +1,68 @@
 import { useState } from 'react'
 
-interface OrderFormData {
-  nombreCompleto: string
-  dni: string
-  email: string
-  telefono: string
-  calle: string
-  numero: string
-  piso: string
-  departamento: string
-  localidad: string
-  codigoPostal: string
-  metodoPago: 'whatsapp' | 'efectivo'
+type FormErrors = {
+  nombre?: string
+  telefono?: string
+  direccion?: string
 }
 
-interface ValidationErrors {
-  [key: string]: string
+type FormTouched = {
+  nombre: boolean
+  telefono: boolean
+  direccion: boolean
 }
 
 export function useOrderValidation() {
-  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<FormTouched>({
+    nombre: false,
+    telefono: false,
+    direccion: false,
+  })
 
-  const validateForm = (formData: Partial<OrderFormData>): boolean => {
-    const newErrors: ValidationErrors = {}
+  const validateField = (field: string, value: string): string => {
+    if (field === 'nombre') return value.trim() ? '' : 'El nombre es requerido'
+    if (field === 'telefono') return value.length >= 10 ? '' : 'Ingresá los 10 dígitos sin 0 ni 15'
+    if (field === 'direccion') return value.trim() ? '' : 'Ingresá tu dirección'
+    return ''
+  }
 
-    if (!formData.nombreCompleto?.trim()) {
-      newErrors.nombreCompleto = 'Nombre requerido'
+  const handleBlur = (field: keyof FormTouched, value: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+  }
+
+  const handleChange = (field: keyof FormErrors, value: string) => {
+    if (touched[field as keyof FormTouched]) {
+      setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
     }
+  }
 
-    if (!formData.dni?.trim() || formData.dni.length < 5) {
-      newErrors.dni = 'DNI inválido'
+  const validateForm = (nombre: string, telefono: string, direccion: string, requiresAddress: boolean): boolean => {
+    const newErrors: FormErrors = {
+      nombre: validateField('nombre', nombre),
+      telefono: validateField('telefono', telefono),
     }
-
-    if (!formData.email?.trim() || !formData.email.includes('@')) {
-      newErrors.email = 'Email inválido'
+    if (requiresAddress) {
+      newErrors.direccion = validateField('direccion', direccion)
     }
-
-    if (!formData.telefono?.trim() || formData.telefono.length < 7) {
-      newErrors.telefono = 'Teléfono inválido'
-    }
-
-    if (!formData.calle?.trim()) {
-      newErrors.calle = 'Calle requerida'
-    }
-
-    if (!formData.numero?.trim()) {
-      newErrors.numero = 'Número requerido'
-    }
-
-    if (!formData.localidad?.trim()) {
-      newErrors.localidad = 'Localidad requerida'
-    }
-
-    if (!formData.codigoPostal?.trim()) {
-      newErrors.codigoPostal = 'Código postal requerido'
-    }
-
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setTouched({ nombre: true, telefono: true, direccion: true })
+    return Object.values(newErrors).every((e) => !e)
   }
 
   const clearErrors = () => {
     setErrors({})
-  }
-
-  const getFieldError = (fieldName: string): string => {
-    return errors[fieldName] || ''
+    setTouched({ nombre: false, telefono: false, direccion: false })
   }
 
   return {
     errors,
+    touched,
+    validateField,
+    handleBlur,
+    handleChange,
     validateForm,
     clearErrors,
-    getFieldError,
   }
 }
