@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 interface AuthResult {
-  user: any
+  user: User | null
   error: Response | null
 }
 
