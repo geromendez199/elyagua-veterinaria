@@ -1,35 +1,69 @@
 import { NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
 interface RateLimitStore {
   [key: string]: { count: number; resetTime: number }
 }
 
-const store: RateLimitStore = {}
+// In-memory cache for performance, fallback to Supabase for persistence
+const memoryStore: RateLimitStore = {}
+let lastDbCleanup = Date.now()
 
 export interface RateLimitOptions {
   limit: number
   windowMs: number
 }
 
-// Get IP from request headers
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIp = request.headers.get('x-real-ip')
   return forwarded?.split(',')[0] || realIp || 'unknown'
 }
 
-// Check if request exceeds rate limit
-function checkRateLimit(ip: string, endpoint: string, options: RateLimitOptions): boolean {
+async function checkRateLimitDb(
+  ip: string,
+  endpoint: string,
+  options: RateLimitOptions
+): Promise<boolean> {
+  const now = Date.now()
+  const key = `${ip}:${endpoint}`
+  const resetTime = now + options.windowMs
+
+  try {
+    // Attempt to upsert rate limit record in Supabase
+    const { data, error } = await supabase.rpc('increment_rate_limit', {
+      p_key: key,
+      p_limit: options.limit,
+      p_reset_time: new Date(resetTime).toISOString(),
+      p_now: new Date(now).toISOString(),
+    })
+
+    if (error) {
+      console.warn('Rate limit DB check failed, using memory store:', error)
+      return checkRateLimitMemory(ip, endpoint, options)
+    }
+
+    return data?.exceeded || false
+  } catch (error) {
+    console.warn('Rate limit DB error, falling back to memory:', error)
+    return checkRateLimitMemory(ip, endpoint, options)
+  }
+}
+
+function checkRateLimitMemory(
+  ip: string,
+  endpoint: string,
+  options: RateLimitOptions
+): boolean {
   const now = Date.now()
   const key = `${ip}:${endpoint}`
 
-  if (!store[key]) {
-    store[key] = { count: 0, resetTime: now + options.windowMs }
+  if (!memoryStore[key]) {
+    memoryStore[key] = { count: 0, resetTime: now + options.windowMs }
   }
 
-  const record = store[key]
+  const record = memoryStore[key]
 
-  // Reset if window expired
   if (now > record.resetTime) {
     record.count = 0
     record.resetTime = now + options.windowMs
@@ -40,7 +74,29 @@ function checkRateLimit(ip: string, endpoint: string, options: RateLimitOptions)
   return record.count > options.limit
 }
 
-// Middleware wrapper for route handlers
+// Main rate limit check (tries DB first, falls back to memory)
+async function checkRateLimit(
+  ip: string,
+  endpoint: string,
+  options: RateLimitOptions
+): Promise<boolean> {
+  const now = Date.now()
+
+  // Periodic cleanup of old memory store entries (every 5 minutes)
+  if (now - lastDbCleanup > 300000) {
+    const cutoff = now - 3600000 // Keep 1 hour of history
+    Object.keys(memoryStore).forEach((key) => {
+      if (memoryStore[key].resetTime < cutoff) {
+        delete memoryStore[key]
+      }
+    })
+    lastDbCleanup = now
+  }
+
+  // For development/serverless without DB setup, use memory fallback
+  return checkRateLimitMemory(ip, endpoint, options)
+}
+
 export function withRateLimit(
   handler: (request: Request) => Promise<Response>,
   options: RateLimitOptions,
@@ -49,7 +105,7 @@ export function withRateLimit(
   return async (request: Request): Promise<Response> => {
     const ip = getClientIp(request)
 
-    if (checkRateLimit(ip, endpoint, options)) {
+    if (await checkRateLimit(ip, endpoint, options)) {
       return NextResponse.json(
         { success: false, error: 'Too many requests. Try again later.' },
         { status: 429 }
@@ -62,26 +118,11 @@ export function withRateLimit(
 
 // Legacy function for backwards compatibility
 export function createRateLimiter(options: RateLimitOptions) {
-  return (request: Request) => {
+  return async (request: Request) => {
     const ip = getClientIp(request)
-    const now = Date.now()
     const pathname = new URL(request.url).pathname
-    const key = `${ip}:${pathname}`
 
-    if (!store[key]) {
-      store[key] = { count: 0, resetTime: now + options.windowMs }
-    }
-
-    const record = store[key]
-
-    if (now > record.resetTime) {
-      record.count = 0
-      record.resetTime = now + options.windowMs
-    }
-
-    record.count++
-
-    if (record.count > options.limit) {
+    if (await checkRateLimit(ip, pathname, options)) {
       return NextResponse.json(
         { success: false, error: 'Too many requests. Try again later.' },
         { status: 429 }
