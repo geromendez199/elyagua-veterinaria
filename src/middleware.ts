@@ -2,14 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Proteger rutas sensibles de debug/setup - solo redirigir estas rutas específicas
   const { pathname } = request.nextUrl
 
-  // Solo redirigir las rutas de debug/setup que no deben ser accesibles
-  if (pathname === '/admin/setup-db' ||
-      pathname === '/admin/debug-dni' ||
-      pathname === '/admin/fix-rls' ||
-      pathname === '/admin/fix-consejos') {
+  // Proteger rutas sensibles - redirigir a login
+  const debugRoutes = ['/admin/setup-db', '/admin/debug-dni', '/admin/fix-rls', '/admin/fix-consejos']
+
+  if (debugRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 
@@ -17,5 +15,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    '/admin/setup-db',
+    '/admin/debug-dni',
+    '/admin/fix-rls',
+    '/admin/fix-consejos',
+  ],
 }
