@@ -858,10 +858,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   )}
 
-                  {/* Próximos hitos */}
+                  {/* Hitos de YaguaMillas */}
                   {milestones.length > 0 && (
                     <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3">Próximos hitos</p>
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3">Tus hitos YaguaMillas</p>
                       <div className="space-y-2">
                         {milestones.map((milestone) => {
                           const hasReached = (clienteActual?.puntos_acumulados || 0) >= milestone.millas_requeridas
