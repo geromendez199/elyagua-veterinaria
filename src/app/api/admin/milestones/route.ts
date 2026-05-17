@@ -1,56 +1,40 @@
 import { supabase } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api/auth'
+import { errorResponse, successResponse } from '@/lib/api/response'
 
 export async function GET() {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from('milestones')
       .select('*')
       .order('millas_requeridas', { ascending: true })
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true, data })
+    return successResponse(data)
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('GET /api/admin/milestones error:', error)
+    return errorResponse('Error interno del servidor', 500)
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
     const { millas_requeridas, descuento_porcentaje, activo } = await request.json()
 
     if (!millas_requeridas || !descuento_porcentaje) {
-      return Response.json(
-        { success: false, error: 'Faltan datos requeridos' },
-        { status: 400 }
-      )
+      return errorResponse('Faltan datos requeridos')
     }
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from('milestones')
       .insert([
         {
@@ -61,42 +45,29 @@ export async function POST(request: Request) {
       ])
       .select()
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true, data: data?.[0] })
+    return successResponse(data?.[0])
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('POST /api/admin/milestones error:', error)
+    return errorResponse('Error interno del servidor', 500)
   }
 }
 
 export async function PUT(request: Request) {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
     const { id, millas_requeridas, descuento_porcentaje, activo } = await request.json()
 
     if (!id) {
-      return Response.json(
-        { success: false, error: 'ID requerido' },
-        { status: 400 }
-      )
+      return errorResponse('ID requerido')
     }
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from('milestones')
       .update({
         millas_requeridas,
@@ -107,59 +78,41 @@ export async function PUT(request: Request) {
       .eq('id', id)
       .select()
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true, data: data?.[0] })
+    return successResponse(data?.[0])
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('PUT /api/admin/milestones error:', error)
+    return errorResponse('Error interno del servidor', 500)
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
     if (!id) {
-      return Response.json(
-        { success: false, error: 'ID requerido' },
-        { status: 400 }
-      )
+      return errorResponse('ID requerido')
     }
 
-    const { error } = await supabase
+    const { error: dbError } = await supabase
       .from('milestones')
       .delete()
       .eq('id', id)
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true })
+    return successResponse({})
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('DELETE /api/admin/milestones error:', error)
+    return errorResponse('Error interno del servidor', 500)
   }
 }

@@ -1,26 +1,20 @@
 import { supabase } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api/auth'
+import { errorResponse, successResponse } from '@/lib/api/response'
 
 export async function POST(request: Request) {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
     const body = await request.json()
     const { cliente_id, nombre, especie, raza, edad, color, peso, observaciones } = body
 
     if (!cliente_id || !nombre || !especie) {
-      return Response.json(
-        { success: false, error: 'Datos incompletos' },
-        { status: 400 }
-      )
+      return errorResponse('Datos incompletos')
     }
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from('mascotas')
       .insert([{
         cliente_id,
@@ -34,59 +28,41 @@ export async function POST(request: Request) {
       }])
       .select()
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true, data })
+    return successResponse(data)
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno' },
-      { status: 500 }
-    )
+    console.error('POST /api/admin/mascotas error:', error)
+    return errorResponse('Error interno', 500)
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return Response.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { user, error } = await requireAuth()
+    if (error) return error
 
     const { searchParams } = new URL(request.url)
     const mascotaId = searchParams.get('id')
 
     if (!mascotaId) {
-      return Response.json(
-        { success: false, error: 'ID requerido' },
-        { status: 400 }
-      )
+      return errorResponse('ID requerido')
     }
 
-    const { error } = await supabase
+    const { error: dbError } = await supabase
       .from('mascotas')
       .delete()
       .eq('id', mascotaId)
 
-    if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+    if (dbError) {
+      return errorResponse(dbError.message, 500)
     }
 
-    return Response.json({ success: true })
+    return successResponse({})
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno' },
-      { status: 500 }
-    )
+    console.error('DELETE /api/admin/mascotas error:', error)
+    return errorResponse('Error interno', 500)
   }
 }

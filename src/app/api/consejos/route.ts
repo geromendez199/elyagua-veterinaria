@@ -1,28 +1,9 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerSupabaseClient } from '@/lib/api/server-client'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: Request) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch {}
-          },
-        },
-      }
-    )
-
+    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
     const activo = searchParams.get('activo') !== 'false'
     const categoria = searchParams.get('categoria')
@@ -42,18 +23,12 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('Consejos query error:', error)
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+      return errorResponse(error.message, 500)
     }
 
-    return Response.json({ success: true, data: data || [] })
+    return successResponse(data || [])
   } catch (err) {
     console.error('Error fetching consejos:', err)
-    return Response.json(
-      { success: false, error: 'Error interno' },
-      { status: 500 }
-    )
+    return errorResponse('Error interno', 500)
   }
 }
