@@ -38,7 +38,7 @@ export default function QuienesSomosPage() {
               src="/team.jpg"
               alt="Equipo de El Yagua Veterinaria"
               width={1200}
-              height={500}
+              height={300}
               className="w-full h-auto"
               objectFit="cover"
             />
