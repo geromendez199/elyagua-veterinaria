@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST() {
   try {
@@ -6,17 +7,13 @@ export async function POST() {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return Response.json(
-        { success: false, error: 'Missing Supabase credentials' },
-        { status: 500 }
-      )
+      return errorResponse('Missing Supabase credentials', 500)
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false }
     })
 
-    // Execute migration SQL
     const migrationSQL = `
     CREATE TABLE IF NOT EXISTS milestones (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -43,26 +40,14 @@ export async function POST() {
     CREATE INDEX IF NOT EXISTS idx_cupones_auto_generado ON cupones(auto_generado);
     `
 
-    // Try to execute via RPC or direct execution
-    const { error } = await (supabase as any).rpc('query', {
-      sql: migrationSQL
-    }).catch(async () => {
-      // If RPC fails, try alternative method
-      return supabase.from('_realtime').select('*').limit(0)
-    })
+    await (supabase as any).rpc('query', { sql: migrationSQL })
+      .catch(async () => supabase.from('_realtime').select('*').limit(0))
 
-    return Response.json({
-      success: true,
+    return successResponse({
       message: 'Migration setup complete. Visit /admin/milestones to manage milestone configurations.',
     })
   } catch (error) {
     console.error('Setup error:', error)
-    return Response.json(
-      {
-        success: false,
-        error: String(error),
-      },
-      { status: 500 }
-    )
+    return errorResponse(String(error), 500)
   }
 }

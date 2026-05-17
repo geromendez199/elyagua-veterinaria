@@ -1,17 +1,14 @@
 import { supabase } from '@/lib/supabase'
+import { errorResponse, successResponse } from '@/lib/api/response'
 
 export async function POST(request: Request) {
   try {
     const { cupon_id, cliente_dni, milestone_millas } = await request.json()
 
     if (!cupon_id || !cliente_dni) {
-      return Response.json(
-        { success: false, error: 'Datos incompletos' },
-        { status: 400 }
-      )
+      return errorResponse('Datos incompletos')
     }
 
-    // Marcar cupón como inactivo (usado)
     const { error: updateCuponError } = await supabase
       .from('cupones')
       .update({ activo: false })
@@ -19,13 +16,9 @@ export async function POST(request: Request) {
 
     if (updateCuponError) {
       console.error('Error marking coupon as used:', updateCuponError)
-      return Response.json(
-        { success: false, error: 'Error al procesar cupón' },
-        { status: 500 }
-      )
+      return errorResponse('Error al procesar cupón', 500)
     }
 
-    // Descontar YaguaMillas si se proporcionan
     if (milestone_millas && milestone_millas > 0) {
       try {
         const { data: cliente } = await supabase
@@ -43,19 +36,14 @@ export async function POST(request: Request) {
         }
       } catch (e) {
         console.error('Error deducting points:', e)
-        // No fallar si no se descuentan puntos
       }
     }
 
-    return Response.json({
-      success: true,
+    return successResponse({
       message: 'Cupón utilizado exitosamente'
     })
   } catch (err) {
-    console.error('Error using coupon:', err)
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('POST /api/cupones/usar error:', err)
+    return errorResponse('Error interno del servidor', 500)
   }
 }

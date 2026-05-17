@@ -1,14 +1,12 @@
 import { supabase } from '@/lib/supabase'
+import { errorResponse, successResponse } from '@/lib/api/response'
 
 export async function POST(request: Request) {
   try {
     const { cupon_id, pedido_id } = await request.json()
 
     if (!cupon_id || !pedido_id) {
-      return Response.json(
-        { success: false, error: 'cupon_id y pedido_id requeridos' },
-        { status: 400 }
-      )
+      return errorResponse('cupon_id y pedido_id requeridos')
     }
 
     const { error } = await supabase
@@ -21,17 +19,12 @@ export async function POST(request: Request) {
       .eq('id', cupon_id)
 
     if (error) {
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      )
+      return errorResponse(error.message, 500)
     }
 
-    return Response.json({ success: true })
+    return successResponse({})
   } catch (error) {
-    return Response.json(
-      { success: false, error: 'Error interno' },
-      { status: 500 }
-    )
+    console.error('POST /api/admin/cupones/usar error:', error)
+    return errorResponse('Error interno', 500)
   }
 }

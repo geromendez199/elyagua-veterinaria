@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: Request) {
   try {
@@ -6,13 +7,9 @@ export async function GET(request: Request) {
     const dni = searchParams.get('dni')
 
     if (!dni) {
-      return Response.json(
-        { success: false, error: 'DNI requerido' },
-        { status: 400 }
-      )
+      return errorResponse('DNI requerido')
     }
 
-    // Buscar cliente por DNI
     const { data: cliente, error } = await supabase
       .from('clientes')
       .select('id, dni, nombre, puntos_acumulados')
@@ -20,27 +17,21 @@ export async function GET(request: Request) {
       .single()
 
     if (error || !cliente) {
-      // Cliente no existe, retornar 0 puntos
-      return Response.json({
-        success: true,
+      return successResponse({
         puntos_acumulados: 0,
         cliente_encontrado: false,
         mensaje: 'Cliente no registrado aún',
       })
     }
 
-    return Response.json({
-      success: true,
+    return successResponse({
       cliente_id: cliente.id,
       nombre: cliente.nombre,
       puntos_acumulados: cliente.puntos_acumulados || 0,
       cliente_encontrado: true,
     })
   } catch (error) {
-    console.error('Error fetching points:', error)
-    return Response.json(
-      { success: false, error: 'Error interno del servidor' },
-      { status: 500 }
-    )
+    console.error('GET /api/clientes/puntos error:', error)
+    return errorResponse('Error interno del servidor', 500)
   }
 }
