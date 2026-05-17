@@ -43,6 +43,17 @@ export default function Navbar() {
       <nav className="bg-primary text-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
+
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
+              <img
+                src="/logo-blanco.png"
+                alt="El Yagua Veterinaria"
+                className="h-10 w-auto navbar-logo-img"
+                loading="eager"
+              />
+            </Link>
+
             {/* Desktop links */}
             <div className="hidden md:flex gap-8 items-center">
               {searchOpen ? (
