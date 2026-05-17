@@ -28,8 +28,7 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Navbar logo styling - hide white background using CSS mask */
-.navbar-logo img {
-  filter: invert(1) contrast(1.2) brightness(1.1) invert(1);
+/* Navbar logo styling */
+#logo-canvas {
   display: block;
 }
