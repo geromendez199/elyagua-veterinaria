@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Consejo, ConsejoCategoria, CONSEJO_CATEGORIES } from '@/types'
 import { BookOpen } from 'lucide-react'
-import VaccinationTable from '@/components/VaccinationTable'
 
 export default function ConsejoPage() {
   const [consejos, setConsejos] = useState<Consejo[]>([])
@@ -166,12 +165,6 @@ export default function ConsejoPage() {
         </div>
       </section>
 
-      {/* Vaccination Table Section */}
-      <section className="bg-primary py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <VaccinationTable showTitle={true} darkBg={true} />
-        </div>
-      </section>
     </div>
   )
 }
