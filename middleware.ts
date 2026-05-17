@@ -30,10 +30,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
-  const isApiAdminRoute = request.nextUrl.pathname.startsWith('/api/admin')
+  const pathname = request.nextUrl.pathname
+  const isAdminLoginPage = pathname === '/admin'
+  const isAdminSubRoute = pathname.startsWith('/admin/') || pathname.startsWith('/api/admin/')
 
-  if ((isAdminRoute || isApiAdminRoute) && !user) {
+  // Solo redirigir si es una subruta de admin y no está autenticado
+  if (isAdminSubRoute && !user) {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 
