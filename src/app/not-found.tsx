@@ -1,16 +1,18 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center px-4">
       <div className="max-w-md">
-        <div className="relative w-20 h-20 mx-auto mb-4 opacity-20">
-          <Image
+        <div className="w-20 h-20 mx-auto mb-4 opacity-20">
+          <LazyImage
             src="/logo-color.png"
             alt="El Yagua Veterinaria"
-            fill
-            className="object-contain"
+            width={80}
+            height={80}
+            className="w-full h-full"
+            objectFit="contain"
           />
         </div>
         <p className="text-8xl font-black text-primary/15 leading-none mb-4">404</p>

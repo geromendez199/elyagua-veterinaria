@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from './LazyImage'
 import { ShoppingCart, Menu, X, Search, Star } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import dynamic from 'next/dynamic'
@@ -47,13 +47,12 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
-              <Image
+              <LazyImage
                 src="/logo-blanco.png"
                 alt="El Yagua Veterinaria"
                 width={180}
                 height={45}
                 className="h-10 w-auto"
-                priority
               />
             </Link>
 

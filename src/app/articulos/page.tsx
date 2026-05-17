@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useFetchData } from '@/hooks'
 import { BookOpen } from 'lucide-react'
+import LazyImage from '@/components/LazyImage'
 
 interface Articulo {
   id: string
@@ -106,12 +106,13 @@ export default function ArticulosPage() {
                 >
                   <div className="relative w-full h-48 bg-gray-100">
                     {articulo.imagen_url ? (
-                      <Image
+                      <LazyImage
                         src={articulo.imagen_url}
                         alt={articulo.titulo}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        width={400}
+                        height={192}
+                        className="w-full h-full"
+                        objectFit="cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-primary/5">

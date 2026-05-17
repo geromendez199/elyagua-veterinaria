@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { ArrowLeft, Loader2, X, Check, BookOpen } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Consejo, ConsejoCategoria, ConsejoTipoMascota, CONSEJO_CATEGORIES } from '@/types'
@@ -295,12 +295,14 @@ export default function AdminConsejos() {
               <div key={consejo.id} className="bg-white rounded-lg p-4 md:p-5 flex items-start gap-4 border-l-4 border-primary hover:shadow-md transition">
                 {/* Image Thumbnail */}
                 {consejo.imagen_url && (
-                  <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                    <Image
+                  <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                    <LazyImage
                       src={consejo.imagen_url}
                       alt={consejo.titulo}
-                      fill
-                      className="object-cover"
+                      width={64}
+                      height={64}
+                      className="w-full h-full"
+                      objectFit="cover"
                     />
                   </div>
                 )}
@@ -394,12 +396,14 @@ export default function AdminConsejos() {
                   className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition"
                 >
                   {imagePreview ? (
-                    <div className="relative w-full h-40 mb-2">
-                      <Image
+                    <div className="w-full h-40 mb-2">
+                      <LazyImage
                         src={imagePreview}
                         alt="Preview"
-                        fill
-                        className="object-contain"
+                        width={600}
+                        height={160}
+                        className="w-full h-full"
+                        objectFit="contain"
                       />
                     </div>
                   ) : (

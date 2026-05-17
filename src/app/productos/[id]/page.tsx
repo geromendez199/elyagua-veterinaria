@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Product } from '@/types'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import AddToCartButton from '@/components/AddToCartButton'
@@ -141,14 +141,15 @@ export default async function ProductoDetallePage({ params }: PageProps) {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Imagen */}
-            <div className="relative aspect-square bg-gray-100">
+            <div className="aspect-square bg-gray-100">
               {product.imagen_url ? (
-                <Image
+                <LazyImage
                   src={product.imagen_url}
                   alt={product.nombre}
-                  fill
-                  className="object-contain p-6"
-                  priority
+                  width={500}
+                  height={500}
+                  className="w-full h-full object-contain p-6"
+                  objectFit="contain"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">

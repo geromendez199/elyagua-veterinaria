@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria } from '@/types'
 import { ArrowLeft, Plus, Trash2, Edit2, LogOut, BookOpen, Eye, EyeOff, Upload, Camera, Loader2 } from 'lucide-react'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 
 const CATEGORIAS: ArticuloCategoria[] = ['Nutrición', 'Salud', 'Prevención', 'Cuidados', 'General']
@@ -289,12 +289,13 @@ export default function AdminInfoPage() {
                 {/* Miniatura */}
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0 flex items-center justify-center">
                   {art.imagen_url ? (
-                    <Image
+                    <LazyImage
                       src={art.imagen_url}
                       alt={art.titulo}
                       width={64}
                       height={64}
                       className="w-full h-full object-contain"
+                      objectFit="contain"
                     />
                   ) : (
                     <BookOpen size={20} className="text-gray-300" />
@@ -368,12 +369,13 @@ export default function AdminInfoPage() {
                 >
                   {currentImage ? (
                     <div className="relative">
-                      <Image
+                      <LazyImage
                         src={currentImage}
                         alt="preview"
                         width={600}
                         height={400}
                         className="w-full max-h-72 object-contain bg-gray-50"
+                        objectFit="contain"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 rounded-xl">
                         <Camera size={22} className="text-white" />

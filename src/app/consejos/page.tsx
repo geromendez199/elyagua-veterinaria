@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { supabase } from '@/lib/supabase'
 import { Consejo, ConsejoCategoria, CONSEJO_CATEGORIES } from '@/types'
 import { BookOpen } from 'lucide-react'
@@ -128,14 +128,15 @@ export default function ConsejoPage() {
                     className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition border-l-4 border-primary"
                   >
                     {/* Image */}
-                    <div className="relative w-full h-48 bg-gray-100">
+                    <div className="w-full h-48 bg-gray-100">
                       {consejo.imagen_url ? (
-                        <Image
+                        <LazyImage
                           src={consejo.imagen_url}
                           alt={consejo.titulo}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          width={400}
+                          height={192}
+                          className="w-full h-full"
+                          objectFit="cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-primary/5">

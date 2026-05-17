@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ShoppingCart, Check } from 'lucide-react'
 
 import { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/lib/formatPrice'
+import LazyImage from './LazyImage'
 
 interface ProductCarouselProps {
   products: Product[]
@@ -28,7 +28,7 @@ function CarouselCard({ product }: { product: Product }) {
       <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           {product.imagen_url ? (
-            <Image src={product.imagen_url} alt={product.nombre} fill className="object-contain p-3 group-hover:scale-105 transition duration-300" />
+            <LazyImage src={product.imagen_url} alt={product.nombre} width={400} height={400} className="w-full h-full p-3 group-hover:scale-105 transition duration-300" objectFit="contain" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
               <div className="text-center">

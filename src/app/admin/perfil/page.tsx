@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Save, LogOut, Loader2 } from 'lucide-react'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 
 interface AdminProfile {
@@ -114,7 +114,7 @@ export default function AdminPerfilPage() {
             <Link href="/admin/dashboard" className="hover:bg-gray-100 p-1.5 rounded-lg transition">
               <ArrowLeft size={20} className="text-gray-600" />
             </Link>
-            <Image src="/logo-color.png" alt="El Yagua" width={120} height={60} className="h-10 w-auto" />
+            <LazyImage src="/logo-color.png" alt="El Yagua" width={120} height={60} className="h-10 w-auto" />
             <div className="hidden sm:block border-l border-gray-200 pl-3">
               <p className="text-xs text-gray-400">Mi Perfil</p>
               <p className="text-sm font-semibold text-gray-700">{profile.nombre}</p>

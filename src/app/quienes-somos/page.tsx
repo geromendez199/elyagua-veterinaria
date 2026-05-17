@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 import { Heart, Target, Award } from 'lucide-react'
 
@@ -34,15 +34,14 @@ export default function QuienesSomosPage() {
 
           {/* Foto del Equipo */}
           <div className="rounded-2xl overflow-hidden shadow-xl mb-12">
-            <div className="relative w-full h-[300px] md:h-[500px]">
-              <Image
-                src="/team.jpg"
-                alt="Equipo de El Yagua Veterinaria"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
+            <LazyImage
+              src="/team.jpg"
+              alt="Equipo de El Yagua Veterinaria"
+              width={1200}
+              height={500}
+              className="w-full h-auto"
+              objectFit="cover"
+            />
           </div>
 
           {/* Valores */}

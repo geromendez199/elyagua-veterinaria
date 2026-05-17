@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product, Category } from '@/types'
 import { Edit2, Trash2, LogOut, Plus, X, Upload, Camera, Loader2, ShoppingBag, AlertCircle, Users, LayoutDashboard, Search } from 'lucide-react'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 import { LOW_STOCK_THRESHOLD } from '@/lib/constants'
@@ -480,7 +480,7 @@ export default function AdminProductosPage() {
                   </div>
                 ) : product.imagen_url ? (
                   <>
-                    <Image src={product.imagen_url} alt={product.nombre} width={56} height={56} className="w-14 h-14 object-cover rounded-lg" />
+                    <LazyImage src={product.imagen_url} alt={product.nombre} width={56} height={56} className="w-14 h-14 object-cover rounded-lg" objectFit="cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-lg">
                       <Camera size={14} className="text-white" />
                     </div>
@@ -594,12 +594,13 @@ export default function AdminProductosPage() {
                         </div>
                       ) : product.imagen_url ? (
                         <>
-                          <Image
+                          <LazyImage
                             src={product.imagen_url}
                             alt={product.nombre}
                             width={56}
                             height={56}
                             className="w-14 h-14 object-cover rounded-lg"
+                            objectFit="cover"
                           />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-lg">
                             <Camera size={16} className="text-white" />
@@ -770,7 +771,7 @@ export default function AdminProductosPage() {
                   className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
                 >
                   {imagePreview ? (
-                    <Image src={imagePreview} alt="preview" width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" />
+                    <LazyImage src={imagePreview} alt="preview" width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" objectFit="contain" />
                   ) : (
                     <div className="py-4 text-gray-400">
                       <Upload size={32} className="mx-auto mb-2" />
@@ -941,12 +942,12 @@ export default function AdminProductosPage() {
                 >
                   {editImagePreview ? (
                     <div>
-                      <Image src={editImagePreview} alt="preview" width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" />
+                      <LazyImage src={editImagePreview} alt="preview" width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" objectFit="contain" />
                       <p className="text-xs text-primary mt-2">Nueva imagen seleccionada — clic para cambiar</p>
                     </div>
                   ) : editProduct.imagen_url ? (
                     <div>
-                      <Image src={editProduct.imagen_url} alt={editProduct.nombre} width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" />
+                      <LazyImage src={editProduct.imagen_url} alt={editProduct.nombre} width={200} height={200} className="mx-auto max-h-40 w-auto object-contain rounded" objectFit="contain" />
                       <p className="text-xs text-gray-400 mt-2">Clic para cambiar la imagen</p>
                     </div>
                   ) : (

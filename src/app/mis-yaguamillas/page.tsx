@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Cliente, Product } from '@/types'
 import { Search, Star, TrendingUp, Calendar, Loader2, ShoppingCart, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { formatPrice } from '@/lib/formatPrice'
 import { useCart } from '@/context/CartContext'
 
@@ -408,14 +408,15 @@ export default function MisYaguamillasPage() {
                   className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden border border-gray-100"
                 >
                   {/* Imagen */}
-                  <div className="relative h-48 bg-gray-100">
+                  <div className="h-48 bg-gray-100">
                     {producto.imagen_url ? (
-                      <Image
+                      <LazyImage
                         src={producto.imagen_url}
                         alt={producto.nombre}
-                        fill
-                        className="object-cover"
-                        sizes="300px"
+                        width={300}
+                        height={192}
+                        className="w-full h-full"
+                        objectFit="cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">

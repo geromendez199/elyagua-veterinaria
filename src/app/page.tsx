@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { ShieldCheck, Stethoscope, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import ProductCarousel from '@/components/ProductCarousel'
@@ -34,13 +34,12 @@ export default async function Home() {
       <section className="bg-primary text-white py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col items-center justify-center text-center gap-6">
-            <Image
+            <LazyImage
               src="/logo-blanco-vertical.png"
               alt="El Yagua Veterinaria"
               width={200}
               height={250}
               className="h-36 md:h-48 w-auto mx-auto"
-              priority
             />
             <div className="max-w-2xl mx-auto px-2 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">¿En qué podemos ayudarte?</h1>
@@ -78,13 +77,13 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Foto */}
             <div className="rounded-2xl overflow-hidden shadow-lg">
-              <Image
+              <LazyImage
                 src="/team.jpg"
                 alt="Equipo de El Yagua Veterinaria"
                 width={600}
                 height={600}
                 className="w-full h-auto object-cover"
-                priority
+                objectFit="cover"
               />
             </div>
 

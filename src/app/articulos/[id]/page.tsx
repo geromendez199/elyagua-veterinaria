@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Calendar, User } from 'lucide-react'
 
@@ -105,13 +105,14 @@ export default function ArticuloDetailPage() {
       <section className="py-12">
         <div className="max-w-4xl mx-auto px-4">
           {articulo.imagen_url && (
-            <div className="relative w-full h-96 rounded-2xl overflow-hidden mb-8 shadow-lg">
-              <Image
+            <div className="w-full rounded-2xl overflow-hidden mb-8 shadow-lg">
+              <LazyImage
                 src={articulo.imagen_url}
                 alt={articulo.titulo}
-                fill
-                className="object-cover"
-                priority
+                width={800}
+                height={384}
+                className="w-full h-auto"
+                objectFit="cover"
               />
             </div>
           )}

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X } from 'lucide-react'
 import { Product } from '@/types'
-import Image from 'next/image'
+import LazyImage from './LazyImage'
 import { formatPrice } from '@/lib/formatPrice'
 
 interface SearchBarProps {
@@ -104,12 +104,13 @@ export default function SearchBar({ products = [] }: SearchBarProps) {
               }`}
             >
               {product.imagen_url ? (
-                <Image
+                <LazyImage
                   src={product.imagen_url}
                   alt={product.nombre}
                   width={40}
                   height={40}
                   className="w-10 h-10 object-cover rounded-lg shrink-0"
+                  objectFit="cover"
                 />
               ) : (
                 <div className="w-10 h-10 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center">

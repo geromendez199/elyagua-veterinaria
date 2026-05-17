@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { notFound } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Articulo, ArticuloCategoria } from '@/types'
@@ -122,14 +122,13 @@ export default async function ArticuloPage({ params }: { params: Promise<{ slug:
             {/* Imagen — columna derecha (2/5), sticky al hacer scroll */}
             <div className="md:col-span-2 md:sticky md:top-24">
               <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
-                <Image
+                <LazyImage
                   src={art.imagen_url!}
                   alt={art.titulo}
                   width={600}
                   height={600}
                   className="w-full h-auto object-contain"
-                  priority
-                  sizes="(max-width: 768px) 100vw, 40vw"
+                  objectFit="contain"
                 />
               </div>
             </div>

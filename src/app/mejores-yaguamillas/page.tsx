@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Product } from '@/types'
 import Link from 'next/link'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 import { Star, ShoppingCart, Loader2, ArrowRight } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { useCart } from '@/context/CartContext'
@@ -78,14 +78,15 @@ export default function MejoresYaguamillasPage() {
                   </div>
 
                   {/* Imagen */}
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     {producto.imagen_url ? (
-                      <Image
+                      <LazyImage
                         src={producto.imagen_url}
                         alt={producto.nombre}
-                        fill
-                        className="object-cover"
-                        sizes="100px"
+                        width={100}
+                        height={100}
+                        className="w-full h-full"
+                        objectFit="cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">

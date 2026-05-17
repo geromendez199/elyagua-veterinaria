@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Image from 'next/image'
+import LazyImage from '@/components/LazyImage'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <Image
+          <LazyImage
             src="/logo-color.png"
             alt="El Yagua Veterinaria"
             width={200}

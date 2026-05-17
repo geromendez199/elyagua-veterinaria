@@ -2,7 +2,6 @@
 
 import { Product } from '@/types'
 import { ShoppingCart, Check, Share2, Heart } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
@@ -10,6 +9,7 @@ import { useState } from 'react'
 import { formatPrice } from '@/lib/formatPrice'
 import { LOW_STOCK_THRESHOLD, SITE_URL } from '@/lib/constants'
 import PointsBadge from './PointsBadge'
+import LazyImage from './LazyImage'
 
 interface ProductCardProps {
   product: Product
@@ -40,12 +40,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition h-full flex flex-col group">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           {product.imagen_url ? (
-            <Image
+            <LazyImage
               src={product.imagen_url}
               alt={product.nombre}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-contain p-3 group-hover:scale-105 transition duration-300"
+              width={400}
+              height={400}
+              className="w-full h-full p-3 group-hover:scale-105 transition duration-300"
+              objectFit="contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-gray-200 group-hover:to-gray-300 transition">
