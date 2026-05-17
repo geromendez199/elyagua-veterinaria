@@ -46,32 +46,11 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
-              <canvas
-                id="logo-canvas"
-                style={{ display: 'block', height: '40px', width: 'auto' }}
-              />
               <img
-                src="/logo-blanco.png"
+                src="/logo-color.png"
                 alt="El Yagua Veterinaria"
-                id="logo-img"
-                style={{ display: 'none' }}
-                onLoad={(e) => {
-                  const img = e.currentTarget as HTMLImageElement
-                  const canvas = document.getElementById('logo-canvas') as HTMLCanvasElement
-                  if (!canvas) return
-                  canvas.width = img.width
-                  canvas.height = img.height
-                  const ctx = canvas.getContext('2d')
-                  if (!ctx) return
-                  ctx.drawImage(img, 0, 0)
-                  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-                  const data = imageData.data
-                  for (let i = 3; i < data.length; i += 4) {
-                    const r = data[i - 3], g = data[i - 2], b = data[i - 1]
-                    if (r > 200 && g > 200 && b > 200) data[i] = 0
-                  }
-                  ctx.putImageData(imageData, 0, 0)
-                }}
+                className="h-10 w-auto"
+                loading="eager"
               />
             </Link>
 
