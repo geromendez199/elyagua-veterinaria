@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ShoppingCart, Menu, X, Search, Star } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import dynamic from 'next/dynamic'
@@ -47,16 +46,12 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0" onClick={() => { setMenuOpen(false); closeSearch() }}>
-              <div className="navbar-logo relative h-10 w-44">
-                <Image
-                  src="/logo-blanco.png"
-                  alt="El Yagua Veterinaria"
-                  fill
-                  priority
-                  className="object-contain object-left"
-                  sizes="(max-width: 768px) 120px, 180px"
-                />
-              </div>
+              <img
+                src="/logo-blanco.png"
+                alt="El Yagua Veterinaria"
+                className="h-10 w-auto"
+                loading="eager"
+              />
             </Link>
 
             {/* Desktop links */}
