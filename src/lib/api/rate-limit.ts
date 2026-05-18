@@ -104,15 +104,45 @@ export function withRateLimit(
 ) {
   return async (request: Request): Promise<Response> => {
     const ip = getClientIp(request)
+    const key = `${ip}:${endpoint}`
+    const now = Date.now()
 
-    if (await checkRateLimit(ip, endpoint, options)) {
+    if (!memoryStore[key]) {
+      memoryStore[key] = { count: 0, resetTime: now + options.windowMs }
+    }
+
+    const record = memoryStore[key]
+    if (now > record.resetTime) {
+      record.count = 0
+      record.resetTime = now + options.windowMs
+    }
+
+    const isLimited = await checkRateLimit(ip, endpoint, options)
+    const remaining = Math.max(0, options.limit - record.count)
+    const resetTime = new Date(record.resetTime).toISOString()
+
+    if (isLimited) {
       return NextResponse.json(
         { success: false, error: 'Too many requests. Try again later.' },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': options.limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': resetTime,
+            'Retry-After': Math.ceil((record.resetTime - now) / 1000).toString(),
+          },
+        }
       )
     }
 
-    return handler(request)
+    const response = await handler(request)
+    const newResponse = new NextResponse(response.body, response)
+    newResponse.headers.set('X-RateLimit-Limit', options.limit.toString())
+    newResponse.headers.set('X-RateLimit-Remaining', remaining.toString())
+    newResponse.headers.set('X-RateLimit-Reset', resetTime)
+
+    return newResponse
   }
 }
 
