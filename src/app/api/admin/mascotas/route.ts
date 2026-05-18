@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const body = await request.json()
@@ -39,9 +40,9 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+async function deleteHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { searchParams } = new URL(request.url)
@@ -66,3 +67,6 @@ export async function DELETE(request: Request) {
     return errorResponse('Error interno', 500)
   }
 }
+
+export const POST = withRateLimit(postHandler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'admin-mascotas-post')
+export const DELETE = withRateLimit(deleteHandler, { limit: 10, windowMs: 15 * 60 * 1000 }, 'admin-mascotas-delete')

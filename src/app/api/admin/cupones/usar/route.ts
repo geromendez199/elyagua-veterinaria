@@ -1,8 +1,13 @@
 import { supabase } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST(request: Request) {
+async function handler(request: Request) {
   try {
+    const { error: authError } = await requireAuth()
+    if (authError) return authError
+
     const { cupon_id, pedido_id } = await request.json()
 
     if (!cupon_id || !pedido_id) {
@@ -28,3 +33,5 @@ export async function POST(request: Request) {
     return errorResponse('Error interno', 500)
   }
 }
+
+export const POST = withRateLimit(handler, { limit: 10, windowMs: 15 * 60 * 1000 }, 'admin-cupones-usar')

@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function PATCH(request: Request) {
+async function handler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { producto_id, puntos } = await request.json()
@@ -39,3 +40,5 @@ export async function PATCH(request: Request) {
     return errorResponse('Error interno del servidor', 500)
   }
 }
+
+export const PATCH = withRateLimit(handler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'admin-productos-puntos')

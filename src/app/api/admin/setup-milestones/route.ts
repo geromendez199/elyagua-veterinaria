@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { requireAuth } from '@/lib/api/auth'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST() {
+async function handler(_request: Request) {
   try {
     const { error: authError } = await requireAuth()
     if (authError) return authError
@@ -55,3 +56,5 @@ export async function POST() {
     return errorResponse(String(error), 500)
   }
 }
+
+export const POST = withRateLimit(handler, { limit: 3, windowMs: 60 * 60 * 1000 }, 'admin-setup-milestones')
