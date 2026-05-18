@@ -167,7 +167,7 @@ export default function AdminInfoPage() {
       // Auto-generate resumen from the first paragraph (max 200 chars)
       const resumen = form.contenido.split('\n\n')[0].slice(0, 200).trimEnd()
 
-      const payload = {
+      const payload: any = {
         titulo: form.titulo.trim(),
         slug: form.slug.trim() || toSlug(form.titulo),
         resumen,
@@ -175,11 +175,13 @@ export default function AdminInfoPage() {
         imagen_url: imagen_url || null,
         autor: 'El Yagua Veterinaria',
         categoria: form.categoria,
-        tipo_mascota: form.tipo_mascota,
-        veterinario_autor: form.veterinario_autor.trim() || null,
         activo: form.activo,
         updated_at: new Date().toISOString(),
       }
+
+      // Solo agregar campos opcionales si tienen valor
+      if (form.tipo_mascota) payload.tipo_mascota = form.tipo_mascota
+      if (form.veterinario_autor?.trim()) payload.veterinario_autor = form.veterinario_autor.trim()
 
       if (editingId) {
         const { error } = await supabase.from('articulos').update(payload).eq('id', editingId)
@@ -194,7 +196,8 @@ export default function AdminInfoPage() {
       closeModal()
       await fetchArticulos()
     } catch (err: unknown) {
-      showToast('Error: ' + (err instanceof Error ? err.message : String(err)))
+      const errorMsg = err instanceof Error ? err.message : typeof err === 'object' && err !== null && 'message' in err ? String((err as any).message) : String(err)
+      showToast('Error: ' + (errorMsg || 'Error desconocido'))
     } finally {
       setSaving(false)
       setUploadingImage(false)
