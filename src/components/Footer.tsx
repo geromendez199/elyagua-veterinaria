@@ -1,5 +1,4 @@
 import { MapPin, Phone } from 'lucide-react'
-import LazyImage from './LazyImage'
 import Link from 'next/link'
 import InstagramIcon from './InstagramIcon'
 import FacebookIcon from './FacebookIcon'
@@ -15,11 +14,9 @@ export default function Footer() {
         {/* Logo + tagline */}
         <div className="flex flex-col items-center text-center mb-10 md:mb-12">
           <Link href="/">
-            <LazyImage
+            <img
               src="/logo-blanco.png"
               alt="El Yagua Veterinaria"
-              width={180}
-              height={50}
               className="h-12 w-auto mb-3 opacity-90 hover:opacity-100 transition"
             />
           </Link>
