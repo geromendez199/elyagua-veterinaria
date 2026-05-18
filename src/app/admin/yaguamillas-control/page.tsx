@@ -4,19 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Cliente } from '@/types'
-import { ArrowLeft, Gift, Star, Zap, Loader2, Search, Trash2, Plus, X, Edit2, Check } from 'lucide-react'
+import { ArrowLeft, Star, Zap, Loader2, Search, Trash2, Plus, Edit2, Check } from 'lucide-react'
 import Link from 'next/link'
-import { formatPrice } from '@/lib/formatPrice'
-
-interface Cupon {
-  id: string
-  cliente_id: string
-  codigo: string
-  descuento_porcentaje: number
-  usado: boolean
-  auto_generado?: boolean
-  created_at: string
-}
 
 interface Milestone {
   id: string
@@ -32,9 +21,8 @@ interface ClienteConInfo extends Cliente {
 
 export default function YaguamillasControlPage() {
   const router = useRouter()
-  const [tab, setTab] = useState<'clientes' | 'cupones' | 'hitos'>('clientes')
+  const [tab, setTab] = useState<'clientes' | 'hitos'>('clientes')
   const [clientes, setClientes] = useState<ClienteConInfo[]>([])
-  const [cupones, setCupones] = useState<Cupon[]>([])
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -47,8 +35,6 @@ export default function YaguamillasControlPage() {
   const [adjustingCliente, setAdjustingCliente] = useState<string | null>(null)
   const [adjustAmount, setAdjustAmount] = useState('')
   const [adjustReason, setAdjustReason] = useState('')
-  const [showCuponForm, setShowCuponForm] = useState(false)
-  const [cuponForm, setCuponForm] = useState({ cliente_id: '', descuento: '', codigo: '', es_general: true })
 
   useEffect(() => {
     const init = async () => {
@@ -57,7 +43,7 @@ export default function YaguamillasControlPage() {
         router.push('/admin')
         return
       }
-      await Promise.all([fetchClientes(), fetchCupones(), fetchMilestones()])
+      await Promise.all([fetchClientes(), fetchMilestones()])
     }
     init()
   }, [router])
@@ -90,18 +76,6 @@ export default function YaguamillasControlPage() {
       }
     } catch (error) {
       console.error('Error fetching clientes:', error)
-    }
-  }
-
-  const fetchCupones = async () => {
-    try {
-      const { data } = await supabase
-        .from('cupones')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setCupones(data || [])
-    } catch (error) {
-      console.error('Error fetching cupones:', error)
     }
   }
 
@@ -160,41 +134,38 @@ export default function YaguamillasControlPage() {
       return
     }
 
+    const payload = {
+      millas_requeridas: parseInt(milestoneForm.millas),
+      descuento_porcentaje: parseInt(milestoneForm.descuento),
+      activo: milestoneForm.activo,
+    }
+
     try {
-      const body = {
-        millas_requeridas: parseInt(milestoneForm.millas),
-        descuento_porcentaje: parseInt(milestoneForm.descuento),
-        activo: milestoneForm.activo,
-      }
+      const { error } = editingMilestone
+        ? await supabase
+            .from('milestones')
+            .update({ ...payload, updated_at: new Date().toISOString() })
+            .eq('id', editingMilestone.id)
+        : await supabase.from('milestones').insert([payload])
 
-      const url = '/api/admin/milestones'
-      const method = editingMilestone ? 'PUT' : 'POST'
-      const payload = editingMilestone ? { ...body, id: editingMilestone.id } : body
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      const data = await res.json()
-      if (data.success) {
-        alert('✓ Hito guardado')
-        setShowMilestoneForm(false)
-        setEditingMilestone(null)
-        setMilestoneForm({ millas: '', descuento: '', activo: true })
-        await fetchMilestones()
-      } else {
-        const errorMsg = data.error || 'Error desconocido'
-        if (errorMsg.includes('row-level security')) {
+      if (error) {
+        const msg = error.message || ''
+        if (msg.includes('row-level security')) {
           alert('Error de RLS. Ve a /admin/fix-rls para arreglarlo.')
           window.location.href = '/admin/fix-rls'
-        } else if (errorMsg.includes('duplicate key') || errorMsg.includes('unique constraint')) {
+        } else if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
           alert('Este hito de YaguaMillas ya existe. Intenta con otro número de millas.')
         } else {
-          alert('Error: ' + errorMsg)
+          alert('Error: ' + msg)
         }
+        return
       }
+
+      alert('✓ Hito guardado')
+      setShowMilestoneForm(false)
+      setEditingMilestone(null)
+      setMilestoneForm({ millas: '', descuento: '', activo: true })
+      await fetchMilestones()
     } catch (error) {
       alert('Error: ' + String(error))
     }
@@ -204,57 +175,12 @@ export default function YaguamillasControlPage() {
     if (!confirm('¿Eliminar este hito?')) return
 
     try {
-      const res = await fetch(`/api/admin/milestones?id=${id}`, { method: 'DELETE' })
-      const data = await res.json()
-      if (data.success) {
-        await fetchMilestones()
-      }
-    } catch (error) {
-      alert('Error: ' + String(error))
-    }
-  }
-
-  const handleDeleteCupon = async (cuponId: string) => {
-    if (!confirm('¿Eliminar este cupón?')) return
-    try {
-      await supabase.from('cupones').delete().eq('id', cuponId)
-      await fetchCupones()
-    } catch (error) {
-      alert('Error: ' + String(error))
-    }
-  }
-
-  const handleCreateCupon = async () => {
-    if (!cuponForm.descuento || !cuponForm.codigo) {
-      alert('Completa código y descuento')
-      return
-    }
-
-    if (!cuponForm.es_general && !cuponForm.cliente_id) {
-      alert('Selecciona un cliente o marca como general')
-      return
-    }
-
-    try {
-      const { error } = await supabase.from('cupones').insert([
-        {
-          cliente_id: cuponForm.es_general ? null : cuponForm.cliente_id,
-          codigo: cuponForm.codigo,
-          descuento_porcentaje: parseInt(cuponForm.descuento),
-          activo: true,
-          usado: false,
-        },
-      ])
-
+      const { error } = await supabase.from('milestones').delete().eq('id', id)
       if (error) {
         alert('Error: ' + error.message)
         return
       }
-
-      alert('✓ Cupón creado')
-      setCuponForm({ cliente_id: '', descuento: '', codigo: '', es_general: true })
-      setShowCuponForm(false)
-      await fetchCupones()
+      await fetchMilestones()
     } catch (error) {
       alert('Error: ' + String(error))
     }
@@ -263,14 +189,6 @@ export default function YaguamillasControlPage() {
   const filteredClientes = clientes.filter(
     (c) => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || c.dni.includes(searchTerm)
   )
-
-  const filteredCupones = cupones.filter((c) => {
-    const cliente = clientes.find((cl) => cl.id === c.cliente_id)
-    return (
-      cliente &&
-      (cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || cliente.dni.includes(searchTerm))
-    )
-  })
 
   if (loading) {
     return (
@@ -300,7 +218,6 @@ export default function YaguamillasControlPage() {
           <div className="flex gap-0">
             {[
               { id: 'clientes', label: 'Clientes & YaguaMillas', icon: Star },
-              { id: 'cupones', label: 'Cupones', icon: Gift },
               { id: 'hitos', label: 'Hitos de YaguaMillas', icon: Zap },
             ].map(({ id, label, icon: Icon }) => (
               <button
@@ -423,183 +340,6 @@ export default function YaguamillasControlPage() {
             )}
           </div>
         )}
-
-        {/* CUPONES TAB */}
-        {tab === 'cupones' && (
-          <div className="space-y-4">
-            {!showCuponForm ? (
-              <button
-                onClick={() => setShowCuponForm(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
-              >
-                <Plus size={20} />
-                Crear Cupón Manual
-              </button>
-            ) : (
-              <div className="bg-white p-6 rounded-lg shadow border">
-                <h2 className="text-xl font-bold mb-4">Crear Cupón Manual</h2>
-
-                <div className="flex gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={cuponForm.es_general}
-                      onChange={() => setCuponForm({ ...cuponForm, es_general: true, cliente_id: '' })}
-                      className="w-4 h-4"
-                    />
-                    <span className="font-semibold">Cupón General (para cualquier cliente)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={!cuponForm.es_general}
-                      onChange={() => setCuponForm({ ...cuponForm, es_general: false })}
-                      className="w-4 h-4"
-                    />
-                    <span className="font-semibold">Cupón para Cliente Específico</span>
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  {!cuponForm.es_general && (
-                    <select
-                      value={cuponForm.cliente_id}
-                      onChange={(e) => setCuponForm({ ...cuponForm, cliente_id: e.target.value })}
-                      className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 text-gray-900"
-                    >
-                      <option value="">Seleccionar cliente</option>
-                      {clientes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre} ({c.dni})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <input
-                    type="text"
-                    value={cuponForm.codigo}
-                    onChange={(e) => setCuponForm({ ...cuponForm, codigo: e.target.value })}
-                    placeholder="Código del cupón (ej: YAGUA10)"
-                    className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
-                  />
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={cuponForm.descuento}
-                    onChange={(e) => setCuponForm({ ...cuponForm, descuento: e.target.value })}
-                    placeholder="Descuento %"
-                    className="border-2 border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600 text-gray-900"
-                  />
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={handleCreateCupon}
-                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg font-bold text-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl flex-1"
-                  >
-                    <Check size={20} />
-                    Crear
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowCuponForm(false)
-                      setCuponForm({ cliente_id: '', descuento: '', codigo: '', es_general: true })
-                    }}
-                    className="bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transition cursor-pointer shadow-md hover:shadow-lg flex-1"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por cliente..."
-                className="w-full border-2 border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-primary focus:bg-white bg-gray-50 placeholder-gray-600"
-              />
-            </div>
-
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Cliente</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Código</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Descuento</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Estado</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Tipo</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCupones.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                        No hay cupones
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredCupones.map((cupon) => {
-                      const cliente = clientes.find((c) => c.id === cupon.cliente_id)
-                      const isGeneral = !cupon.cliente_id
-                      return (
-                        <tr key={cupon.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm">
-                            {isGeneral ? (
-                              <span className="font-bold text-blue-600">🌍 General</span>
-                            ) : (
-                              cliente?.nombre || '—'
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-sm font-mono">{cupon.codigo}</td>
-                          <td className="px-6 py-4 text-sm font-bold text-primary">
-                            {cupon.descuento_porcentaje}%
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full font-semibold ${
-                                cupon.usado
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-green-100 text-green-800'
-                              }`}
-                            >
-                              {cupon.usado ? 'Usado' : 'Disponible'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                cupon.auto_generado
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {cupon.auto_generado ? 'Automático' : 'Manual'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <button
-                              onClick={() => handleDeleteCupon(cupon.id)}
-                              className="text-red-600 hover:text-red-800 transition"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         {/* HITOS TAB */}
         {tab === 'hitos' && (
           <div className="space-y-4">

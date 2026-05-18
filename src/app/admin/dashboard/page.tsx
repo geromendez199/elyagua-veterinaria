@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, BookOpen, Star } from 'lucide-react'
-import LazyImage from '@/components/LazyImage'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 
@@ -203,7 +202,7 @@ export default function AdminDashboardPage() {
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <LazyImage src="/logo-color.png" alt="El Yagua" width={120} height={60} className="h-10 w-auto" />
+            <img src="/logo-color.png" alt="El Yagua" className="h-10 w-auto" />
             <Link href="/admin/perfil" className="hidden sm:block border-l border-gray-200 pl-3 hover:opacity-70 transition">
               <p className="text-xs text-gray-400">Panel de administración</p>
               <p className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{userName || userEmail}</p>

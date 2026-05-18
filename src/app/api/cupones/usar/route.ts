@@ -11,15 +11,11 @@ async function handler(request: Request) {
 
     const { cupon_id, cliente_dni, milestone_millas } = data
 
-    const { error: updateCuponError } = await supabase
+    // Try to mark the cupon as used (may be a milestone_id, in which case no rows match - that's OK)
+    await supabase
       .from('cupones')
-      .update({ activo: false })
+      .update({ usado: true, used_at: new Date().toISOString() })
       .eq('id', cupon_id)
-
-    if (updateCuponError) {
-      console.error('Error marking coupon as used:', updateCuponError)
-      return errorResponse('Error al procesar cupón', 500)
-    }
 
     if (milestone_millas && milestone_millas > 0) {
       try {

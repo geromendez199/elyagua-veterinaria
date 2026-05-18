@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface Milestone {
   id: string
@@ -57,29 +58,26 @@ export default function MilestonesPage() {
     }
 
     try {
-      const url = '/api/admin/milestones'
-      const method = editingMilestone ? 'PUT' : 'POST'
-      const body = {
-        ...(editingMilestone && { id: editingMilestone.id }),
+      const payload = {
         millas_requeridas: parseInt(formData.millas_requeridas),
         descuento_porcentaje: parseInt(formData.descuento_porcentaje),
         activo: formData.activo,
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      const { error } = editingMilestone
+        ? await supabase
+            .from('milestones')
+            .update({ ...payload, updated_at: new Date().toISOString() })
+            .eq('id', editingMilestone.id)
+        : await supabase.from('milestones').insert([payload])
 
-      const data = await res.json()
-      if (data.success) {
+      if (error) {
+        alert('Error: ' + error.message)
+      } else {
         fetchMilestones()
         setShowForm(false)
         setEditingMilestone(null)
         setFormData({ millas_requeridas: '', descuento_porcentaje: '', activo: true })
-      } else {
-        alert('Error: ' + data.error)
       }
     } catch (error) {
       console.error('Error saving milestone:', error)
@@ -101,15 +99,12 @@ export default function MilestonesPage() {
     if (!confirm('¿Eliminar este hito?')) return
 
     try {
-      const res = await fetch(`/api/admin/milestones?id=${id}`, {
-        method: 'DELETE',
-      })
+      const { error } = await supabase.from('milestones').delete().eq('id', id)
 
-      const data = await res.json()
-      if (data.success) {
-        fetchMilestones()
+      if (error) {
+        alert('Error: ' + error.message)
       } else {
-        alert('Error: ' + data.error)
+        fetchMilestones()
       }
     } catch (error) {
       console.error('Error deleting milestone:', error)

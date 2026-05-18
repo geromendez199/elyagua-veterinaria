@@ -113,24 +113,29 @@ export default function AdminClientesPage() {
 
     setSavingMascota(true)
     try {
-      const response = await fetch('/api/admin/mascotas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data, error } = await supabase
+        .from('mascotas')
+        .insert([{
           cliente_id: clienteId,
-          ...mascotaForm,
-        }),
-      })
+          nombre: mascotaForm.nombre,
+          especie: mascotaForm.especie,
+          raza: mascotaForm.raza || null,
+          edad: mascotaForm.edad || null,
+          color: mascotaForm.color || null,
+          peso: mascotaForm.peso || null,
+          observaciones: mascotaForm.observaciones || null,
+        }])
+        .select()
 
-      const result = await response.json()
-      if (result.success) {
-        alert('✓ Mascota agregada')
-        await fetchData()
-        setAddingMascotaClienteId(null)
-        setMascotaForm({ nombre: '', especie: 'perro', raza: '', edad: '', color: '', peso: '', observaciones: '' })
-      } else {
-        alert('Error: ' + (result.error || 'No guardado'))
+      if (error) {
+        alert('Error: ' + error.message)
+        return
       }
+
+      alert('✓ Mascota agregada')
+      await fetchData()
+      setAddingMascotaClienteId(null)
+      setMascotaForm({ nombre: '', especie: 'perro', raza: '', edad: '', color: '', peso: '', observaciones: '' })
     } catch (err) {
       alert('Error: ' + String(err))
     } finally {
