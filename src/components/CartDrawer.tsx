@@ -615,6 +615,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
               )}
 
+              {/* ── DNI (opcional) ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={state.formData.dni || ''}
+                    onChange={(e) => handleDniChange(e.target.value)}
+                    className={`${inputCls(false)} pr-9 ${state.dniState === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
+                    placeholder="12345678"
+                    maxLength={8}
+                  />
+                  {state.dniState === 'loading' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 size={15} className="text-gray-400 animate-spin" />
+                    </div>
+                  )}
+                  {state.dniState === 'found' && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Check size={15} className="text-green-500" />
+                    </div>
+                  )}
+                </div>
+                {state.dniState === 'found' ? (
+                  <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Datos cargados automáticamente.</p>
+                ) : (
+                  <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
+                )}
+              </div>
+
               {/* ── Nombre ── */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -698,38 +730,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </label>
                   ))}
                 </div>
-              </div>
-
-              {/* ── DNI (opcional) ── */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  DNI <span className="text-gray-400 font-normal text-xs">(opcional)</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={state.formData.dni || ''}
-                    onChange={(e) => handleDniChange(e.target.value)}
-                    className={`${inputCls(false)} pr-9 ${state.dniState === 'found' ? 'border-green-400 focus:border-green-500' : ''}`}
-                    placeholder="12345678"
-                    maxLength={8}
-                  />
-                  {state.dniState === 'loading' && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 size={15} className="text-gray-400 animate-spin" />
-                    </div>
-                  )}
-                  {state.dniState === 'found' && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Check size={15} className="text-green-500" />
-                    </div>
-                  )}
-                </div>
-                {state.dniState === 'found' ? (
-                  <p className="text-green-600 text-xs mt-1 font-semibold">¡Te reconocemos! Datos cargados automáticamente.</p>
-                ) : (
-                  <p className="text-gray-400 text-xs mt-1">Para que tus próximos pedidos sean más rápidos</p>
-                )}
               </div>
 
               {/* ── YaguaMillas y Cupones ── */}
