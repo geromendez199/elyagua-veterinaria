@@ -23,7 +23,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) setItems(JSON.parse(saved))
-    } catch {}
+    } catch (err) {
+      console.warn('WishlistContext: error leyendo localStorage', err)
+    }
     hydrated.current = true
   }, [])
 
@@ -31,7 +33,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     if (!hydrated.current) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-    } catch {}
+    } catch (err) {
+      console.warn('WishlistContext: error guardando localStorage', err)
+    }
   }, [items])
 
   const addItem = (productId: string) => {

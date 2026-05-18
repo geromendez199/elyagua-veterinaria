@@ -38,7 +38,8 @@ export default function LazyImage({
           ${isLoading ? 'opacity-0' : 'opacity-100'}
         `}
         style={{ objectFit }}
-        onLoadingComplete={() => setIsLoading(false)}
+        onLoad={() => setIsLoading(false)}
+        onError={() => setIsLoading(false)}
         loading={priority ? 'eager' : 'lazy'}
         priority={priority}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -11,6 +11,10 @@ async function handler(request: Request) {
       return errorResponse('DNI requerido')
     }
 
+    if (!/^\d{7,8}$/.test(dni)) {
+      return errorResponse('DNI inválido')
+    }
+
     const { data: cliente, error } = await supabase
       .from('clientes')
       .select('id, dni, nombre, puntos_acumulados')

@@ -31,7 +31,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) setItems(JSON.parse(saved))
-    } catch {}
+    } catch (err) {
+      console.warn('CartContext: error leyendo localStorage', err)
+    }
     hydrated.current = true
   }, [])
 
@@ -40,7 +42,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!hydrated.current) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-    } catch {}
+    } catch (err) {
+      console.warn('CartContext: error guardando localStorage', err)
+    }
   }, [items])
 
   const addItem = (product: Product, quantity: number) => {
