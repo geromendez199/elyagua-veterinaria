@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import LazyImage from '@/components/LazyImage'
 import { supabase } from '@/lib/supabase'
 import { Consejo, ConsejoCategoria, CONSEJO_CATEGORIES } from '@/types'
@@ -123,10 +124,13 @@ export default function ConsejoPage() {
                 const categoryInfo = CONSEJO_CATEGORIES[consejo.categoria as ConsejoCategoria]
                 const categoryLabel = categoryInfo?.label || consejo.categoria
                 return (
-                  <div
+                  <Link
                     key={consejo.id}
-                    className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition border-l-4 border-primary"
+                    href={`/consejos/${consejo.id}`}
+                    className="block group"
                   >
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition border-l-4 border-primary h-full group-hover:translate-y-1"
+                    >
                     {/* Image */}
                     <div className="w-full h-48 bg-gray-100">
                       {consejo.imagen_url ? (
@@ -166,7 +170,8 @@ export default function ConsejoPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  </Link>
                 )
               })}
             </div>
