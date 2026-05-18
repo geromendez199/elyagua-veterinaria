@@ -6,10 +6,20 @@ import LazyImage from '@/components/LazyImage'
 import { ArrowLeft, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
+interface Articulo {
+  id: string
+  titulo: string
+  contenido: string
+  categoria: string
+  tipo_mascota?: string
+  imagen_url?: string
+  created_at?: string
+}
+
 export default function ConsejoDetail() {
   const params = useParams()
   const router = useRouter()
-  const [consejo, setConsejo] = useState<any>(null)
+  const [consejo, setConsejo] = useState<Articulo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -67,13 +77,14 @@ export default function ConsejoDetail() {
     )
   }
 
-  const categoryEmoji = {
+  const categoryEmojis: Record<string, string> = {
     'Nutrición': '🍖',
     'Salud': '💊',
     'Prevención': '🛡️',
     'Cuidados': '✨',
     'General': '📚'
-  }[consejo.categoria] || '📖'
+  }
+  const categoryEmoji = categoryEmojis[consejo?.categoria || ''] || '📖'
 
   const tipoMascota = consejo.tipo_mascota === 'ambos'
     ? '🐕 🐱 Perros y Gatos'
