@@ -27,15 +27,18 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/(.*)',
+        headers: securityHeaders,
+      },
+      {
+        source: '/admin/:path*',
         headers: [
-          ...securityHeaders,
-          { key: 'Cache-Control', value: 'public, max-age=3600, must-revalidate' },
+          { key: 'Cache-Control', value: 'private, no-cache, no-store, must-revalidate' },
         ],
       },
       {
         source: '/api/(.*)',
         headers: [
-          { key: 'Cache-Control', value: 'private, max-age=0, must-revalidate' },
+          { key: 'Cache-Control', value: 'private, no-cache, no-store, must-revalidate' },
         ],
       },
       {
