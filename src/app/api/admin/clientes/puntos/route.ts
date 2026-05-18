@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { adjustClientePuntosSchema, type AdjustClientePuntosInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
@@ -22,8 +22,7 @@ async function handler(request: Request) {
     })
 
     if (rpcError) {
-      console.error('RPC error:', rpcError)
-      return errorResponse(rpcError.message, 500)
+      return dbErrorResponse('admin/clientes/puntos PATCH', rpcError, 'No se pudo ajustar los puntos')
     }
 
     if (!data) {
@@ -32,8 +31,7 @@ async function handler(request: Request) {
 
     return successResponse(data)
   } catch (error) {
-    console.error('PATCH /api/admin/clientes/puntos error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/clientes/puntos PATCH', error)
   }
 }
 

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { createMascotaSchema, type CreateMascotaInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
@@ -30,13 +30,12 @@ async function postHandler(request: Request) {
       .select()
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/mascotas POST', dbError, 'No se pudo crear la mascota')
     }
 
     return successResponse(data)
   } catch (error) {
-    console.error('POST /api/admin/mascotas error:', error)
-    return errorResponse('Error interno', 500)
+    return dbErrorResponse('admin/mascotas POST', error)
   }
 }
 
@@ -58,13 +57,12 @@ async function deleteHandler(request: Request) {
       .eq('id', mascotaId)
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/mascotas DELETE', dbError, 'No se pudo eliminar la mascota')
     }
 
     return successResponse({})
   } catch (error) {
-    console.error('DELETE /api/admin/mascotas error:', error)
-    return errorResponse('Error interno', 500)
+    return dbErrorResponse('admin/mascotas DELETE', error)
   }
 }
 

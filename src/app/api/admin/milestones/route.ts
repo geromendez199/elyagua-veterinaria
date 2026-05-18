@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { createMilestoneSchema, updateMilestoneSchema, type CreateMilestoneInput, type UpdateMilestoneInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
 
-async function getHandler(request: Request) {
+async function getHandler(_request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { data, error: dbError } = await supabase
@@ -16,19 +16,18 @@ async function getHandler(request: Request) {
       .order('millas_requeridas', { ascending: true })
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/milestones GET', dbError, 'No se pudieron obtener los milestones')
     }
 
     return successResponse(data)
   } catch (error) {
-    console.error('GET /api/admin/milestones error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/milestones GET', error)
   }
 }
 
 async function postHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { data, error: validationError } = await validateRequest<CreateMilestoneInput>(request, createMilestoneSchema)
@@ -48,19 +47,18 @@ async function postHandler(request: Request) {
       .select()
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/milestones POST', dbError, 'No se pudo crear el milestone')
     }
 
     return successResponse(dbData?.[0])
   } catch (error) {
-    console.error('POST /api/admin/milestones error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/milestones POST', error)
   }
 }
 
 async function putHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { data, error: validationError } = await validateRequest<UpdateMilestoneInput>(request, updateMilestoneSchema)
@@ -80,19 +78,18 @@ async function putHandler(request: Request) {
       .select()
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/milestones PUT', dbError, 'No se pudo actualizar el milestone')
     }
 
     return successResponse(dbData?.[0])
   } catch (error) {
-    console.error('PUT /api/admin/milestones error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/milestones PUT', error)
   }
 }
 
 async function deleteHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { searchParams } = new URL(request.url)
@@ -108,13 +105,12 @@ async function deleteHandler(request: Request) {
       .eq('id', id)
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/milestones DELETE', dbError, 'No se pudo eliminar el milestone')
     }
 
     return successResponse({})
   } catch (error) {
-    console.error('DELETE /api/admin/milestones error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/milestones DELETE', error)
   }
 }
 

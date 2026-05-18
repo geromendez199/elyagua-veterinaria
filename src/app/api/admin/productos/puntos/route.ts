@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { updateProductoPuntosSchema, type UpdateProductoPuntosInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
@@ -23,7 +23,7 @@ async function handler(request: Request) {
       .single()
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/productos/puntos PATCH', dbError, 'No se pudieron actualizar los puntos')
     }
 
     return successResponse({
@@ -32,8 +32,7 @@ async function handler(request: Request) {
       puntos_nuevo: data.puntos,
     })
   } catch (error) {
-    console.error('PATCH /api/admin/productos/puntos error:', error)
-    return errorResponse('Error interno del servidor', 500)
+    return dbErrorResponse('admin/productos/puntos PATCH', error)
   }
 }
 

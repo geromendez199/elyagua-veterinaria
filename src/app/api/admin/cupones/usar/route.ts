@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { useAdminCuponSchema, type UseAdminCuponInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
@@ -25,13 +25,12 @@ async function handler(request: Request) {
       .eq('id', cupon_id)
 
     if (error) {
-      return errorResponse(error.message, 500)
+      return dbErrorResponse('admin/cupones/usar POST', error, 'No se pudo marcar el cupón')
     }
 
     return successResponse({})
   } catch (error) {
-    console.error('POST /api/admin/cupones/usar error:', error)
-    return errorResponse('Error interno', 500)
+    return dbErrorResponse('admin/cupones/usar POST', error)
   }
 }
 

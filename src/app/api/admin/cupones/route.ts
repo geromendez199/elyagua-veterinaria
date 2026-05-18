@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
-import { errorResponse, successResponse } from '@/lib/api/response'
+import { errorResponse, successResponse, dbErrorResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
 import { createCouponSchema, type CreateCouponInput } from '@/lib/validation/schemas'
 import { validateRequest } from '@/lib/validation/validate-request'
 
 async function postHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { data, error: validationError } = await validateRequest<CreateCouponInput>(request, createCouponSchema)
@@ -55,7 +55,7 @@ async function postHandler(request: Request) {
       .insert(nuevosCupones)
 
     if (insertError) {
-      return errorResponse(insertError.message, 500)
+      return dbErrorResponse('admin/cupones POST', insertError, 'No se pudieron generar los cupones')
     }
 
     return successResponse({
@@ -63,14 +63,13 @@ async function postHandler(request: Request) {
       cupones_disponibles: cuponesPosibles,
     })
   } catch (error) {
-    console.error('POST /api/admin/cupones error:', error)
-    return errorResponse('Error interno', 500)
+    return dbErrorResponse('admin/cupones POST', error)
   }
 }
 
 async function getHandler(request: Request) {
   try {
-    const { user, error } = await requireAuth()
+    const { error } = await requireAuth()
     if (error) return error
 
     const { searchParams } = new URL(request.url)
@@ -88,7 +87,7 @@ async function getHandler(request: Request) {
       .order('created_at', { ascending: true })
 
     if (dbError) {
-      return errorResponse(dbError.message, 500)
+      return dbErrorResponse('admin/cupones GET', dbError, 'No se pudieron obtener los cupones')
     }
 
     return successResponse({
@@ -96,8 +95,7 @@ async function getHandler(request: Request) {
       cupones: data || [],
     })
   } catch (error) {
-    console.error('GET /api/admin/cupones error:', error)
-    return errorResponse('Error interno', 500)
+    return dbErrorResponse('admin/cupones GET', error)
   }
 }
 
