@@ -433,7 +433,6 @@ export default function MisYaguamillasPage() {
                         <Star size={16} className="fill-amber-600 text-amber-600" />
                       </div>
                       <p className="text-xl font-bold text-amber-900">{producto.puntos}</p>
-                      <p className="text-xs text-amber-800 font-semibold">millas</p>
                     </div>
                   </div>
 
