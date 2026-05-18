@@ -2,17 +2,18 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { useAdminCuponSchema, type UseAdminCuponInput } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
     const { error: authError } = await requireAuth()
     if (authError) return authError
 
-    const { cupon_id, pedido_id } = await request.json()
+    const { data: input, error: validationError } = await validateRequest<UseAdminCuponInput>(request, useAdminCuponSchema)
+    if (validationError || !input) return validationError || errorResponse('Datos inválidos', 400)
 
-    if (!cupon_id || !pedido_id) {
-      return errorResponse('cupon_id y pedido_id requeridos')
-    }
+    const { cupon_id, pedido_id } = input
 
     const { error } = await supabase
       .from('cupones')

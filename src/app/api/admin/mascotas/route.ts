@@ -2,18 +2,18 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { createMascotaSchema, type CreateMascotaInput } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function postHandler(request: Request) {
   try {
     const { error } = await requireAuth()
     if (error) return error
 
-    const body = await request.json()
-    const { cliente_id, nombre, especie, raza, edad, color, peso, observaciones } = body
+    const { data: input, error: validationError } = await validateRequest<CreateMascotaInput>(request, createMascotaSchema)
+    if (validationError || !input) return validationError || errorResponse('Datos inválidos', 400)
 
-    if (!cliente_id || !nombre || !especie) {
-      return errorResponse('Datos incompletos')
-    }
+    const { cliente_id, nombre, especie, raza, edad, color, peso, observaciones } = input
 
     const { data, error: dbError } = await supabase
       .from('mascotas')

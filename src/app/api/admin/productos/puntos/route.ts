@@ -2,26 +2,22 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { updateProductoPuntosSchema, type UpdateProductoPuntosInput } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
     const { error } = await requireAuth()
     if (error) return error
 
-    const { producto_id, puntos } = await request.json()
+    const { data: input, error: validationError } = await validateRequest<UpdateProductoPuntosInput>(request, updateProductoPuntosSchema)
+    if (validationError || !input) return validationError || errorResponse('Datos inválidos', 400)
 
-    if (!producto_id || puntos === undefined) {
-      return errorResponse('Datos incompletos')
-    }
-
-    const puntosInt = parseInt(puntos)
-    if (isNaN(puntosInt) || puntosInt < 0) {
-      return errorResponse('Puntos debe ser un número entero no negativo')
-    }
+    const { producto_id, puntos } = input
 
     const { data, error: dbError } = await supabase
       .from('productos')
-      .update({ puntos: puntosInt, updated_at: new Date().toISOString() })
+      .update({ puntos, updated_at: new Date().toISOString() })
       .eq('id', producto_id)
       .select('id, nombre, puntos')
       .single()

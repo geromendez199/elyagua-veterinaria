@@ -2,27 +2,22 @@ import { supabase } from '@/lib/supabase'
 import { requireAuth } from '@/lib/api/auth'
 import { errorResponse, successResponse } from '@/lib/api/response'
 import { withRateLimit } from '@/lib/api/rate-limit'
+import { adjustClientePuntosSchema, type AdjustClientePuntosInput } from '@/lib/validation/schemas'
+import { validateRequest } from '@/lib/validation/validate-request'
 
 async function handler(request: Request) {
   try {
     const { error } = await requireAuth()
     if (error) return error
 
-    const body = await request.json()
-    const { cliente_id, cantidad, motivo } = body
+    const { data: input, error: validationError } = await validateRequest<AdjustClientePuntosInput>(request, adjustClientePuntosSchema)
+    if (validationError || !input) return validationError || errorResponse('Datos inválidos', 400)
 
-    if (!cliente_id || cantidad === undefined || !motivo) {
-      return errorResponse('Datos incompletos')
-    }
-
-    const cantidadInt = parseInt(cantidad)
-    if (isNaN(cantidadInt)) {
-      return errorResponse('Cantidad debe ser un número')
-    }
+    const { cliente_id, cantidad, motivo } = input
 
     const { data, error: rpcError } = await supabase.rpc('adjust_puntos_manual', {
       p_cliente_id: cliente_id,
-      p_cantidad: cantidadInt,
+      p_cantidad: cantidad,
       p_motivo: motivo,
     })
 

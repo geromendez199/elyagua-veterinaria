@@ -66,6 +66,33 @@ export const updateMilestoneSchema = z.object({
   activo: z.boolean().optional(),
 })
 
+export const createMascotaSchema = z.object({
+  cliente_id: z.string().uuid('ID de cliente inválido'),
+  nombre: z.string().min(1, 'Nombre requerido').max(100, 'Nombre demasiado largo'),
+  especie: z.string().min(1, 'Especie requerida').max(50),
+  raza: z.string().max(100).optional().nullable(),
+  edad: z.string().max(50).optional().nullable(),
+  color: z.string().max(50).optional().nullable(),
+  peso: z.string().max(50).optional().nullable(),
+  observaciones: z.string().max(1000).optional().nullable(),
+})
+
+export const updateProductoPuntosSchema = z.object({
+  producto_id: z.string().uuid('ID de producto inválido'),
+  puntos: z.number().int().nonnegative('Puntos no puede ser negativo'),
+})
+
+export const adjustClientePuntosSchema = z.object({
+  cliente_id: z.string().uuid('ID de cliente inválido'),
+  cantidad: z.number().int('Cantidad debe ser un número entero'),
+  motivo: z.string().min(1, 'Motivo requerido').max(500),
+})
+
+export const useAdminCuponSchema = z.object({
+  cupon_id: z.string().uuid('Cupón inválido'),
+  pedido_id: z.string().uuid('Pedido inválido'),
+})
+
 // ── Type Exports ───────────────────────────────────────────────
 export type CheckoutFormData = z.infer<typeof checkoutFormSchema>
 export type DniInput = z.infer<typeof dniSchema>
@@ -75,3 +102,7 @@ export type RegisterPointsInput = z.infer<typeof registerPointsSchema>
 export type CreateCouponInput = z.infer<typeof createCouponSchema>
 export type CreateMilestoneInput = z.infer<typeof createMilestoneSchema>
 export type UpdateMilestoneInput = z.infer<typeof updateMilestoneSchema>
+export type CreateMascotaInput = z.infer<typeof createMascotaSchema>
+export type UpdateProductoPuntosInput = z.infer<typeof updateProductoPuntosSchema>
+export type AdjustClientePuntosInput = z.infer<typeof adjustClientePuntosSchema>
+export type UseAdminCuponInput = z.infer<typeof useAdminCuponSchema>
