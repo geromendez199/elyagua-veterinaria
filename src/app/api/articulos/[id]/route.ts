@@ -1,14 +1,15 @@
 import { createServerSupabaseClient } from '@/lib/api/server-client'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const supabase = await createServerSupabaseClient()
 
     const { data, error } = await supabase
       .from('articulos')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('activo', true)
       .single()
 
