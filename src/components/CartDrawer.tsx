@@ -324,7 +324,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 body: JSON.stringify({
                   cupon_id: appliedCoupon.id,
                   cliente_dni: state.formData.dni,
-                  milestone_millas: (appliedCoupon as any).milestone_millas || 0,
+                  milestone_millas: (appliedCoupon as { milestone_millas?: number }).milestone_millas || 0,
                 }),
               })
             } catch (err) {

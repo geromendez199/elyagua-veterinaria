@@ -12,25 +12,35 @@ async function handler(request: Request) {
     const { cupon_id, cliente_dni, milestone_millas } = data
 
     // Try to mark the cupon as used (may be a milestone_id, in which case no rows match - that's OK)
-    await supabase
+    const { error: cuponError } = await supabase
       .from('cupones')
       .update({ usado: true, used_at: new Date().toISOString() })
       .eq('id', cupon_id)
 
+    if (cuponError) {
+      console.error('Error marking cupon as used:', cuponError)
+    }
+
     if (milestone_millas && milestone_millas > 0) {
       try {
-        const { data: cliente } = await supabase
+        const { data: cliente, error: clienteError } = await supabase
           .from('clientes')
           .select('puntos_acumulados')
           .eq('dni', cliente_dni)
           .single()
 
-        if (cliente) {
+        if (clienteError) {
+          console.error('Error fetching cliente for points deduction:', clienteError)
+        } else if (cliente) {
           const newPoints = Math.max(0, (cliente.puntos_acumulados || 0) - milestone_millas)
-          await supabase
+          const { error: updateError } = await supabase
             .from('clientes')
             .update({ puntos_acumulados: newPoints })
             .eq('dni', cliente_dni)
+
+          if (updateError) {
+            console.error('Error updating cliente points:', updateError)
+          }
         }
       } catch (e) {
         console.error('Error deducting points:', e)
