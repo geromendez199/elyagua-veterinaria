@@ -30,6 +30,8 @@ const emptyForm = {
   contenido: '',
   imagen_url: '',
   categoria: 'General' as ArticuloCategoria,
+  tipo_mascota: null as string | null,
+  veterinario_autor: '',
   activo: true,
 }
 
@@ -100,6 +102,8 @@ export default function AdminInfoPage() {
       contenido: art.contenido,
       imagen_url: art.imagen_url || '',
       categoria: art.categoria,
+      tipo_mascota: (art as any).tipo_mascota || null,
+      veterinario_autor: (art as any).veterinario_autor || '',
       activo: art.activo,
     })
     setImageFile(null)
@@ -171,6 +175,8 @@ export default function AdminInfoPage() {
         imagen_url: imagen_url || null,
         autor: 'El Yagua Veterinaria',
         categoria: form.categoria,
+        tipo_mascota: form.tipo_mascota,
+        veterinario_autor: form.veterinario_autor.trim() || null,
         activo: form.activo,
         updated_at: new Date().toISOString(),
       }
@@ -420,6 +426,33 @@ export default function AdminInfoPage() {
                 >
                   {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+              </div>
+
+              {/* ── Tipo de Mascota ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Para qué mascota</label>
+                <select
+                  value={form.tipo_mascota || ''}
+                  onChange={(e) => setForm(prev => ({ ...prev, tipo_mascota: e.target.value || null }))}
+                  className={inputCls}
+                >
+                  <option value="">Seleccionar (opcional)</option>
+                  <option value="perro">Perros</option>
+                  <option value="gato">Gatos</option>
+                  <option value="ambos">Perros y Gatos</option>
+                </select>
+              </div>
+
+              {/* ── Veterinario Autor ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Veterinario autor</label>
+                <input
+                  type="text"
+                  value={form.veterinario_autor}
+                  onChange={(e) => setForm(prev => ({ ...prev, veterinario_autor: e.target.value }))}
+                  className={inputCls}
+                  placeholder="Ej: Dra. María González (opcional)"
+                />
               </div>
 
               {/* ── Contenido ── */}

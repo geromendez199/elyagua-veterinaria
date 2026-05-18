@@ -86,11 +86,13 @@ export default function ConsejoDetail() {
   }
   const categoryEmoji = categoryEmojis[consejo?.categoria || ''] || '📖'
 
-  const tipoMascota = consejo.tipo_mascota === 'ambos'
-    ? '🐕 🐱 Perros y Gatos'
-    : consejo.tipo_mascota === 'perro'
-    ? '🐕 Perros'
-    : '🐱 Gatos'
+  const tipoMascota = consejo?.tipo_mascota === 'ambos'
+    ? 'Perros y Gatos'
+    : consejo?.tipo_mascota === 'perro'
+    ? 'Perros'
+    : consejo?.tipo_mascota === 'gato'
+    ? 'Gatos'
+    : null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,14 +129,23 @@ export default function ConsejoDetail() {
         )}
 
         {/* Meta Info */}
-        <div className="flex flex-wrap gap-4 mb-8 pb-8 border-b border-gray-200">
-          <div className="flex items-center gap-2 text-gray-600">
-            <span className="text-2xl">{tipoMascota.split(' ')[0]}</span>
-            <span className="text-sm">{tipoMascota}</span>
-          </div>
+        <div className="flex flex-wrap gap-6 mb-8 pb-8 border-b border-gray-200 text-sm text-gray-600">
+          {tipoMascota && (
+            <div>
+              <span className="font-semibold text-gray-700">Para: </span>
+              {tipoMascota}
+            </div>
+          )}
+          {(consejo as any)?.veterinario_autor && (
+            <div>
+              <span className="font-semibold text-gray-700">Autor: </span>
+              {(consejo as any).veterinario_autor}
+            </div>
+          )}
           {consejo.created_at && (
-            <div className="flex items-center gap-2 text-gray-600 text-sm">
-              📅 {new Date(consejo.created_at).toLocaleDateString('es-AR')}
+            <div>
+              <span className="font-semibold text-gray-700">Publicado: </span>
+              {new Date(consejo.created_at).toLocaleDateString('es-AR')}
             </div>
           )}
         </div>

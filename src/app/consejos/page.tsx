@@ -165,7 +165,7 @@ export default function ConsejoPage() {
                       {consejo.tipo_mascota && (
                         <div className="flex items-center text-xs text-gray-500 border-t pt-3">
                           <span>
-                            {consejo.tipo_mascota === 'ambos' ? '🐕 🐱 Ambos' : consejo.tipo_mascota === 'perro' ? '🐕 Perro' : '🐱 Gato'}
+                            {consejo.tipo_mascota === 'ambos' ? 'Perros y Gatos' : consejo.tipo_mascota === 'perro' ? 'Perros' : 'Gatos'}
                           </span>
                         </div>
                       )}
