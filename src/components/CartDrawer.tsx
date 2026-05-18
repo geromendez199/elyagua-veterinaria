@@ -739,31 +739,42 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <p className="text-xs text-amber-700 mt-1">YaguaMillas acumuladas</p>
                   </div>
 
-                  {/* Cupones disponibles */}
-                  {state.cupones.length > 0 && (
+                  {/* Milestones disponibles para canjear */}
+                  {state.milestones.length > 0 && (
                     <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Tag size={18} className="text-green-600" />
-                        <p className="text-sm font-semibold text-green-900">Cupones disponibles ({state.cupones.length})</p>
+                        <p className="text-sm font-semibold text-green-900">Canjeá tus YaguaMillas</p>
                       </div>
                       <div className="space-y-2">
-                        {state.cupones.map((cupon) => {
-                          const milestoneMap: { [key: number]: number } = { 10: 25, 20: 50, 30: 75 }
-                          const milestone_millas = milestoneMap[cupon.descuento_porcentaje] || 0
+                        {state.milestones.map((milestone) => {
+                          const clientMillas = state.clienteActual?.puntos_acumulados || 0
+                          const hasEnough = clientMillas >= milestone.millas_requeridas
+                          const isApplied = appliedCoupon?.id === milestone.id
+                          const isDisabled = (!!appliedCoupon && !isApplied) || !hasEnough
                           return (
-                          <button
-                            key={cupon.id}
-                            onClick={() => applyCoupon(cupon.id, cupon.descuento_porcentaje, milestone_millas)}
-                            disabled={!!appliedCoupon && appliedCoupon.id !== cupon.id}
-                            className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between cursor-pointer ${
-                              appliedCoupon?.id === cupon.id
-                                ? 'bg-green-600 text-white border-2 border-green-700'
-                                : 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 disabled:opacity-50'
-                            }`}
-                          >
-                            <span>🎟️ {cupon.descuento_porcentaje}% Descuento</span>
-                            {appliedCoupon?.id === cupon.id && <Check size={16} />}
-                          </button>
+                            <button
+                              key={milestone.id}
+                              onClick={() => hasEnough && applyCoupon(milestone.id, milestone.descuento_porcentaje, milestone.millas_requeridas)}
+                              disabled={isDisabled}
+                              className={`w-full p-3 rounded-lg text-sm font-semibold transition flex items-center justify-between ${
+                                isApplied
+                                  ? 'bg-green-600 text-white border-2 border-green-700 cursor-pointer'
+                                  : hasEnough
+                                  ? 'bg-white border-2 border-green-300 text-green-700 hover:bg-green-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                                  : 'bg-gray-50 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              <span className="flex flex-col items-start">
+                                <span>🎟️ {milestone.descuento_porcentaje}% Descuento</span>
+                                <span className={`text-xs font-normal ${isApplied ? 'text-green-100' : hasEnough ? 'text-green-600' : 'text-gray-400'}`}>
+                                  {hasEnough
+                                    ? `Canjeá ${milestone.millas_requeridas} YaguaMillas`
+                                    : `Te faltan ${milestone.millas_requeridas - clientMillas} YaguaMillas`}
+                                </span>
+                              </span>
+                              {isApplied && <Check size={16} />}
+                            </button>
                           )
                         })}
                       </div>
@@ -783,7 +794,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                   {state.loadingCupones && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
-                      <p className="text-sm text-yellow-800">⏳ Generando cupones disponibles...</p>
+                      <p className="text-sm text-yellow-800">⏳ Cargando opciones disponibles...</p>
                     </div>
                   )}
 

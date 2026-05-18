@@ -34,13 +34,6 @@ export default async function Home() {
       <section className="bg-primary text-white py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col items-center justify-center text-center gap-6">
-            <LazyImage
-              src="/logo-blanco-vertical.png"
-              alt="El Yagua Veterinaria"
-              width={200}
-              height={250}
-              className="h-36 md:h-48 w-auto mx-auto"
-            />
             <div className="max-w-2xl mx-auto px-2 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">¿En qué podemos ayudarte?</h1>
               <p className="text-base md:text-xl text-white">
