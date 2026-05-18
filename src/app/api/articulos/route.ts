@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/api/server-client'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function GET(request: Request) {
+async function handler(request: Request) {
   try {
     const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
@@ -31,3 +32,5 @@ export async function GET(request: Request) {
     return errorResponse('Error interno', 500)
   }
 }
+
+export const GET = withRateLimit(handler, { limit: 60, windowMs: 15 * 60 * 1000 }, 'articulos-get')

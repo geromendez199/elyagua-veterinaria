@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { withRateLimit } from '@/lib/api/rate-limit'
 
-export async function POST(request: NextRequest) {
+async function handler(request: Request) {
   try {
     const body = await request.json()
 
@@ -15,6 +16,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Webhook failed' }, { status: 500 })
   }
 }
+
+export const POST = withRateLimit(handler, { limit: 100, windowMs: 15 * 60 * 1000 }, 'mp-webhook')
 
 /**
  * Helper function to initiate Mercado Pago payment (checkout preference)
