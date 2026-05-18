@@ -441,9 +441,19 @@ export default function MisYaguamillasPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">
-                        Precio: <span className="font-bold text-primary">{formatPrice(producto.precio)}</span>
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-600">
+                          Precio: <span className="font-bold text-primary">{formatPrice(producto.precio)}</span>
+                        </p>
+                      </div>
+                      {producto.puntos && producto.puntos > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Star size={14} className="fill-amber-400 text-amber-400" />
+                          <p className="text-sm font-semibold text-amber-600">
+                            {producto.puntos} YaguaMillas
+                          </p>
+                        </div>
+                      )}
                       <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded capitalize">
                         {producto.categoria}
                       </span>
