@@ -68,6 +68,8 @@ export interface Articulo {
   imagen_url: string | null
   autor: string
   categoria: ArticuloCategoria
+  tipo_mascota?: 'perro' | 'gato' | 'ambos' | null
+  veterinario_autor?: string | null
   activo: boolean
   created_at: string
   updated_at: string

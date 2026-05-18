@@ -102,8 +102,8 @@ export default function AdminInfoPage() {
       contenido: art.contenido,
       imagen_url: art.imagen_url || '',
       categoria: art.categoria,
-      tipo_mascota: (art as any).tipo_mascota || null,
-      veterinario_autor: (art as any).veterinario_autor || '',
+      tipo_mascota: art.tipo_mascota || null,
+      veterinario_autor: art.veterinario_autor || '',
       activo: art.activo,
     })
     setImageFile(null)
@@ -167,7 +167,7 @@ export default function AdminInfoPage() {
       // Auto-generate resumen from the first paragraph (max 200 chars)
       const resumen = form.contenido.split('\n\n')[0].slice(0, 200).trimEnd()
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         titulo: form.titulo.trim(),
         slug: form.slug.trim() || toSlug(form.titulo),
         resumen,

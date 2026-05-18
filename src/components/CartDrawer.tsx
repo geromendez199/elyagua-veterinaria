@@ -310,7 +310,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   productos: items.map((i) => ({ id: i.product.id, cantidad: i.quantity, puntos: i.product.puntos || 0 })),
                 }),
               })
-            } catch {}
+            } catch (err) {
+              console.error('Error registrando puntos:', err)
+            }
           }
 
           // Marcar cupón como usado y descontar YaguaMillas
@@ -325,7 +327,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   milestone_millas: (appliedCoupon as any).milestone_millas || 0,
                 }),
               })
-            } catch {}
+            } catch (err) {
+              console.error('Error marcando cupón usado:', err)
+            }
           }
         }
 
@@ -337,7 +341,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             updated_at: new Date().toISOString(),
           }, { onConflict: 'dni' })
         }
-      } catch {}
+      } catch (err) {
+        console.error('Error registrando pedido:', err)
+      }
     })()
     clearCart()
     onClose()

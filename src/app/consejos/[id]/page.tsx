@@ -11,7 +11,8 @@ interface Articulo {
   titulo: string
   contenido: string
   categoria: string
-  tipo_mascota?: string
+  tipo_mascota?: string | null
+  veterinario_autor?: string | null
   imagen_url?: string
   created_at?: string
 }
@@ -136,10 +137,10 @@ export default function ConsejoDetail() {
               {tipoMascota}
             </div>
           )}
-          {(consejo as any)?.veterinario_autor && (
+          {consejo?.veterinario_autor && (
             <div>
               <span className="font-semibold text-gray-700">Autor: </span>
-              {(consejo as any).veterinario_autor}
+              {consejo.veterinario_autor}
             </div>
           )}
           {consejo.created_at && (

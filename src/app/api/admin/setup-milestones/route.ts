@@ -1,8 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { requireAuth } from '@/lib/api/auth'
 
 export async function POST() {
   try {
+    const { error: authError } = await requireAuth()
+    if (authError) return authError
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
