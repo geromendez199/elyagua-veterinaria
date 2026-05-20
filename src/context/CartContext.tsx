@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
-import { Product } from '@/types'
+import { Product, Oferta } from '@/types'
 
 export interface CartItem {
   product: Product
@@ -16,21 +16,31 @@ interface CartContextType {
   clearCart: () => void
   total: number
   itemCount: number
+  appliedOffer: Oferta | null
+  setAppliedOffer: (offer: Oferta | null) => void
+  availableOffers: Oferta[]
+  setAvailableOffers: (offers: Oferta[]) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 const STORAGE_KEY = 'elyagua-cart'
+const OFFER_STORAGE_KEY = 'elyagua-cart-offer'
 
 export function CartProvider({ children }: { children: ReactNode }) {
   // Start with [] on both server and client to avoid hydration mismatch,
   // then load from localStorage after mount
   const [items, setItems] = useState<CartItem[]>([])
+  const [appliedOffer, setAppliedOffer] = useState<Oferta | null>(null)
+  const [availableOffers, setAvailableOffers] = useState<Oferta[]>([])
   const hydrated = useRef(false)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) setItems(JSON.parse(saved))
+
+      const savedOffer = localStorage.getItem(OFFER_STORAGE_KEY)
+      if (savedOffer) setAppliedOffer(JSON.parse(savedOffer))
     } catch (err) {
       console.warn('CartContext: error leyendo localStorage', err)
     }
@@ -46,6 +56,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.warn('CartContext: error guardando localStorage', err)
     }
   }, [items])
+
+  useEffect(() => {
+    if (!hydrated.current) return
+    try {
+      if (appliedOffer) {
+        localStorage.setItem(OFFER_STORAGE_KEY, JSON.stringify(appliedOffer))
+      } else {
+        localStorage.removeItem(OFFER_STORAGE_KEY)
+      }
+    } catch (err) {
+      console.warn('CartContext: error guardando oferta', err)
+    }
+  }, [appliedOffer])
 
   const addItem = (product: Product, quantity: number) => {
     setItems((prev) => {
@@ -86,7 +109,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}>
+    <CartContext.Provider value={{
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      total,
+      itemCount,
+      appliedOffer,
+      setAppliedOffer,
+      availableOffers,
+      setAvailableOffers,
+    }}>
       {children}
     </CartContext.Provider>
   )

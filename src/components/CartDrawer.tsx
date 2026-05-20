@@ -12,7 +12,9 @@ import { formatPrice } from '@/lib/formatPrice'
 import { WA_URL } from '@/lib/constants'
 import { purchaseEvent } from '@/lib/analytics'
 import PuntosInfo from './PuntosInfo'
+import ApplicableOffers from './ApplicableOffers'
 import { useCartDrawerReducer } from '@/hooks/useCartDrawerReducer'
+import { applyOfferToCartTotal } from '@/lib/offer-utils'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -22,7 +24,7 @@ interface CartDrawerProps {
 const STEPS = ['Carrito', 'Datos del pedido']
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, removeItem, updateQuantity, clearCart, total } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, total, appliedOffer } = useCart()
   const { appliedCoupon, applyCoupon, removeCoupon } = useCoupon()
 
   // Single reducer for all state management
@@ -499,6 +501,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     ))}
                   </div>
 
+                  {/* Ofertas disponibles */}
+                  <ApplicableOffers />
+
                   {/* YaguaMillas Info */}
                   {items.some(item => item.product.puntos) && (
                     <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
@@ -859,25 +864,41 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2 shrink-0">
           {state.step === 'cart' && items.length > 0 && (
             <>
-              {appliedCoupon && (
+              {(appliedCoupon || appliedOffer) && (
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal:</span>
                     <span>{formatPrice(total)}</span>
                   </div>
-                  <div className="flex justify-between text-rose-600 font-semibold">
-                    <span>Descuento ({appliedCoupon.descuento_porcentaje}%):</span>
-                    <span>-{formatPrice(total * (appliedCoupon.descuento_porcentaje / 100))}</span>
-                  </div>
+                  {appliedOffer && (
+                    <div className="flex justify-between text-red-600 font-semibold">
+                      <span>Oferta:</span>
+                      <span>-{formatPrice(total - applyOfferToCartTotal(total, appliedOffer, items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, precio: i.product.precio, cantidad: i.quantity, puntos: i.product.puntos }))))}</span>
+                    </div>
+                  )}
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-rose-600 font-semibold">
+                      <span>Descuento YaguaMillas ({appliedCoupon.descuento_porcentaje}%):</span>
+                      <span>-{formatPrice((appliedOffer ? applyOfferToCartTotal(total, appliedOffer, items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, precio: i.product.precio, cantidad: i.quantity, puntos: i.product.puntos }))) : total) * (appliedCoupon.descuento_porcentaje / 100))}</span>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex justify-between items-center text-lg font-bold text-gray-900">
                 <span>Total:</span>
                 <span className="text-primary">
-                  {appliedCoupon
-                    ? formatPrice(total * (1 - appliedCoupon.descuento_porcentaje / 100))
-                    : formatPrice(total)
-                  }
+                  {formatPrice(
+                    (() => {
+                      let finalTotal = total
+                      if (appliedOffer) {
+                        finalTotal = applyOfferToCartTotal(total, appliedOffer, items.map((i) => ({ id: i.product.id, nombre: i.product.nombre, precio: i.product.precio, cantidad: i.quantity, puntos: i.product.puntos })))
+                      }
+                      if (appliedCoupon) {
+                        finalTotal = finalTotal * (1 - appliedCoupon.descuento_porcentaje / 100)
+                      }
+                      return finalTotal
+                    })()
+                  )}
                 </span>
               </div>
               {state.stockErrors.length > 0 && (

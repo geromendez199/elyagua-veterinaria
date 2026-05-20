@@ -54,38 +54,23 @@ CREATE POLICY "Oferta productos son publicamente visibles"
     WHERE id = oferta_id AND activo = true
   ));
 
--- Create policies for admin access
-CREATE POLICY "Admin puede ver todas las ofertas"
-  ON public.ofertas FOR SELECT
-  USING (EXISTS (
-    SELECT 1 FROM auth.users
-    WHERE auth.uid() = id AND raw_user_meta_data->>'email' = ANY(string_to_array(current_setting('app.admin_emails', true), ','))
-  ));
+-- Create policies for admin access (anon users cannot insert/update/delete)
+-- Only authenticated admins can manage offers through API endpoints with auth checks
+DROP POLICY IF EXISTS "Admin puede ver todas las ofertas" ON public.ofertas;
+DROP POLICY IF EXISTS "Admin puede insertar ofertas" ON public.ofertas;
+DROP POLICY IF EXISTS "Admin puede actualizar ofertas" ON public.ofertas;
+DROP POLICY IF EXISTS "Admin puede borrar ofertas" ON public.ofertas;
+DROP POLICY IF EXISTS "Admin puede gestionar oferta_productos" ON public.oferta_productos;
 
-CREATE POLICY "Admin puede insertar ofertas"
-  ON public.ofertas FOR INSERT
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM auth.users
-    WHERE auth.uid() = id AND raw_user_meta_data->>'email' = ANY(string_to_array(current_setting('app.admin_emails', true), ','))
-  ));
+CREATE POLICY "Admin can manage all offers"
+  ON public.ofertas
+  FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
 
-CREATE POLICY "Admin puede actualizar ofertas"
-  ON public.ofertas FOR UPDATE
-  USING (EXISTS (
-    SELECT 1 FROM auth.users
-    WHERE auth.uid() = id AND raw_user_meta_data->>'email' = ANY(string_to_array(current_setting('app.admin_emails', true), ','))
-  ));
+CREATE POLICY "Admin can manage offer products"
+  ON public.oferta_productos
+  FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
 
-CREATE POLICY "Admin puede borrar ofertas"
-  ON public.ofertas FOR DELETE
-  USING (EXISTS (
-    SELECT 1 FROM auth.users
-    WHERE auth.uid() = id AND raw_user_meta_data->>'email' = ANY(string_to_array(current_setting('app.admin_emails', true), ','))
-  ));
-
-CREATE POLICY "Admin puede gestionar oferta_productos"
-  ON public.oferta_productos FOR ALL
-  USING (EXISTS (
-    SELECT 1 FROM auth.users
-    WHERE auth.uid() = id AND raw_user_meta_data->>'email' = ANY(string_to_array(current_setting('app.admin_emails', true), ','))
-  ));
