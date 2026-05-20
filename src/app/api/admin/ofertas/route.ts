@@ -193,7 +193,7 @@ async function handler(req: Request) {
   }
 }
 
-export const GET = withRateLimit(handler, { maxRequests: 20, windowMs: 15 * 60 * 1000 })
-export const POST = withRateLimit(handler, { maxRequests: 5, windowMs: 15 * 60 * 1000 })
-export const PUT = withRateLimit(handler, { maxRequests: 5, windowMs: 15 * 60 * 1000 })
-export const DELETE = withRateLimit(handler, { maxRequests: 5, windowMs: 15 * 60 * 1000 })
+export const GET = withRateLimit(handler, { limit: 20, windowMs: 15 * 60 * 1000 }, 'GET /api/admin/ofertas')
+export const POST = withRateLimit(handler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'POST /api/admin/ofertas')
+export const PUT = withRateLimit(handler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'PUT /api/admin/ofertas')
+export const DELETE = withRateLimit(handler, { limit: 5, windowMs: 15 * 60 * 1000 }, 'DELETE /api/admin/ofertas')

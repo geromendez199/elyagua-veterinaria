@@ -84,4 +84,4 @@ async function handler(req: Request) {
   }
 }
 
-export const PATCH = withRateLimit(handler, { maxRequests: 10, windowMs: 15 * 60 * 1000 })
+export const PATCH = withRateLimit(handler, { limit: 10, windowMs: 15 * 60 * 1000 }, 'PATCH /api/admin/ofertas/usar')
