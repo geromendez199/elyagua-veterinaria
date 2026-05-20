@@ -45,7 +45,7 @@ export default async function OfertasPage() {
       <div className="bg-gradient-to-r from-primary to-primary-dark text-white py-12">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold">Ofertas Especiales</h1>
-          <p className="text-primary-light mt-2 text-lg">
+          <p className="text-white mt-2 text-lg">
             Descubre los mejores precios en productos y combos para tu mascota
           </p>
         </div>
