@@ -32,14 +32,19 @@ export default function OfertaForm({ oferta, onSuccess, onCancel }: OfertaFormPr
   const [productoSearch, setProductoSearch] = useState('')
   const [disponibles, setDisponibles] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingProductos, setLoadingProductos] = useState(false)
   const [error, setError] = useState('')
   const [showProductoDropdown, setShowProductoDropdown] = useState(false)
 
   useEffect(() => {
-    fetchProductos()
+    if (disponibles.length === 0 && !loadingProductos) {
+      fetchProductos()
+    }
   }, [])
 
   async function fetchProductos() {
+    if (loadingProductos || disponibles.length > 0) return
+    setLoadingProductos(true)
     try {
       const response = await fetch('/api/productos')
       if (!response.ok) throw new Error('Error fetching productos')
@@ -47,6 +52,9 @@ export default function OfertaForm({ oferta, onSuccess, onCancel }: OfertaFormPr
       setDisponibles(data || [])
     } catch (error) {
       console.error('Error fetching productos:', error)
+      setError('No se pudo cargar la lista de productos')
+    } finally {
+      setLoadingProductos(false)
     }
   }
 
@@ -294,12 +302,13 @@ export default function OfertaForm({ oferta, onSuccess, onCancel }: OfertaFormPr
         <div className="mb-4 relative">
           <input
             type="text"
-            placeholder="Buscar producto para agregar..."
+            placeholder={loadingProductos ? 'Cargando productos...' : 'Buscar producto para agregar...'}
             value={productoSearch}
             onChange={(e) => setProductoSearch(e.target.value)}
             onFocus={() => setShowProductoDropdown(true)}
             onBlur={() => setTimeout(() => setShowProductoDropdown(false), 150)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            disabled={loadingProductos}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
           />
           {showProductoDropdown && (
             <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 rounded-lg bg-white shadow-lg z-10 max-h-48 overflow-y-auto">
