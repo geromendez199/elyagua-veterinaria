@@ -301,27 +301,30 @@ export default function OfertaForm({ oferta, onSuccess, onCancel }: OfertaFormPr
             onBlur={() => setTimeout(() => setShowProductoDropdown(false), 150)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
           />
-          {showProductoDropdown && filteredProductos.length > 0 && (
+          {showProductoDropdown && (
             <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 rounded-lg bg-white shadow-lg z-10 max-h-48 overflow-y-auto">
-              {filteredProductos.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    addProducto(p.id)
-                    setShowProductoDropdown(false)
-                  }}
-                  className="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-200 last:border-b-0"
-                >
-                  <div className="font-medium">{p.nombre}</div>
-                  <div className="text-sm text-gray-500">${p.precio.toLocaleString('es-AR')}</div>
-                </button>
-              ))}
-            </div>
-          )}
-          {showProductoDropdown && filteredProductos.length === 0 && disponibles.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 rounded-lg bg-white shadow-lg z-10 p-3 text-center text-gray-500">
-              {productoSearch ? 'No se encontraron productos con ese nombre' : 'Todos los productos ya están agregados'}
+              {filteredProductos.length > 0 ? (
+                filteredProductos.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      addProducto(p.id)
+                      setShowProductoDropdown(false)
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-200 last:border-b-0"
+                  >
+                    <div className="font-medium">{p.nombre}</div>
+                    <div className="text-sm text-gray-500">${p.precio.toLocaleString('es-AR')}</div>
+                  </button>
+                ))
+              ) : (
+                <div className="p-3 text-center text-gray-500 text-sm">
+                  {disponibles.length === 0 ? 'No hay productos disponibles' :
+                   productoSearch ? 'No se encontraron productos con ese nombre' :
+                   'Todos los productos ya están agregados'}
+                </div>
+              )}
             </div>
           )}
         </div>
