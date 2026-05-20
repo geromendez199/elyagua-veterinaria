@@ -40,12 +40,12 @@ export default async function OfertasPage() {
   const comboOfertas = ofertas.filter((o: any) => o.tipo === 'combo')
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <main className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white py-12">
+      <div className="bg-gradient-to-r from-primary to-primary-dark text-white py-12">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold">Ofertas Especiales</h1>
-          <p className="text-green-100 mt-2 text-lg">
+          <p className="text-primary-light mt-2 text-lg">
             Descubre los mejores precios en productos y combos para tu mascota
           </p>
         </div>

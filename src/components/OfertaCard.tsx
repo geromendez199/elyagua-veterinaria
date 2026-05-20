@@ -43,13 +43,13 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full">
       {/* Oferta Badge */}
-      <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-3">
+      <div className="bg-gradient-to-r from-primary to-primary-dark text-white px-4 py-3">
         <div className="text-sm font-semibold uppercase tracking-wide">
           {oferta.tipo === 'porcentaje' ? '% DESCUENTO' : 'COMBO ESPECIAL'}
         </div>
         <h3 className="text-xl font-bold mt-1">{oferta.titulo}</h3>
         {oferta.descripcion && (
-          <p className="text-sm mt-1 text-red-100">{oferta.descripcion}</p>
+          <p className="text-sm mt-1 text-primary-light">{oferta.descripcion}</p>
         )}
       </div>
 
@@ -96,10 +96,10 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-lg text-red-600">
+                <span className="font-bold text-lg text-primary">
                   {savings.percentage}% Descuento
                 </span>
-                <span className="font-bold text-lg text-green-600">
+                <span className="font-bold text-lg text-primary">
                   -${savings.amount.toLocaleString('es-AR')}
                 </span>
               </div>
@@ -116,11 +116,11 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Precio combo:</span>
-                <span className="text-green-600 font-bold text-lg">
+                <span className="text-primary font-bold text-lg">
                   ${(oferta.precio_especial || 0).toLocaleString('es-AR')}
                 </span>
               </div>
-              <div className="text-center text-sm text-orange-600 font-semibold">
+              <div className="text-center text-sm text-primary font-semibold">
                 ¡Ahorras ${savings.amount.toLocaleString('es-AR')}! ({savings.percentage}%)
               </div>
             </>
