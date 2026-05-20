@@ -117,7 +117,7 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Precio combo:</span>
                 <span className="text-green-600 font-bold text-lg">
-                  ${oferta.precio_especial.toLocaleString('es-AR')}
+                  ${(oferta.precio_especial || 0).toLocaleString('es-AR')}
                 </span>
               </div>
               <div className="text-center text-sm text-orange-600 font-semibold">
