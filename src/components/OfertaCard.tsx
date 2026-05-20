@@ -3,19 +3,21 @@
 import Image from 'next/image'
 import { Oferta } from '@/types'
 
+interface ProductoOferta {
+  producto_id: string
+  cantidad?: number
+  productos?: {
+    id: string
+    nombre: string
+    precio: number
+    imagen_url?: string | null
+    stock: number
+  }
+}
+
 interface OfertaCardProps {
   oferta: Oferta & {
-    productos?: Array<{
-      producto_id: string
-      cantidad?: number
-      productos?: {
-        id: string
-        nombre: string
-        precio: number
-        imagen_url?: string | null
-        stock: number
-      }
-    }>
+    productos?: ProductoOferta[]
   }
 }
 
@@ -26,7 +28,7 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
   const calculateOriginalPrice = () => {
     if (oferta.tipo === 'porcentaje') {
       return productos.reduce((sum, p) => {
-        const product = (p.productos as any)
+        const product = p.productos
         return sum + (product?.precio || 0)
       }, 0)
     }
@@ -68,8 +70,8 @@ export default function OfertaCard({ oferta }: OfertaCardProps) {
       {/* Productos */}
       <div className="p-4">
         <div className="space-y-3">
-          {productos.map((p, idx) => {
-            const product = (p.productos as any)
+          {productos.map((p) => {
+            const product = p.productos
             return (
               <div key={p.producto_id} className="flex gap-3">
                 {product?.imagen_url && (
