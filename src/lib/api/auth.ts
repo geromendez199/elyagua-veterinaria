@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/api/server-client'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthResult {
@@ -15,6 +15,7 @@ function getAdminEmails(): string[] {
 }
 
 export async function requireAuth(): Promise<AuthResult> {
+  const supabase = await createServerSupabaseClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
   if (authError || !user) {
