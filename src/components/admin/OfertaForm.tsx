@@ -45,17 +45,30 @@ export default function OfertaForm({ oferta, onSuccess, onCancel }: OfertaFormPr
   async function fetchProductos() {
     if (loadingProductos || disponibles.length > 0) return
     setLoadingProductos(true)
-    try {
-      const response = await fetch('/api/productos')
-      if (!response.ok) throw new Error('Error fetching productos')
-      const { data } = await response.json()
-      setDisponibles(data || [])
-    } catch (error) {
-      console.error('Error fetching productos:', error)
-      setError('No se pudo cargar la lista de productos')
-    } finally {
-      setLoadingProductos(false)
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const response = await fetch('/api/productos')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        const json = await response.json()
+        if (!json.data || !Array.isArray(json.data)) {
+          throw new Error('Invalid response format')
+        }
+        setDisponibles(json.data)
+        setLoadingProductos(false)
+        return
+      } catch (err) {
+        console.error(`Intento ${attempt} falló:`, err)
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 1000 * attempt))
+        }
+      }
     }
+
+    console.error('No se pudo cargar productos después de 3 intentos')
+    setLoadingProductos(false)
   }
 
   function addProducto(productoId: string) {
