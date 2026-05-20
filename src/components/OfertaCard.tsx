@@ -3,22 +3,8 @@
 import Image from 'next/image'
 import { Oferta } from '@/types'
 
-interface ProductoOferta {
-  producto_id: string
-  cantidad?: number
-  productos?: {
-    id: string
-    nombre: string
-    precio: number
-    imagen_url?: string | null
-    stock: number
-  }
-}
-
 interface OfertaCardProps {
-  oferta: Oferta & {
-    productos?: ProductoOferta[]
-  }
+  oferta: Oferta
 }
 
 export default function OfertaCard({ oferta }: OfertaCardProps) {

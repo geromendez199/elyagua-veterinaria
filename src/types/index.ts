@@ -136,6 +136,13 @@ export interface OfertaProducto {
   cantidad?: number
   nombre?: string
   precio?: number
+  productos?: {
+    id: string
+    nombre: string
+    precio: number
+    imagen_url?: string | null
+    stock: number
+  }
 }
 
 export interface Oferta {
