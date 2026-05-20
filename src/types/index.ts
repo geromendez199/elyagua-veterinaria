@@ -127,3 +127,34 @@ export const CONSEJO_CATEGORIES = {
   Prevencion: { label: 'Prevención', icon: '', color: 'blue' },
   Nutricion: { label: 'Nutrición', icon: '', color: 'green' },
 } as const
+
+// Offers System
+export type OfertaTipo = 'porcentaje' | 'combo'
+
+export interface OfertaProducto {
+  producto_id: string
+  cantidad?: number
+  nombre?: string
+  precio?: number
+}
+
+export interface Oferta {
+  id: string
+  tipo: OfertaTipo
+  titulo: string
+  descripcion?: string | null
+  descuento_porcentaje?: number | null
+  precio_especial?: number | null
+  fecha_inicio: string
+  fecha_fin: string
+  activo: boolean
+  cantidad_maxima_usos: number | null
+  usos_actuales: number
+  productos?: OfertaProducto[]
+  created_at: string
+  updated_at: string
+}
+
+export interface OfertaDetailed extends Oferta {
+  productos: Array<OfertaProducto & { nombre: string; precio: number }>
+}

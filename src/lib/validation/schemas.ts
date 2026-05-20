@@ -93,6 +93,66 @@ export const useAdminCuponSchema = z.object({
   pedido_id: z.string().uuid('Pedido inválido'),
 })
 
+// ── Ofertas Schemas ────────────────────────────────────────────
+export const createOfertaSchema = z.object({
+  tipo: z.enum(['porcentaje', 'combo']),
+  titulo: z.string().min(3, 'Título debe tener al menos 3 caracteres').max(100),
+  descripcion: z.string().max(500).optional().nullable(),
+  descuento_porcentaje: z.number().int().min(1).max(100).nullable().optional(),
+  precio_especial: z.number().positive().nullable().optional(),
+  fecha_inicio: z.string().datetime('Fecha inicio inválida'),
+  fecha_fin: z.string().datetime('Fecha fin inválida'),
+  cantidad_maxima_usos: z.number().int().nonnegative().nullable().optional(),
+  productos: z.array(
+    z.object({
+      producto_id: z.string().uuid('ID de producto inválido'),
+      cantidad: z.number().int().positive().optional(),
+    })
+  ).min(1, 'Debe tener al menos un producto'),
+}).refine(
+  (data) => new Date(data.fecha_inicio) < new Date(data.fecha_fin),
+  { message: 'Fecha inicio debe ser anterior a fecha fin', path: ['fecha_fin'] }
+).refine(
+  (data) => {
+    if (data.tipo === 'porcentaje') return data.descuento_porcentaje != null
+    if (data.tipo === 'combo') return data.precio_especial != null
+    return false
+  },
+  { message: 'Campos requeridos incompletos para el tipo de oferta' }
+)
+
+export const updateOfertaSchema = z.object({
+  id: z.string().uuid('ID inválido'),
+  tipo: z.enum(['porcentaje', 'combo']).optional(),
+  titulo: z.string().min(3).max(100).optional(),
+  descripcion: z.string().max(500).optional().nullable(),
+  descuento_porcentaje: z.number().int().min(1).max(100).nullable().optional(),
+  precio_especial: z.number().positive().nullable().optional(),
+  fecha_inicio: z.string().datetime().optional(),
+  fecha_fin: z.string().datetime().optional(),
+  activo: z.boolean().optional(),
+  cantidad_maxima_usos: z.number().int().nonnegative().nullable().optional(),
+  productos: z.array(
+    z.object({
+      producto_id: z.string().uuid('ID de producto inválido'),
+      cantidad: z.number().int().positive().optional(),
+    })
+  ).optional(),
+})
+
+export const addProductoToOfertaSchema = z.object({
+  producto_id: z.string().uuid('ID de producto inválido'),
+  cantidad: z.number().int().positive().optional(),
+})
+
+export const removeProductoFromOfertaSchema = z.object({
+  producto_id: z.string().uuid('ID de producto inválido'),
+})
+
+export const incrementOfertaUsoSchema = z.object({
+  oferta_id: z.string().uuid('ID de oferta inválido'),
+})
+
 // ── Type Exports ───────────────────────────────────────────────
 export type CheckoutFormData = z.infer<typeof checkoutFormSchema>
 export type DniInput = z.infer<typeof dniSchema>
@@ -106,3 +166,8 @@ export type CreateMascotaInput = z.infer<typeof createMascotaSchema>
 export type UpdateProductoPuntosInput = z.infer<typeof updateProductoPuntosSchema>
 export type AdjustClientePuntosInput = z.infer<typeof adjustClientePuntosSchema>
 export type UseAdminCuponInput = z.infer<typeof useAdminCuponSchema>
+export type CreateOfertaInput = z.infer<typeof createOfertaSchema>
+export type UpdateOfertaInput = z.infer<typeof updateOfertaSchema>
+export type AddProductoToOfertaInput = z.infer<typeof addProductoToOfertaSchema>
+export type RemoveProductoFromOfertaInput = z.infer<typeof removeProductoFromOfertaSchema>
+export type IncrementOfertaUsoInput = z.infer<typeof incrementOfertaUsoSchema>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, BookOpen, Star } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, ChevronRight, Clock, TrendingUp, TrendingDown, Minus, BarChart2, CreditCard, AlertTriangle, BookOpen, Star, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/formatPrice'
 
@@ -150,6 +150,16 @@ export default function AdminDashboardPage() {
       stat: stats.productos_activos,
       statLabel: 'activos',
       color: 'from-primary to-primary-dark',
+      badge: null,
+    },
+    {
+      href: '/admin/ofertas',
+      icon: Sparkles,
+      titulo: 'Ofertas',
+      descripcion: 'Descuentos y combos de productos',
+      stat: null,
+      statLabel: '',
+      color: 'from-red-400 to-red-600',
       badge: null,
     },
     {
