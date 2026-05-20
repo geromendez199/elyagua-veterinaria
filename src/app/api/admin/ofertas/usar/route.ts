@@ -48,7 +48,7 @@ async function handler(req: Request) {
       .single()
 
     if (fetchError) {
-      return dbErrorResponse(fetchError, 'Error al obtener oferta')
+      return dbErrorResponse('PATCH /api/admin/ofertas/usar', fetchError, 'Error al obtener oferta')
     }
 
     if (!oferta) {
@@ -75,13 +75,12 @@ async function handler(req: Request) {
       .single()
 
     if (updateError) {
-      return dbErrorResponse(updateError, 'Error al actualizar uso de oferta')
+      return dbErrorResponse('PATCH /api/admin/ofertas/usar', updateError, 'Error al actualizar uso de oferta')
     }
 
     return NextResponse.json({ data: updated })
   } catch (error) {
-    console.error('Error en /api/admin/ofertas/usar:', error)
-    return dbErrorResponse(error, 'Error interno del servidor')
+    return dbErrorResponse('PATCH /api/admin/ofertas/usar', error, 'Error interno del servidor')
   }
 }
 

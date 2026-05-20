@@ -60,7 +60,7 @@ async function handler(req: Request) {
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) {
-        return dbErrorResponse(error, 'Error al obtener ofertas')
+        return dbErrorResponse('GET /api/admin/ofertas', error, 'Error al obtener ofertas')
       }
 
       return NextResponse.json({ data })
@@ -83,7 +83,7 @@ async function handler(req: Request) {
         .single()
 
       if (createError) {
-        return dbErrorResponse(createError, 'Error al crear oferta')
+        return dbErrorResponse('POST /api/admin/ofertas', createError, 'Error al crear oferta')
       }
 
       // Insert productos
@@ -99,7 +99,7 @@ async function handler(req: Request) {
           .insert(productosData)
 
         if (productoError) {
-          return dbErrorResponse(productoError, 'Error al agregar productos a oferta')
+          return dbErrorResponse('POST /api/admin/ofertas', productoError, 'Error al agregar productos a oferta')
         }
       }
 
@@ -131,7 +131,7 @@ async function handler(req: Request) {
         .single()
 
       if (updateError) {
-        return dbErrorResponse(updateError, 'Error al actualizar oferta')
+        return dbErrorResponse('PUT /api/admin/ofertas', updateError, 'Error al actualizar oferta')
       }
 
       // Update productos if provided
@@ -143,7 +143,7 @@ async function handler(req: Request) {
           .eq('oferta_id', id)
 
         if (deleteError) {
-          return dbErrorResponse(deleteError, 'Error al eliminar productos anteriores')
+          return dbErrorResponse('PUT /api/admin/ofertas', deleteError, 'Error al eliminar productos anteriores')
         }
 
         // Insert new productos
@@ -159,7 +159,7 @@ async function handler(req: Request) {
             .insert(productosData)
 
           if (productoError) {
-            return dbErrorResponse(productoError, 'Error al agregar productos')
+            return dbErrorResponse('PUT /api/admin/ofertas', productoError, 'Error al agregar productos')
           }
         }
       }
@@ -181,7 +181,7 @@ async function handler(req: Request) {
         .eq('id', ofertaId)
 
       if (error) {
-        return dbErrorResponse(error, 'Error al eliminar oferta')
+        return dbErrorResponse('DELETE /api/admin/ofertas', error, 'Error al eliminar oferta')
       }
 
       return NextResponse.json({ message: 'Oferta eliminada' })
@@ -189,8 +189,7 @@ async function handler(req: Request) {
 
     return NextResponse.json({ error: 'Método no permitido' }, { status: 405 })
   } catch (error) {
-    console.error('Error en /api/admin/ofertas:', error)
-    return dbErrorResponse(error, 'Error interno del servidor')
+    return dbErrorResponse('POST/GET/PUT/DELETE /api/admin/ofertas', error, 'Error interno del servidor')
   }
 }
 
