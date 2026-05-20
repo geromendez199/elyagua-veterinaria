@@ -2,12 +2,15 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { withRateLimit } from '@/lib/api/rate-limit'
-import { requireAdminAuth } from '@/lib/api/auth'
+import { requireAuth } from '@/lib/api/auth'
 import { createOfertaSchema, updateOfertaSchema } from '@/lib/validation/schemas'
 import { dbErrorResponse } from '@/lib/api/response'
 
 async function handler(req: Request) {
   try {
+    const authResult = await requireAuth()
+    if (authResult.error) return authResult.error
+
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,8 +26,6 @@ async function handler(req: Request) {
         },
       }
     )
-
-    await requireAdminAuth(supabase)
 
     if (req.method === 'GET') {
       const url = new URL(req.url)
