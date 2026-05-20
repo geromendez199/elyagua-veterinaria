@@ -3,16 +3,34 @@ import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    console.log('API: Iniciando fetch de productos...')
+    console.log('URL disponible:', !!url)
+    console.log('Key disponible:', !!key)
+
+    if (!url || !key) {
+      console.error('Variables de entorno faltantes')
+      return NextResponse.json(
+        { error: 'Configuración incompleta' },
+        { status: 500 }
+      )
+    }
+
+    const supabase = createClient(url, key)
+
+    console.log('API: Cliente Supabase creado, ejecutando query...')
 
     const { data, error } = await supabase
       .from('productos')
       .select('id, nombre, precio, stock, activo, categoria, imagen_url')
       .eq('activo', true)
       .order('nombre', { ascending: true })
+
+    console.log('API: Query completada')
+    console.log('Data:', data?.length || 0, 'registros')
+    console.log('Error:', error)
 
     if (error) {
       console.error('Error fetching productos:', error)
